@@ -15,13 +15,20 @@ class IndexTTS(TTS):
         voices: Optional[List[Dict[str, str]]] = None,
         host: str = "localhost",
         port: int = 11996,
+        base_url: Optional[str] = None,
+        api_key: Optional[str] = None,
         sample_rate=48000,
         timeout: float = 30.0,
     ):
         self._host = host
         self._port = port
-        self.url = f"http://{host}:{port}/tts_url"
-        self._voices = [voice.copy() for voice in voices]
+        self._base_url = base_url
+        self._api_key = api_key
+        if base_url:
+            self.url = f"{base_url.rstrip('/')}/tts_url"
+        else:
+            self.url = f"http://{host}:{port}/tts_url"
+        self._voices = [voice.copy() for voice in voices] if voices else []
         self._sample_rate = sample_rate
         self._timeout = timeout
         self.audio_paths = [voice.get("path", "") for voice in self._voices]
@@ -90,6 +97,8 @@ class IndexTTS(TTS):
             voices=[voice.copy() for voice in self._base_voices],
             host=self._host,
             port=self._port,
+            base_url=self._base_url,
+            api_key=self._api_key,
             sample_rate=self._sample_rate,
             timeout=self._timeout,
         )
@@ -153,15 +162,21 @@ class IndexTTS(TTS):
         """Synthesize speech and return audio bytes."""
         audio_paths_to_use = self._resolve_audio_paths()
         data = {"text": text, "audio_paths": audio_paths_to_use}
-        response = requests.post(self.url, json=data)
+        headers = {}
+        if self._api_key:
+            headers["Authorization"] = f"Bearer {self._api_key}"
+        response = requests.post(self.url, json=data, headers=headers)
         return self._resample_bytes(response.content)
 
     async def async_synthesize(self, text: str, **kwargs) -> bytes:
         audio_paths_to_use = self._resolve_audio_paths()
         data = {"text": text, "audio_paths": audio_paths_to_use}
+        headers = {}
+        if self._api_key:
+            headers["Authorization"] = f"Bearer {self._api_key}"
         timeout = aiohttp.ClientTimeout(total=self._timeout)
         async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.post(self.url, json=data) as resp:
+            async with session.post(self.url, json=data, headers=headers) as resp:
                 if resp.status != 200:
                     body = await resp.text()
                     raise RuntimeError(f"HTTP {resp.status}: {body}")

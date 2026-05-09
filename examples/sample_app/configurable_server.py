@@ -1,20 +1,24 @@
 import argparse
-from pathlib import Path
-
-from fastapi import FastAPI, Request
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse, JSONResponse
 import json
 import mimetypes
+import os
+from pathlib import Path
+
+os.environ["NO_PROXY"] = "*"
+
+from fastapi import FastAPI, Request  # noqa: E402
+from fastapi.responses import HTMLResponse, JSONResponse  # noqa: E402
+from fastapi.staticfiles import StaticFiles  # noqa: E402
+from fastapi.templating import Jinja2Templates  # noqa: E402
+
+from xtalk import Xtalk  # noqa: E402
+from xtalk.log_utils import mute_other_logging  # noqa: E402, F401
+
+# mute_other_logging()
 
 mimetypes.add_type("application/javascript", ".js")
 mimetypes.add_type("application/javascript", ".mjs")
 
-from xtalk import Xtalk
-from xtalk.log_utils import mute_other_logging
-
-mute_other_logging()
 
 parser = argparse.ArgumentParser(description="Xtalk Dev Server")
 parser.add_argument("--config", type=str, help="Path to the server configuration file")
@@ -40,20 +44,22 @@ try:
     )
 except Exception:
     print("No local Xtalk frontend library found.")
+
+
 @app.get("/api/voices")
 async def get_reference_audios():
     with open(args.config, "r", encoding="utf-8") as f:
         config = json.load(f)
         try:
             voices = config["tts"]["params"]["voices"]
-        except:
+        except KeyError:
             voices = []
     return JSONResponse(content={"audios": voices})
 
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="index.html")
 
 
 if __name__ == "__main__":

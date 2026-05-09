@@ -6,6 +6,7 @@ import uuid
 from pathlib import Path
 from typing import Any
 
+
 def _build_title(text: str, *, max_chars: int = 32) -> str:
     collapsed = " ".join(text.split())
     if len(collapsed) <= max_chars:
@@ -114,7 +115,7 @@ class PersistenceStore:
             return self.create_session(user_id)
         session = self.get_session(user_id, session_id)
         if session is None:
-            raise KeyError(session_id)
+            return self.create_session(user_id, session_id=session_id)
         return session
 
     def list_sessions(self, user_id: str) -> list[dict[str, Any]]:

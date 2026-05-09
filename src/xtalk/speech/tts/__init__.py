@@ -62,3 +62,11 @@ try:
     __all__.append("GPTSoVITS")
 except:
     pass
+
+# OpenAI TTS
+try:
+    from .openai_tts import OpenAITTS as OpenAITTS
+
+    __all__.append("OpenAITTS")
+except Exception as e:
+    print(f"Failed to load OpenAITTS: {e}")
