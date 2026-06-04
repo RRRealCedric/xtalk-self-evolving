@@ -62,7 +62,7 @@ Send the attached session identifier to the frontend.
 _Defined in `xtalk.serving.modules.asr_manager`._
 
 ```python
-class ASRManager(Manager, TurnStateRestorable)
+class ASRManager(Manager)
 ```
 
 ### Methods
@@ -83,13 +83,46 @@ _Defined in `xtalk.serving.modules.asr_manager`._
 async def shutdown(self)
 ```
 
-#### restore_turn_state
+## DirectAudioManager
 
-_Defined in `xtalk.serving.modules.asr_manager`._
+_Defined in `xtalk.serving.modules.direct_audio_manager`._
 
 ```python
-def restore_turn_state(self, *, last_turn_id: int) -> None
+class DirectAudioManager(Manager)
 ```
+
+Forward ``direct_audio`` tool calls to the outbound audio stream.
+
+### Methods
+
+#### __init__
+
+_Defined in `xtalk.serving.modules.direct_audio_manager`._
+
+```python
+def __init__(self, event_bus: EventBus, session_id: str, config: dict[str, Any] | None = None) -> None
+```
+
+Initialize the direct-audio manager.
+
+##### Parameters
+
+- `event_bus` (`EventBus`)
+  Session-scoped event bus.
+- `session_id` (`str`)
+  Active session identifier.
+- `config` (`dict[str, Any] | None, optional`)
+  Session configuration shared with managers.
+
+#### shutdown
+
+_Defined in `xtalk.serving.modules.direct_audio_manager`._
+
+```python
+async def shutdown(self) -> None
+```
+
+Shut down the manager.
 
 ## EmbeddingsManager
 
@@ -190,41 +223,82 @@ _Defined in `xtalk.serving.modules.latency_manager`._
 async def shutdown(self)
 ```
 
-## LLMAgentManager
+## LLMAgentContextManager
 
-_Defined in `xtalk.serving.modules.llm_agent_manager`._
+_Defined in `xtalk.serving.modules.llm_agent_context_manager`._
 
 ```python
-class LLMAgentManager(Manager, TurnStateRestorable)
+class LLMAgentContextManager(Manager)
 ```
 
-Drive LLM agent generation and coordinate TTS streaming.
+Forward session context events into the configured LLM agent.
+
+### Parameters
+
+- `event_bus` (`EventBus`)
+  Shared event bus for the current session.
+- `session_id` (`str`)
+  Current session identifier.
+- `pipeline` (`Pipeline`)
+  Session pipeline that owns the LLM agent.
+- `config` (`dict[str, Any] | None, optional`)
+  Unused manager config kept for interface consistency.
 
 ### Methods
 
 #### __init__
 
-_Defined in `xtalk.serving.modules.llm_agent_manager`._
+_Defined in `xtalk.serving.modules.llm_agent_context_manager`._
 
 ```python
-def __init__(self, event_bus: EventBus, session_id: str, pipeline: Pipeline, config: dict | None = None)
+def __init__(self, event_bus: EventBus, session_id: str, pipeline: Pipeline, config: dict[str, Any] | None = None) -> None
 ```
 
 #### shutdown
 
-_Defined in `xtalk.serving.modules.llm_agent_manager`._
+_Defined in `xtalk.serving.modules.llm_agent_context_manager`._
 
 ```python
 async def shutdown(self) -> None
 ```
 
-#### restore_turn_state
+Release manager resources.
 
-_Defined in `xtalk.serving.modules.llm_agent_manager`._
+## LLMAgentConsumptionManager
+
+_Defined in `xtalk.serving.modules.llm_agent_generation_manager`._
 
 ```python
-def restore_turn_state(self, *, last_turn_id: int) -> None
+class LLMAgentConsumptionManager(Manager)
 ```
+
+Consume one or more agent streams and forward their output downstream.
+
+### Notes
+
+Multiple agent streams may be active concurrently. Their text output is
+merged into one shared turn response and appended to the shared TTS queue in
+arrival order.
+
+### Methods
+
+#### __init__
+
+_Defined in `xtalk.serving.modules.llm_agent_generation_manager`._
+
+```python
+def __init__(self, event_bus: EventBus, session_id: str, pipeline: Pipeline, config: dict[str, Any] | None = None) -> None
+```
+
+#### shutdown
+
+_Defined in `xtalk.serving.modules.llm_agent_generation_manager`._
+
+```python
+async def shutdown(self) -> None
+```
+
+Cancel all active streams during service shutdown.
 
 ## SpeakerManager
 
@@ -240,7 +314,7 @@ Responsibilities:
 - Collect enhanced audio frames per turn and extract embeddings.
 - Compare against previously registered speakers.
 - Recognize an existing speaker or register a new one.
-- Write `speaker_id` to PipelineContext and emit SpeakerRecognized events.
+- Emit ``SpeakerRecognized`` events for downstream consumers.
 
 ### Methods
 
@@ -273,33 +347,29 @@ async def shutdown(self) -> None
 
 Stop buffering audio and persist debug summaries.
 
-## ThoughtManager
+## TTSPlaybackManager
 
-_Defined in `xtalk.serving.modules.thought_manager`._
+_Defined in `xtalk.serving.modules.tts_playback_manager`._
 
 ```python
-class ThoughtManager(Manager)
+class TTSPlaybackManager(Manager)
 ```
 
-Manager that periodically refreshes conversation thoughts.
-
-### Class Fields
-
-- `REFRESH_INTERVAL_SEC: float` = `1.0`
+Project confirmed TTS playback progress back onto response text.
 
 ### Methods
 
 #### __init__
 
-_Defined in `xtalk.serving.modules.thought_manager`._
+_Defined in `xtalk.serving.modules.tts_playback_manager`._
 
 ```python
-def __init__(self, event_bus: EventBus, session_id: str, pipeline: Pipeline, config: dict[str, Any] | None = None) -> None
+def __init__(self, event_bus: EventBus, session_id: str, config: dict[str, Any] | None = None) -> None
 ```
 
 #### shutdown
 
-_Defined in `xtalk.serving.modules.thought_manager`._
+_Defined in `xtalk.serving.modules.tts_playback_manager`._
 
 ```python
 async def shutdown(self) -> None

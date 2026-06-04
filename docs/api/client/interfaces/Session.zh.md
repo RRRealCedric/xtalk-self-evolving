@@ -6,7 +6,7 @@
 
 # 接口: Session
 
-定义于: [session/types.ts:90](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L90)
+定义于: `session/types.ts:86`
 
 前端入口暴露的公开会话控制器。
 
@@ -16,7 +16,7 @@
 
 > **muted**: `boolean`
 
-定义于: [session/types.ts:130](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L130)
+定义于: `session/types.ts:126`
 
 麦克风采集链路当前是否静音。
 
@@ -26,7 +26,7 @@
 
 > `readonly` **state**: `object`
 
-定义于: [session/types.ts:108](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L108)
+定义于: `session/types.ts:104`
 
 当前的会话状态快照。
 
@@ -82,6 +82,18 @@
 
 > **thought**: `string`
 
+#### tool\_call
+
+> **tool\_call**: `object`
+
+##### tool\_call.args
+
+> **args**: `Record`&lt;`string`, `any`&gt;
+
+##### tool\_call.name
+
+> **name**: `string`
+
 #### user
 
 > **user**: `ConversationUser` \| `null`
@@ -92,7 +104,7 @@
 
 > **changeVoice**(`voiceName`): `Promise`&lt;`void`&gt;
 
-定义于: [session/types.ts:136](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L136)
+定义于: `session/types.ts:132`
 
 请求为后续助手语音合成切换语音。
 
@@ -114,7 +126,7 @@
 
 > **close**(): `Promise`&lt;`void`&gt;
 
-定义于: [session/types.ts:98](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L98)
+定义于: `session/types.ts:94`
 
 关闭当前运行时连接和音频资源。
 
@@ -128,7 +140,7 @@
 
 > **getSessions**(): `Promise`&lt;`SessionSummary`[]&gt;
 
-定义于: [session/types.ts:147](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L147)
+定义于: `session/types.ts:143`
 
 获取当前用户可用的持久化会话。
 
@@ -142,7 +154,7 @@
 
 > **onFullAudioChunk**(`callback`): `void`
 
-定义于: [session/types.ts:126](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L126)
+定义于: `session/types.ts:122`
 
 注册一个用于接收合并后的全双工 PCM 音频块的回调。
 
@@ -164,7 +176,7 @@
 
 > **onInputAudioChunk**(`callback`): `void`
 
-定义于: [session/types.ts:114](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L114)
+定义于: `session/types.ts:110`
 
 注册一个用于接收麦克风输入 PCM 音频块的回调。
 
@@ -186,7 +198,7 @@
 
 > **onOutputAudioChunk**(`callback`): `void`
 
-定义于: [session/types.ts:120](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L120)
+定义于: `session/types.ts:116`
 
 注册一个用于接收扬声器输出 PCM 音频块的回调。
 
@@ -208,7 +220,7 @@
 
 > **onStateChange**(`callback`): `void`
 
-定义于: [session/types.ts:104](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L104)
+定义于: `session/types.ts:100`
 
 注册一个在会话状态变化时触发的回调。
 
@@ -230,7 +242,7 @@
 
 > **open**(): `Promise`&lt;`void`&gt;
 
-定义于: [session/types.ts:94](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L94)
+定义于: `session/types.ts:90`
 
 打开会话运行时，并在需要时执行鉴权。
 
@@ -244,7 +256,7 @@
 
 > **switchSession**(`sessionId`): `Promise`&lt;`void`&gt;
 
-定义于: [session/types.ts:153](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L153)
+定义于: `session/types.ts:149`
 
 将当前会话切换到一个已持久化会话，或启动一个新会话。
 
@@ -266,7 +278,7 @@
 
 > **uploadFile**(`file`, `endpoint?`): `Promise`&lt;`void`&gt;
 
-定义于: [session/types.ts:143](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L143)
+定义于: `session/types.ts:139`
 
 将文件上传到当前会话上下文中。
 

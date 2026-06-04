@@ -13,89 +13,86 @@ Abstract interface for conversational agents used by Xtalk.
 
 ### Methods
 
-#### generate
+#### content_to_text
 
 _Defined in `xtalk.llm_agent.interfaces`._
 
 ```python
-def generate(self, input: Union[str, AgentInput]) -> Union[str, tuple[str, List[ToolCall]]]
+def content_to_text(content: Any) -> str
 ```
 
-Generate a complete response for the input.
+Normalize model content blocks into plain text.
 
 ##### Parameters
 
-- `input` (`str | AgentInput`)
-  Raw user text or a structured payload containing both text and
-  pipeline context.
+- `content:`
+  Content emitted by a LangChain model chunk or message.
 
 ##### Returns
 
-- `str | tuple[str, List[ToolCall]]`
-  Plain response text, or a ``(text, tool_calls)`` tuple when tool
-  calls should be surfaced alongside the final text.
+- `str`
+  Plain-text content extracted from the input.
 
-#### generate_stream
+#### accept
 
 _Defined in `xtalk.llm_agent.interfaces`._
 
 ```python
-def generate_stream(self, input: Union[str, AgentInput]) -> Iterable[Union[str, ToolCall, dict[str, Any]]]
+def accept(self, context: AgentContext) -> Iterable[AgentOutput]
 ```
 
-Stream response chunks for the input.
+Accept an incremental context update.
 
 ##### Parameters
 
-- `input` (`str | AgentInput`)
-  Raw user text or structured agent input.
+- `context` (`AgentContext`)
+  Context payload forwarded from serving-layer events.
 
 ##### Yields
 
-- `str | ToolCall | dict[str, Any]`
-  Tool calls, tool-result payloads, followed by text chunks. The
-  default implementation delegates to ``generate()`` and yields its
-  result in streaming form.
+- `AgentStreamItem`
+  Zero or more streamed response items triggered by the context
+  update.
 
-#### async_generate
-
-_Defined in `xtalk.llm_agent.interfaces`._
-
-```python
-async def async_generate(self, input: Union[str, AgentInput]) -> Union[str, tuple[str, List[ToolCall]]]
-```
-
-Asynchronously generate a complete response.
-
-##### Parameters
-
-- `input` (`str | AgentInput`)
-  Raw user text or structured agent input.
-
-##### Returns
-
-- `str | tuple[str, List[ToolCall]]`
-  Same result contract as ``generate()``.
-
-#### async_generate_stream
+#### async_accept
 
 _Defined in `xtalk.llm_agent.interfaces`._
 
 ```python
-async def async_generate_stream(self, input: Union[str, AgentInput]) -> AsyncIterator[Union[str, ToolCall, dict[str, Any]]]
+async def async_accept(self, context: AgentContext) -> AsyncIterator[AgentOutput]
 ```
 
-Asynchronously stream agent outputs.
+Asynchronously accept an incremental context update.
 
 ##### Parameters
 
-- `input` (`str | AgentInput`)
-  Raw user text or structured agent input.
+- `context` (`AgentContext`)
+  Context payload forwarded from serving-layer events.
 
 ##### Yields
 
-- `str | ToolCall | dict[str, Any]`
-  Streamed outputs from ``generate_stream()``.
+- `AgentStreamItem`
+  Streamed response items triggered by the context update.
+
+#### sync_iter_from_async
+
+_Defined in `xtalk.llm_agent.interfaces`._
+
+```python
+def sync_iter_from_async(self, async_iter: AsyncIterator[T]) -> Iterable[T]
+```
+
+Convert an async iterator into a synchronous generator.
+
+##### Parameters
+
+- `async_iter` (`AsyncIterator[T]`)
+  Async iterator to bridge into synchronous iteration.
+
+##### Yields
+
+- `T`
+  Items produced by ``async_iter``.
 
 #### clone
 
@@ -132,10 +129,16 @@ Restore persisted conversation messages into the agent state.
 _Defined in `xtalk.llm_agent.interfaces`._
 
 ```python
-def get_chat_history(self) -> str | None
+def get_chat_history(self, with_system: bool = False) -> str | None
 ```
 
 Return the serialized conversation history when available.
+
+##### Parameters
+
+- `with_system` (`bool, optional`)
+  Whether to include the system prompt message when supported by the
+  concrete implementation.
 
 ##### Returns
 
@@ -147,7 +150,7 @@ Return the serialized conversation history when available.
 _Defined in `xtalk.llm_agent.interfaces`._
 
 ```python
-def add_tools(self, tools: list[BaseTool | Callable[[], BaseTool]])
+def add_tools(self, tools: list[BaseTool | Callable[[], BaseTool]]) -> None
 ```
 
 Attach tools to the agent.
@@ -157,6 +160,105 @@ Attach tools to the agent.
 - `tools` (`list[BaseTool | Callable[[], BaseTool]]`)
   Tool instances or factories that produce tool instances.
 
+## AgentContext
+
+_Defined in `xtalk.llm_agent.interfaces`._
+
+```python
+class AgentContext(TypedDict)
+```
+
+Incremental context update accepted by an agent.
+
+### Notes
+
+``type`` identifies the logical context stream, while ``data`` carries the
+event-derived payload for that stream.
+
+### Class Fields
+
+- `type: str`
+- `data: dict[str, Any]`
+
+## AgentOutput
+
+_Defined in `xtalk.llm_agent.interfaces`._
+
+```python
+AgentOutput
+```
+
+**Value:** `Union[str, ToolCall, ToolCallResult]`
+
+## ChatHistory
+
+_Defined in `xtalk.llm_agent.interfaces`._
+
+```python
+class ChatHistory
+```
+
+Manage chat history plus playback-aware assistant-message merging.
+
+### Methods
+
+#### __init__
+
+_Defined in `xtalk.llm_agent.interfaces`._
+
+```python
+def __init__(self, system_prompt: str) -> None
+```
+
+Initialize the history with one system message.
+
+##### Parameters
+
+- `system_prompt:`
+  The system prompt to place at the start of the message list.
+
+#### messages
+
+_Defined in `xtalk.llm_agent.interfaces`._
+
+```python
+def messages(self) -> list[BaseMessage]
+```
+
+Return the current chat-history message list.
+
+#### append_message
+
+_Defined in `xtalk.llm_agent.interfaces`._
+
+```python
+def append_message(self, message: BaseMessage) -> None
+```
+
+Append one message to the history unchanged.
+
+##### Parameters
+
+- `message:`
+  The message to append.
+
+#### append_or_update_ai_message
+
+_Defined in `xtalk.llm_agent.interfaces`._
+
+```python
+def append_or_update_ai_message(self, full_text: str, *, final: bool) -> None
+```
+
+Append or merge one playback-managed assistant message.
+
+##### Parameters
+
+- `full_text:`
+  The cumulative assistant text confirmed by playback.
+- `final:`
+  Whether this update closes the playback-managed assistant message.
+
 ## DummyAgent
 
 _Defined in `xtalk.llm_agent.dummy`._
@@ -165,9 +267,12 @@ _Defined in `xtalk.llm_agent.dummy`._
 class DummyAgent(Agent)
 ```
 
-Dummy LLM model for testing purposes.
+Dummy agent that always returns the same response text.
 
-This model ignores the input and returns a predefined test response.
+### Parameters
+
+- `default_response` (`str, optional`)
+  Response text yielded for every input turn.
 
 ### Methods
 
@@ -176,31 +281,10 @@ This model ignores the input and returns a predefined test response.
 _Defined in `xtalk.llm_agent.dummy`._
 
 ```python
-def __init__(self, default_response: str = 'The term "psychology" can refer to the entirety of humans\' internal mental activities. It can also denote an organism\'s subjective reflection of the objective world, as well as the processes and phenomena related to mental activity, such as emotion, thinking, and behavior. In addition, "psychology" is often used to refer to the academic discipline that studies human psychological phenomena, mental functions, and behavior.')
+def __init__(self, default_response: str = 'The term "psychology" can refer to the entirety of humans\' internal mental activities. It can also denote an organism\'s subjective reflection of the objective world, as well as the processes and phenomena related to mental activity, such as emotion, thinking, and behavior. In addition, "psychology" is often used to refer to the academic discipline that studies human psychological phenomena, mental functions, and behavior.') -> None
 ```
 
-Initialize the DummyLLM model.
-
-Args:
-    default_response (str): The default response to return for any input
-
-#### generate
-
-_Defined in `xtalk.llm_agent.dummy`._
-
-```python
-def generate(self, input: Union[str, AgentInput]) -> str
-```
-
-Generate response for the given input (dummy implementation).
-
-This method ignores the input and returns the predefined test response.
-
-Args:
-    input: Input text or dict with content/context (ignored)
-
-Returns:
-    str: The predefined test response
+Initialize the dummy agent.
 
 #### restore_history
 
@@ -210,6 +294,43 @@ _Defined in `xtalk.llm_agent.dummy`._
 def restore_history(self, messages: list[dict[str, Any]]) -> None
 ```
 
+Ignore persisted history for the stateless dummy agent.
+
+##### Parameters
+
+- `messages` (`list[dict[str, Any]]`)
+  Persisted messages. Ignored by this implementation.
+
+#### accept
+
+_Defined in `xtalk.llm_agent.dummy`._
+
+```python
+def accept(self, context: AgentContext) -> Iterable[AgentOutput]
+```
+
+Synchronously bridge ``async_accept()`` for the stateless agent.
+
+##### Parameters
+
+- `context` (`AgentContext`)
+  Context payload forwarded from serving events.
+
+#### async_accept
+
+_Defined in `xtalk.llm_agent.dummy`._
+
+```python
+async def async_accept(self, context: AgentContext) -> AsyncIterator[AgentOutput]
+```
+
+Yield a canned response for generation-triggering contexts.
+
+##### Parameters
+
+- `context` (`AgentContext`)
+  Context payload forwarded from serving events.
+
 #### clone
 
 _Defined in `xtalk.llm_agent.dummy`._
@@ -218,15 +339,27 @@ _Defined in `xtalk.llm_agent.dummy`._
 def clone(self) -> 'Agent'
 ```
 
+Create a fresh dummy agent with the same canned response.
+
+##### Returns
+
+- `Agent`
+  Cloned dummy agent instance.
+
 ## DefaultAgent
 
 _Defined in `xtalk.llm_agent.default`._
 
 ```python
-class DefaultAgent(TemplateAgent)
+class DefaultAgent(Agent)
 ```
 
-Default scenario agent built on top of ``TemplateAgent``.
+Default speech-first conversational agent implementation.
+
+### Class Fields
+
+- `BASE_PROMPT: str` = `'\nYou are a friendly conversational partner whose response will be converted to speech using TTS. Please follow rules below:\n1. Respond with the same language as user.\nExamples:\n- user: 你好。\n- assistant: 你好呀，今天感觉怎么样？\n- user: Hello.\n- assistant: Hello, how are you today?\n\n2. Your response should not contain content that cannot be synthesize by the TTS model, such as parentheses, ordered lists (starting by - ), etc. Numbers should be written in English words rather than Arabic numerals.\n\n3. Your response should be informative and adequately detailed, but avoid unnecessary repetition or filler. Keep it suitable for spoken delivery.\n\n4. If you find user input (ASR result) unclear, incomplete, or likely incorrect — for example:\n- contains obvious ASR hallucinations,\n- contains broken words or meaningless fragments,\n- does not form a valid sentence,\n- semantic intention cannot be determined,\nthen DO NOT guess the user\'s meaning.\nInstead, politely ask the user to repeat their last utterance.\n\n5. Each distinct speaker ID corresponds to a separate dialogue user.\nThe system should distinguish users based on their speaker IDs, with one user mapped to one speaker ID.\n\n6. You have access to tools. You MUST use them proactively:\n- get_time: call when user asks about current time, date, or day of week.\n- web_search: you MUST default to searching for ANY question about specific facts, including but not limited to:\n  * Weather, news, current events, real-time data (stock prices, sports scores, exchange rates)\n  * Specific places, buildings, campuses, addresses, floor numbers, room numbers, opening hours\n  * Restaurants, shops, cafes, businesses and their details (location, menu, price, how many)\n  * Specific people, organizations, companies, products, events\n  * Questions involving numbers, statistics, rankings, or comparisons that require accuracy\n  * Any question where giving an INCORRECT answer is worse than taking a moment to search\n- set_voice: call when user asks to change voice or sound like someone.\n- set_speed: call when user asks to speak faster or slower.\n- GOLDEN RULE: If you are not 100% certain your answer is accurate AND up-to-date, call web_search. When in doubt, ALWAYS search.\n- NEVER say "I cannot access real-time information" or "I don\'t have internet access". You have search tools — USE THEM.\n- NEVER answer specific factual questions from memory alone — search first, then answer based on search results.\n\n7. When citing times, numbers, names, or other specific facts from search results, you SHOULD reproduce them faithfully. Do NOT reinterpret or convert values based on your assumptions. For example, if search results say "10:30", treat it as 10:30 AM unless the source explicitly says PM or evening.\n\n8. SEARCH QUERY RULE: When constructing a web_search query, ALWAYS replace relative time references ("今天", "昨天", "明天", "上个月", "去年", "today", "yesterday", etc.) with the actual date from <current_date>. For example, if today is 2026-02-28 and the user asks "今天NBA有哪些比赛", your query should be "2026年2月28日 NBA比赛赛程", NOT "今天NBA有哪些比赛".\n\n你是一位友好的对话伙伴，你的回复会通过 TTS 转成语音。请遵守以下规则：\n\n1. 用和用户相同的语言回复。\n示例：\n- user: 你好。\n- assistant: 你好呀，今天感觉怎么样？\n- user: Hello.\n- assistant: Hello, how are you today?\n\n2. 你的回复中不能出现 TTS 无法合成的内容，例如括号、编号列表（以- 开始）等。数字要用英文单词书写，不要使用阿拉伯数字。\n\n3. 你的回复应当信息充分、适当详细，但避免不必要的重复或废话。回复长度要适合语音播报。\n\n4. 如果你发现用户输入（ASR 结果）不清晰、不完整或可能有误，例如：\n- 包含明显的 ASR 幻觉内容；\n- 包含残缺的词语或无意义的片段；\n- 无法构成有效句子；\n- 无法判断其语义意图；\n那么不要猜测用户的意思。\n请礼貌地请求用户重复上一句内容。\n5. 有几个不同说话人id就有几个不同的对话用户，每个说话人id对应一个用户，你要根据说话人id来区分用户。\n\n6. 你可以使用工具，必须主动调用：\n- get_time：用户问当前时间、日期、星期几时调用。\n- web_search：遇到任何关于具体事实的问题时，必须优先搜索，包括但不限于：\n  * 天气、新闻、时事、实时数据（股价、比分、汇率等）\n  * 具体地点、建筑、校园、地址、楼层、房间号、营业时间\n  * 餐厅、商店、咖啡厅、商家及其详细信息（位置、菜单、价格、数量）\n  * 具体人物、机构、公司、产品、事件\n  * 涉及数字、统计、排名或需要准确性的比较类问题\n  * 任何回答错误比多花一点时间搜索更糟糕的问题\n- set_voice：用户要求换声音或模仿某人声音时调用。\n- set_speed：用户要求说快一点或慢一点时调用。\n- 黄金原则：如果你不能百分之百确定答案准确且是最新的，就调用 web_search。有疑问时，永远先搜索。\n- 绝对不要说"我无法获取实时信息"或"我没有联网能力"。你拥有搜索工具，请使用它们。\n- 绝对不要仅凭记忆回答具体的事实性问题——先搜索，再根据搜索结果回答。\n\n7. 引用搜索结果中的时间、数字、名称等具体事实时，应该忠实于原文，不要根据自己的推测重新解读。例如搜索结果写"10:30"，应说"上午十点三十分"，除非原文明确标注是下午或晚上。\n\n8. 搜索用语规则：构造 web_search 的 query 时，必须将"今天"、"昨天"、"明天"、"上个月"、"去年"等相对时间词替换为 <current_date> 中的具体日期。例如今天是2026-02-28，用户问"今天NBA有哪些比赛"，你的 query 应为"2026年2月28日 NBA比赛赛程"，而不是"今天NBA有哪些比赛"。\n'`
+- `CONTEXT_AWARE_PROMPT: str` = `"\nYou are a multimodal conversational assistant with access to:\n1) Non-verbal environmental context extracted from recent audio, wrapped in <caption>...</caption>.\n\nAbout <caption>:\n- It describes the user's environment, emotional cues, ambient sounds, and relevant non-verbal context.\n- It may contain incomplete or approximate descriptions; treat it as helpful hints, not absolute truth.\n- Use it only to enrich understanding and respond more naturally, not to hallucinate details that are not implied.\n- DO NOT reveal <caption> content directly in your replies.\n\nWhen generating your final response:\n- Use <caption> as a private hint to better understand the user's situation.\n- Never output the tags themselves, nor refer to them explicitly.\n- Do NOT invent nonexistent sensations, emotions, or events.\n- Focus on giving a helpful, grounded, natural reply to the user's last message.\n- If caption and user text conflict, ALWAYS prioritize the user's explicit message.\n\nCaption:\n".strip()`
 
 ### Methods
 
@@ -235,7 +368,7 @@ Default scenario agent built on top of ``TemplateAgent``.
 _Defined in `xtalk.llm_agent.default`._
 
 ```python
-def __init__(self, model: BaseChatModel | dict[str, Any], system_prompt: str = DefaultPromptBuilder.BASE_PROMPT, voice_names: Optional[list[str]] = None, emotions: Optional[list[str]] = None, tools: Optional[list[BaseTool | Callable[[], BaseTool]]] = None) -> None
+def __init__(self, model: BaseChatModel | dict[str, Any], system_prompt: str = BASE_PROMPT, voice_names: Optional[list[str]] = None, emotions: Optional[list[str]] = None, tools: Optional[list[BaseTool | Callable[[], BaseTool]]] = None) -> None
 ```
 
 Initialize the default agent.
@@ -253,66 +386,9 @@ Initialize the default agent.
 - `tools` (`list[BaseTool | Callable[[], BaseTool]] | None, optional`)
   Explicit tool set or factories.
 
-## TemplateAgent
-
-_Defined in `xtalk.llm_agent.template`._
-
-```python
-class TemplateAgent(Agent)
-```
-
-Concrete ``Agent`` built from a reusable ``ScenarioSpec`` template.
-
-### Parameters
-
-- `model` (`BaseChatModel | dict[str, Any]`)
-  Chat model instance or ``ChatOpenAI`` configuration.
-- `scenario` (`ScenarioSpec`)
-  Scenario definition used by the runtime.
-- `clone_kwargs` (`dict[str, Any] | None, optional`)
-  Keyword arguments reused when ``clone()`` creates a fresh session agent.
-  The ``model`` argument is supplied automatically and should not be
-  included here.
-- `tool_provider` (`SupportsMutableToolProvider | None, optional`)
-  Mutable tool provider used to implement ``add_tools()`` and preserve
-  tool factories across ``clone()``.
-- `tool_specs_key` (`str | None, optional`)
-  ``clone_kwargs`` key that should receive ``tool_provider`` factories
-  during cloning. Set to ``None`` when tool specs should not be injected.
-
-### Methods
-
-#### __init__
-
-_Defined in `xtalk.llm_agent.template`._
-
-```python
-def __init__(self, model: BaseChatModel | dict[str, Any], *, scenario: ScenarioSpec, clone_kwargs: dict[str, Any] | None = None, tool_provider: SupportsMutableToolProvider | None = None, tool_specs_key: str | None = 'tools') -> None
-```
-
-#### coerce_model
-
-_Defined in `xtalk.llm_agent.template`._
-
-```python
-def coerce_model(model: BaseChatModel | dict[str, Any]) -> BaseChatModel
-```
-
-Coerce model configuration into a concrete chat model.
-
-##### Parameters
-
-- `model` (`BaseChatModel | dict[str, Any]`)
-  Chat model instance or ``ChatOpenAI`` configuration dict.
-
-##### Returns
-
-- `BaseChatModel`
-  Concrete chat model instance.
-
 #### model
 
-_Defined in `xtalk.llm_agent.template`._
+_Defined in `xtalk.llm_agent.default`._
 
 ```python
 def model(self) -> BaseChatModel
@@ -322,13 +398,13 @@ Return the backing model.
 
 #### model
 
-_Defined in `xtalk.llm_agent.template`._
+_Defined in `xtalk.llm_agent.default`._
 
 ```python
 def model(self, model: BaseChatModel) -> None
 ```
 
-Update the backing model and runtime.
+Update the backing model.
 
 ##### Parameters
 
@@ -337,118 +413,78 @@ Update the backing model and runtime.
 
 #### session_history
 
-_Defined in `xtalk.llm_agent.template`._
+_Defined in `xtalk.llm_agent.default`._
 
 ```python
 def session_history(self) -> list[BaseMessage]
 ```
 
-Expose runtime session history for compatibility.
+Expose session history for compatibility.
 
 #### session_history
 
-_Defined in `xtalk.llm_agent.template`._
+_Defined in `xtalk.llm_agent.default`._
 
 ```python
 def session_history(self, messages: list[BaseMessage]) -> None
 ```
 
-Replace runtime session history for compatibility.
+Replace session history for compatibility.
 
 ##### Parameters
 
 - `messages` (`list[BaseMessage]`)
   New session message list.
 
-#### generate
+#### accept
 
-_Defined in `xtalk.llm_agent.template`._
+_Defined in `xtalk.llm_agent.default`._
 
 ```python
-def generate(self, input: Union[str, AgentInput]) -> Union[str, tuple[str, list[ToolCall]]]
+def accept(self, context: AgentContext) -> Iterable[AgentOutput]
 ```
 
-Generate a complete response.
+Accept a context update and return any triggered stream items.
 
 ##### Parameters
 
-- `input` (`str | AgentInput`)
-  Legacy agent input.
+- `context` (`AgentContext`)
+  Incremental session context update.
 
 ##### Returns
 
-- `str | tuple[str, list[ToolCall]]`
-  Response text, plus tool calls when any occurred.
+- `Iterable[AgentOutput]`
+  Streamed response items triggered by the update.
 
-#### async_generate
+#### async_accept
 
-_Defined in `xtalk.llm_agent.template`._
+_Defined in `xtalk.llm_agent.default`._
 
 ```python
-async def async_generate(self, input: Union[str, AgentInput]) -> Union[str, tuple[str, list[ToolCall]]]
+async def async_accept(self, context: AgentContext) -> AsyncIterator[AgentOutput]
 ```
 
-Asynchronously generate a complete response.
+Asynchronously accept a context update.
 
 ##### Parameters
 
-- `input` (`str | AgentInput`)
-  Legacy agent input.
-
-##### Returns
-
-- `str | tuple[str, list[ToolCall]]`
-  Response text, plus tool calls when any occurred.
-
-#### generate_stream
-
-_Defined in `xtalk.llm_agent.template`._
-
-```python
-def generate_stream(self, input: Union[str, AgentInput]) -> Iterable[Union[str, ToolCall, dict[str, Any]]]
-```
-
-Synchronously stream legacy response chunks.
-
-##### Parameters
-
-- `input` (`str | AgentInput`)
-  Legacy agent input.
+- `context` (`AgentContext`)
+  Incremental session context update.
 
 ##### Yields
 
-- `str | ToolCall | dict[str, Any]`
-  Text chunks, legacy tool-call payloads, and tool-result payloads.
-
-#### async_generate_stream
-
-_Defined in `xtalk.llm_agent.template`._
-
-```python
-async def async_generate_stream(self, input: Union[str, AgentInput]) -> AsyncIterator[Union[str, ToolCall, dict[str, Any]]]
-```
-
-Asynchronously stream legacy response chunks.
-
-##### Parameters
-
-- `input` (`str | AgentInput`)
-  Legacy agent input.
-
-##### Yields
-
-- `str | ToolCall | dict[str, Any]`
-  Text chunks, legacy tool-call payloads, and tool-result payloads.
+- `AgentOutput`
+  Streamed response items triggered by the update.
 
 #### restore_history
 
-_Defined in `xtalk.llm_agent.template`._
+_Defined in `xtalk.llm_agent.default`._
 
 ```python
 def restore_history(self, messages: list[dict[str, Any]]) -> None
 ```
 
-Restore persisted conversation history into the runtime session.
+Restore persisted conversation history into the session state.
 
 ##### Parameters
 
@@ -457,7 +493,7 @@ Restore persisted conversation history into the runtime session.
 
 #### get_chat_history
 
-_Defined in `xtalk.llm_agent.template`._
+_Defined in `xtalk.llm_agent.default`._
 
 ```python
 def get_chat_history(self, with_system: bool = False) -> str | None
@@ -465,484 +501,318 @@ def get_chat_history(self, with_system: bool = False) -> str | None
 
 Render plain-text chat history.
 
-##### Parameters
-
-- `with_system` (`bool, optional`)
-  Whether to include the system message.
-
-##### Returns
-
-- `str | None`
-  Serialized chat history.
-
 #### clone
 
-_Defined in `xtalk.llm_agent.template`._
+_Defined in `xtalk.llm_agent.default`._
 
 ```python
-def clone(self) -> 'TemplateAgent'
+def clone(self) -> Agent
 ```
 
 Clone the agent with a fresh session.
 
 ##### Returns
 
-- `TemplateAgent`
+- `Agent`
   Session-safe cloned agent.
 
 #### add_tools
 
-_Defined in `xtalk.llm_agent.template`._
+_Defined in `xtalk.llm_agent.default`._
 
 ```python
 def add_tools(self, tools: list[BaseTool | Callable[[], BaseTool]]) -> None
 ```
 
-Attach additional tools to the scenario.
+Attach additional tools to the agent.
 
 ##### Parameters
 
 - `tools` (`list[BaseTool | Callable[[], BaseTool]]`)
   Tool instances or factories.
 
-##### Raises
+## LTSAgent
 
-- `RuntimeError`
-  Raised when the configured tool provider is not mutable.
-
-## AgentRequest
-
-_Defined in `xtalk.llm_agent.runtime`._
+_Defined in `xtalk.llm_agent.lts`._
 
 ```python
-@dataclass
-class AgentRequest
+class LTSAgent(Agent)
 ```
 
-Single-turn request passed into the agent runtime.
+Scaffold for an agent with long-term state support.
 
 ### Parameters
 
-- `content` (`str`)
-  Raw user utterance for the current turn.
-- `context` (`PipelineContext | None, optional`)
-  Current pipeline context snapshot.
+- `slow_model` (`BaseChatModel | dict[str, Any]`)
+  Backing slow chat model instance or deferred model configuration.
+- `fast_model` (`BaseChatModel | dict[str, Any]`)
+  Backing fast chat model instance or deferred model configuration.
+- `system_prompt` (`str, optional`)
+  Base system prompt for future LTS interactions.
 
 ### Class Fields
 
-- `content: str`
-- `context: PipelineContext | None` = `None`
-
-## AgentRuntime
-
-_Defined in `xtalk.llm_agent.runtime`._
-
-```python
-class AgentRuntime
-```
-
-Scenario-agnostic execution engine for one conversational session.
-
-### Parameters
-
-- `model` (`BaseChatModel`)
-  Bound chat model used for generation.
-- `scenario` (`ScenarioSpec`)
-  Injected scenario definition.
-- `session` (`AgentSession | None, optional`)
-  Existing mutable session state.
+- `BASE_PROMPT: str` = `'Your reply should be conversational and concise. DO NOT include any special symbols that cannot be read aloud, but can include puntuations.'`
+- `PARTIAL_INFERENCE_PROMPT_TEMPLATE: str` = `'You are assisting a streaming speech agent.\nGiven the dialogue history, the newest partial ASR text, and the latest completed partial-draft reply, create a draft reply to the dialogue history and partial ASR text.\nReply should be generated as if the current partial ASR text is complete.Return exactly one JSON object and nothing else.\nThe JSON object must contain keys "reasoning_content" and "reply_content".\n"reasoning_content" must be a string.\n"reply_content" must be a string.\n\nDialogue history:\n{history}\n\nCurrent partial ASR:\n{partial_text}\n\nLatest completed partial-draft reply to "{latest_partial_asr}": {latest_partial_reply}\n'`
+- `FINAL_RESPONSE_PROMPT_TEMPLATE: str` = `'You are assisting a streaming speech agent.\nGenerate the final assistant reply for the current user turn.\nUse the dialogue history, the final ASR text, and the partial-reply draft when it is helpful.\nReturn plain text only.\n\nDialogue history:\n{history}\n\nLatest partial reply draft for "{latest_partial_asr}":\n{latest_partial_reply}\n\nFinal ASR:\n{final_text}\n'`
 
 ### Methods
 
 #### __init__
 
-_Defined in `xtalk.llm_agent.runtime`._
+_Defined in `xtalk.llm_agent.lts`._
 
 ```python
-def __init__(self, model: BaseChatModel, scenario: ScenarioSpec, session: AgentSession | None = None) -> None
+def __init__(self, slow_model: BaseChatModel | dict[str, Any], fast_model: BaseChatModel | dict[str, Any], system_prompt: str = '') -> None
 ```
 
-#### generate_stream
+Initialize the LTS agent scaffold.
 
-_Defined in `xtalk.llm_agent.runtime`._
+#### accept
+
+_Defined in `xtalk.llm_agent.lts`._
 
 ```python
-async def generate_stream(self, request: AgentRequest) -> AsyncIterator[AgentEvent]
+def accept(self, context: AgentContext) -> Iterable[AgentOutput]
 ```
 
-Run one turn and stream typed runtime events.
+Accept an incremental context update.
 
 ##### Parameters
 
-- `request` (`AgentRequest`)
-  Structured turn input.
+- `context` (`AgentContext`)
+  Context payload forwarded from serving-layer events.
+
+##### Returns
+
+- `Iterable[AgentOutput]`
+  Streamed response items produced for the accepted context.
+
+#### async_accept
+
+_Defined in `xtalk.llm_agent.lts`._
+
+```python
+async def async_accept(self, context: AgentContext) -> AsyncIterator[AgentOutput]
+```
+
+Asynchronously accept an incremental context update.
+
+##### Parameters
+
+- `context` (`AgentContext`)
+  Context payload forwarded from serving-layer events.
 
 ##### Yields
 
-- `AgentEvent`
-  Streamed text chunks, tool calls, and tool results.
+- `AgentOutput`
+  Streamed response items produced for the accepted context.
 
-## AgentSession
+#### clone
 
-_Defined in `xtalk.llm_agent.runtime`._
-
-```python
-@dataclass
-class AgentSession
-```
-
-Mutable per-session runtime state.
-
-### Parameters
-
-- `messages` (`list[BaseMessage]`)
-  Conversation history, including system, user, assistant, and tool
-  messages.
-- `metadata` (`dict[str, Any]`)
-  Extensible per-session runtime metadata for scenario components.
-
-### Class Fields
-
-- `messages: list[BaseMessage]` = `field(default_factory=list)`
-- `metadata: dict[str, Any]` = `field(default_factory=dict)`
-
-## ContextAdapter
-
-_Defined in `xtalk.llm_agent.runtime`._
+_Defined in `xtalk.llm_agent.lts`._
 
 ```python
-class ContextAdapter(Protocol)
+def clone(self) -> 'Agent'
 ```
 
-Translate ``PipelineContext`` into a stable ``TurnContext``.
+Clone the agent for a new session.
 
-### Methods
+##### Returns
 
-#### adapt
+- `Agent`
+  Session-safe LTS agent instance.
 
-_Defined in `xtalk.llm_agent.runtime`._
+#### restore_history
+
+_Defined in `xtalk.llm_agent.lts`._
 
 ```python
-def adapt(self, context: PipelineContext | None) -> TurnContext
+def restore_history(self, messages: list[dict[str, Any]]) -> None
 ```
 
-Adapt pipeline context for the current turn.
+Restore persisted conversation messages into agent state.
 
-## MutableToolProvider
+##### Parameters
 
-_Defined in `xtalk.llm_agent.template`._
+- `messages` (`list[dict[str, Any]]`)
+  Persisted chat messages ordered by session history.
+
+#### get_chat_history
+
+_Defined in `xtalk.llm_agent.lts`._
 
 ```python
-class MutableToolProvider(ToolProvider)
+def get_chat_history(self, with_system: bool = False) -> str | None
 ```
 
-Provide a clone-safe list of tools that can be extended at runtime.
+Return the serialized conversation history when available.
 
-### Parameters
+##### Parameters
 
-- `tools` (`list[BaseTool | Callable[[], BaseTool]] | None, optional`)
-  Initial tool instances or factories.
+- `with_system` (`bool, optional`)
+  Whether the serialized history should include system messages.
 
-### Methods
+##### Returns
 
-#### __init__
-
-_Defined in `xtalk.llm_agent.template`._
-
-```python
-def __init__(self, tools: Optional[list[BaseTool | Callable[[], BaseTool]]] = None) -> None
-```
+- `str | None`
+  Serialized history when implemented.
 
 #### add_tools
 
-_Defined in `xtalk.llm_agent.template`._
+_Defined in `xtalk.llm_agent.lts`._
 
 ```python
 def add_tools(self, tools: list[BaseTool | Callable[[], BaseTool]]) -> None
 ```
 
-Append tools or tool factories.
+Attach tools to the agent.
 
 ##### Parameters
 
 - `tools` (`list[BaseTool | Callable[[], BaseTool]]`)
-  Tool instances or factories to append.
+  Tool instances or factories to attach.
 
-#### get_tool_specs
+## ExperimentalAgent
 
-_Defined in `xtalk.llm_agent.template`._
-
-```python
-def get_tool_specs(self) -> list[Callable[[], BaseTool]]
-```
-
-Return clone-safe tool factories.
-
-##### Returns
-
-- `list[Callable[[], BaseTool]]`
-  Normalized factories used by this provider.
-
-#### get_tools
-
-_Defined in `xtalk.llm_agent.template`._
+_Defined in `xtalk.llm_agent.experimental`._
 
 ```python
-def get_tools(self, session, turn_context) -> list[BaseTool]
+class ExperimentalAgent(Agent)
 ```
 
-Return session-scoped tool instances for the current turn.
+### Class Fields
+
+- `BASE_SYSTEM_PROMPT` = `'你的回复应贴近日常对话，保持简要但信息丰富。你的回复不能出现TTS无法合成的内容，例如* - （） ()。也不要有序号列表，例如1. **；采用口语化的方式表述分点的内容。'`
+- `GREETING_GEN_PROMPT` = `'根据以下角色设定/角色设定，生成一句该角色可能会发出的问候语。角色设定/系统提示：'`
+- `BACKCHANNEL_JUDGE_PROMPT` = `'\n    附和规则：\n    1. 如果用户当前语义片段还不完整，不进行附和\n    2. 如果用户整体内容还未完整表达，但当前小句/意群已经语义完整，可以进行轻量附和\n    3. 用户当前语义片段完整后，如果符合以下情况之一，则进行附和，写入附和类型并从该类型的适用附和词中选择合适的附和词；否则不进行附和：\n\n    附和类型：维持对话流畅  触发条件：对方在讲故事、叙述经历、描述背景、解释过程；整体内容尚未结束，但当前小句/意群已经完整；需要用轻量反馈表示“我在听”  适用的附和词：嗯、嗯嗯、哦\n    附和类型：表达共鸣  触发条件：对方在表达情绪、感受、态度、偏好等主观内容；当前语义片段完整；需要表达情绪上的理解或共鸣  适用的附和词：嗯嗯、对、对对、确实\n    附和类型：理解确认  触发条件：对方在解释概念、说明流程、描述机制或传递信息；当前语义片段完整；需要表示“我理解了/我跟上了”  适用的附和词：嗯、嗯嗯、哦、是的\n    附和类型：轻度认同  触发条件：对方表达观点、判断、结论或评价；当前语义片段完整；需要表示轻微认可，但不展开新内容  适用的附和词：对、对对、是的、没错、确实\n    附和类型：鼓励继续  触发条件：对方正在讲述较长内容，当前语义片段完整但明显还有后续；需要鼓励对方继续表达  适用的附和词：嗯、嗯嗯、哦\n    附和类型：惊讶兴趣  触发条件：对方表达意外、新奇、反常、夸张或值得关注的信息；当前语义片段完整；需要表达惊讶、兴趣或继续关注  适用的附和词：哦、嗯嗯\n    附和类型：安抚支持  触发条件：对方表达压力、焦虑、困惑、委屈、挫败等负面情绪；当前语义片段完整；需要表达理解和支持  适用的附和词：嗯嗯、确实\n    附和类型：接收确认  触发条件：对方提出请求、指令、安排、修改意见或约束条件；当前语义完整；需要表示已经接收该要求  适用的附和词：好的、嗯嗯、是的\n\n    可选附和词：__BACKCHANNEL_OPTIONS__\n\n    根据以下对话历史、用户输入与以上规则，判断是否要进行附和，附和的类型是什么，以及附和的内容是什么；仅返回JSON，格式如下：\n    {"reasoning_content": str, "should_backchannel": bool, "backchannel_type": Optional[附和类型], "backchannel_content": Optional[str]}。\n\n    对话历史：__CHAT_HISTORY__\n    本轮已经附和过的内容：__ALREADY_BACKCHANNELED_TEXT__\n    待判断附和的用户输入：__USER_INPUT__'`
+
+### Methods
+
+#### __init__
+
+_Defined in `xtalk.llm_agent.experimental`._
+
+```python
+def __init__(self, model: BaseChatModel | dict[str, Any], backchannel_model: BaseChatModel | dict[str, Any] | None = None, backchannel_source_dir: str | Path | None = None, tools: list[BaseTool | Callable[[], BaseTool]] | None = None, system_prompt: str = '', proactive: bool = True) -> None
+```
+
+Initialize the experimental agent.
 
 ##### Parameters
 
-- `session` (`Any`)
-  Runtime session state used to cache tool instances.
-- `turn_context` (`Any`)
-  Structured turn context. Unused by the base implementation.
+- `model` (`BaseChatModel | dict[str, Any]`)
+  Primary chat model or configuration.
+- `backchannel_model` (`BaseChatModel | dict[str, Any] | None, optional`)
+  Optional model used to judge backchannel insertion.
+- `backchannel_source_dir` (`str | Path | None, optional`)
+  Directory containing backchannel assets.
+- `tools` (`list[BaseTool | Callable[[], BaseTool]] | None, optional`)
+  Optional tool instances or factories.
+- `system_prompt` (`str, optional`)
+  Additional system prompt appended after the base prompt.
+- `proactive` (`bool, optional`)
+  Whether the agent should proactively emit the startup greeting on
+  the session loop.
 
-##### Returns
+#### accept
 
-- `list[BaseTool]`
-  Tool instances reused within the current session.
-
-#### normalize_tool_specs
-
-_Defined in `xtalk.llm_agent.template`._
-
-```python
-def normalize_tool_specs(tools: list[BaseTool | Callable[[], BaseTool]]) -> list[Callable[[], BaseTool]]
-```
-
-Normalize tools into zero-argument factories.
-
-##### Parameters
-
-- `tools` (`list[BaseTool | Callable[[], BaseTool]]`)
-  Tool instances or factories.
-
-##### Returns
-
-- `list[Callable[[], BaseTool]]`
-  Factory list.
-
-## OutputPolicy
-
-_Defined in `xtalk.llm_agent.runtime`._
+_Defined in `xtalk.llm_agent.experimental`._
 
 ```python
-class OutputPolicy(Protocol)
+def accept(self, context: AgentContext) -> Iterable[AgentOutput]
 ```
 
-Normalize model text before it is emitted to downstream consumers.
+#### messages
 
-### Methods
-
-#### filter_text
-
-_Defined in `xtalk.llm_agent.runtime`._
+_Defined in `xtalk.llm_agent.experimental`._
 
 ```python
-def filter_text(self, text: str) -> str
+def messages(self) -> list[BaseMessage]
 ```
 
-Normalize one text fragment.
+Return the current chat history for prompting and inspection.
 
-## PromptBuilder
+#### async_accept
 
-_Defined in `xtalk.llm_agent.runtime`._
+_Defined in `xtalk.llm_agent.experimental`._
 
 ```python
-class PromptBuilder(Protocol)
+async def async_accept(self, context: AgentContext) -> AsyncIterator[AgentOutput]
 ```
 
-Build scenario-specific prompts and user messages.
+#### clone
 
-### Methods
-
-#### build_system_prompt
-
-_Defined in `xtalk.llm_agent.runtime`._
+_Defined in `xtalk.llm_agent.experimental`._
 
 ```python
-def build_system_prompt(self, session: AgentSession, turn_context: TurnContext) -> str
+def clone(self) -> 'ExperimentalAgent'
 ```
 
-Build the system prompt for the current turn.
+#### restore_history
 
-#### build_user_message
-
-_Defined in `xtalk.llm_agent.runtime`._
+_Defined in `xtalk.llm_agent.experimental`._
 
 ```python
-def build_user_message(self, request: AgentRequest, turn_context: TurnContext) -> str
+def restore_history(self, messages: list[dict[str, Any]]) -> None
 ```
 
-Build the user-facing message content passed to the model.
+#### get_chat_history
 
-## ScenarioSpec
+_Defined in `xtalk.llm_agent.experimental`._
 
-_Defined in `xtalk.llm_agent.runtime`._
+```python
+def get_chat_history(self, with_system: bool = False) -> str | None
+```
+
+## PlaybackAIMessageMeta
+
+_Defined in `xtalk.llm_agent.interfaces`._
 
 ```python
 @dataclass
-class ScenarioSpec
+class PlaybackAIMessageMeta
 ```
 
-Scenario definition injected into ``AgentRuntime``.
-
-### Parameters
-
-- `name` (`str`)
-  Scenario identifier.
-- `context_adapter` (`ContextAdapter`)
-  Adapter that turns pipeline data into stable turn context.
-- `prompt_builder` (`PromptBuilder`)
-  Scenario-specific prompt and user-message builder.
-- `tool_provider` (`ToolProvider`)
-  Tool selector for the current turn.
-- `output_policy` (`OutputPolicy`)
-  Text normalization policy.
-- `hooks` (`Sequence[TurnHook]`)
-  Optional scenario hooks around the runtime flow.
+Track merge state for one playback-managed assistant message.
 
 ### Class Fields
 
-- `name: str`
-- `context_adapter: ContextAdapter`
-- `prompt_builder: PromptBuilder`
-- `tool_provider: ToolProvider`
-- `output_policy: OutputPolicy`
-- `hooks: Sequence[TurnHook]` = `field(default_factory=list)`
+- `final: bool` = `False`
+- `prefix: str | None` = `None`
 
-## TextChunkEvent
+## ToolCallResultArgs
 
-_Defined in `xtalk.llm_agent.runtime`._
+_Defined in `xtalk.llm_agent.tools.utils`._
 
 ```python
-@dataclass
-class TextChunkEvent
+class ToolCallResultArgs(TypedDict)
 ```
 
-Plain text chunk emitted by the runtime.
+Serialized result for one completed tool invocation.
 
-### Class Fields
+### Notes
 
-- `text: str`
-
-## ToolCallEvent
-
-_Defined in `xtalk.llm_agent.runtime`._
-
-```python
-@dataclass
-class ToolCallEvent
-```
-
-Tool call requested by the model.
-
-### Class Fields
-
-- `name: str`
-- `args: dict[str, Any]`
-- `call_id: str | None` = `None`
-
-## ToolProvider
-
-_Defined in `xtalk.llm_agent.runtime`._
-
-```python
-class ToolProvider(Protocol)
-```
-
-Return tools enabled for the current scenario and turn.
-
-### Methods
-
-#### get_tools
-
-_Defined in `xtalk.llm_agent.runtime`._
-
-```python
-def get_tools(self, session: AgentSession, turn_context: TurnContext) -> Sequence[BaseTool]
-```
-
-Return the tool set for the current turn.
-
-## ToolResultEvent
-
-_Defined in `xtalk.llm_agent.runtime`._
-
-```python
-@dataclass
-class ToolResultEvent
-```
-
-Completed tool result emitted by the runtime.
+``name`` stores the original tool name, ``args`` stores the original tool
+arguments, and ``content`` stores the textual tool output.
 
 ### Class Fields
 
 - `name: str`
 - `args: dict[str, Any]`
 - `content: str`
-- `call_id: str | None` = `None`
 
-## TurnContext
+## ToolCallResult
 
-_Defined in `xtalk.llm_agent.runtime`._
+_Defined in `xtalk.llm_agent.tools.utils`._
 
 ```python
-@dataclass
-class TurnContext
+class ToolCallResult(ToolCall)
 ```
 
-Scenario-facing structured context derived from ``PipelineContext``.
-
-### Parameters
-
-- `speaker_id` (`str | None, optional`)
-  Speaker identifier for the current user.
-- `caption` (`str | None, optional`)
-  Caption-like non-verbal context for the turn.
-- `thought` (`str | None, optional`)
-  Internal reasoning summary generated upstream.
-- `extras` (`dict[str, Any]`)
-  Scenario-specific context fields that the runtime should not interpret.
+Structured tool-call event emitted after a tool finishes.
 
 ### Class Fields
 
-- `speaker_id: str | None` = `None`
-- `caption: str | None` = `None`
-- `thought: str | None` = `None`
-- `extras: dict[str, Any]` = `field(default_factory=dict)`
-
-## TurnHook
-
-_Defined in `xtalk.llm_agent.runtime`._
-
-```python
-class TurnHook(ABC)
-```
-
-Inject scenario-specific behavior around runtime execution.
-
-### Methods
-
-#### before_model
-
-_Defined in `xtalk.llm_agent.runtime`._
-
-```python
-async def before_model(self, request: AgentRequest, session: AgentSession, turn_context: TurnContext) -> AsyncIterator['AgentEvent']
-```
-
-Emit events before model generation starts.
-
-#### after_tool
-
-_Defined in `xtalk.llm_agent.runtime`._
-
-```python
-async def after_tool(self, tool_name: str, tool_result: str, session: AgentSession, turn_context: TurnContext) -> AsyncIterator['AgentEvent']
-```
-
-Emit events after a tool finishes.
+- `name: Literal['tool_call_result']`
+- `args: ToolCallResultArgs`

@@ -8,7 +8,7 @@
 
 > **createSession**(`websocketURL`, `config?`): [`Session`](../interfaces/Session.zh.md)
 
-定义于: [session/create.ts:31](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/create.ts#L31)
+定义于: `session/create.ts:31`
 
 创建一个绑定到指定 WebSocket 端点的会话客户端。
 

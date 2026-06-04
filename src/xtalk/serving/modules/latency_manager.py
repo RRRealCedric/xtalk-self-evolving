@@ -29,7 +29,7 @@ from ..events import (
     ASRResultFinal,
     LLMFirstChunk,
     LLMFirstSentence,
-    TTSChunkGenerated,
+    TTSChunkReady,
     LatencyMetricsUpdated,
     WebSocketMessageReceived,
     ClockSyncReceived,
@@ -169,8 +169,8 @@ class LatencyManager(EventListenerMixin):
         if self._llm_sentence_ts is None:
             self._llm_sentence_ts = event.timestamp
 
-    @Manager.event_handler(TTSChunkGenerated, priority=50)
-    async def _on_tts_chunk_generated(self, event: TTSChunkGenerated) -> None:
+    @Manager.event_handler(TTSChunkReady, priority=50)
+    async def _on_tts_chunk_generated(self, event: TTSChunkReady) -> None:
         """Record TTS first chunk timestamp (t5) and compute latency metrics."""
         if self._reported_for_turn:
             return

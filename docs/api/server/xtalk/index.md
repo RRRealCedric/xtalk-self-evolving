@@ -248,42 +248,6 @@ extra components while retaining this interface.
 
 ### Methods
 
-#### context
-
-_Defined in `xtalk.pipelines.interfaces`._
-
-```python
-def context(self) -> 'PipelineContext'
-```
-
-Return the runtime context shared across managers.
-
-##### Returns
-
-- `PipelineContext`
-  Mutable context dictionary initialized with the standard Xtalk
-  runtime keys on first access.
-
-##### Notes
-
-Callers typically read from the returned dictionary directly. Replacing
-the entire context should be done via the setter.
-
-#### context
-
-_Defined in `xtalk.pipelines.interfaces`._
-
-```python
-def context(self, value: 'PipelineContext') -> None
-```
-
-Replace the shared runtime context.
-
-##### Parameters
-
-- `value` (`PipelineContext`)
-  Context dictionary to store on the pipeline instance.
-
 #### clone
 
 _Defined in `xtalk.pipelines.interfaces`._
@@ -389,21 +353,6 @@ Return the caption rewriter used by caption-related managers.
 
 - `Rewriter | None`
   Caption rewriter or ``None``.
-
-#### get_thought_rewriter_model
-
-_Defined in `xtalk.pipelines.interfaces`._
-
-```python
-def get_thought_rewriter_model(self) -> Rewriter | None
-```
-
-Return the thought rewriter used by ``ThoughtManager``.
-
-##### Returns
-
-- `Rewriter | None`
-  Thought rewriter or ``None``.
 
 #### get_vad_model
 
@@ -524,8 +473,6 @@ Store the standard Xtalk model bundle for a session.
   Optional punctuation restoration model.
 - `caption_rewriter` (`Rewriter | BaseChatModel | None, optional`)
   Optional caption rewriter or chat model to wrap as a rewriter.
-- `thought_rewriter` (`Rewriter | BaseChatModel | None, optional`)
-  Optional thought rewriter or chat model to wrap as a rewriter.
 - `vad` (`VAD | None, optional`)
   Optional voice activity detector.
 - `speech_enhancer` (`SpeechEnhancer | None, optional`)
@@ -555,8 +502,7 @@ session. Subclasses can add new fields as long as they expose an
 - `captioner_model: Optional[Captioner]` = `field(default=None, metadata={'init_key': 'captioner', 'clone': False})`
 - `punt_restorer_model: Optional[PuntRestorer]` = `field(default=None, metadata={'init_key': 'punt_restorer_model', 'clone': False})`
 - `caption_rewriter: Optional[Rewriter]` = `field(default=None, metadata={'init_key': 'caption_rewriter', 'clone': False})`
-- `thought_rewriter: Optional[Rewriter]` = `field(default=None, metadata={'init_key': 'thought_rewriter', 'clone': False})`
-- `vad_model: Optional[VAD]` = `field(default=None, metadata={'init_key': 'vad', 'clone': False})`
+- `vad_model: Optional[VAD]` = `field(default=None, metadata={'init_key': 'vad', 'clone': True})`
 - `enhancer_model: Optional[SpeechEnhancer]` = `field(default=None, metadata={'init_key': 'speech_enhancer', 'clone': True})`
 - `speaker_encoder: Optional[SpeakerEncoder]` = `field(default=None, metadata={'init_key': 'speaker_encoder', 'clone': False})`
 - `embeddings_model: Optional[Embeddings]` = `field(default=None, metadata={'init_key': 'embeddings', 'clone': False})`
@@ -569,7 +515,7 @@ session. Subclasses can add new fields as long as they expose an
 _Defined in `xtalk.pipelines.default`._
 
 ```python
-def __init__(self, asr: ASR, llm_agent: Agent, tts: TTS, default_response: str = "Sorry, I didn't catch that. Could you please say it again?", use_streaming_tts: bool = True, captioner: Optional[Captioner] = None, punt_restorer_model: Optional[PuntRestorer] = None, caption_rewriter: Optional[Rewriter | BaseChatModel] = None, thought_rewriter: Optional[Rewriter | BaseChatModel] = None, vad: Optional[VAD] = None, speech_enhancer: Optional[SpeechEnhancer] = None, speaker_encoder: Optional[SpeakerEncoder] = None, speech_speed_controller: Optional[SpeechSpeedController] = None, embeddings: Optional[Embeddings] = None, turn_detector: Optional[TurnDetector] = None)
+def __init__(self, asr: ASR, llm_agent: Agent, tts: TTS, default_response: str = "Sorry, I didn't catch that. Could you please say it again?", use_streaming_tts: bool = True, captioner: Optional[Captioner] = None, punt_restorer_model: Optional[PuntRestorer] = None, caption_rewriter: Optional[Rewriter | BaseChatModel] = None, vad: Optional[VAD] = None, speech_enhancer: Optional[SpeechEnhancer] = None, speaker_encoder: Optional[SpeakerEncoder] = None, speech_speed_controller: Optional[SpeechSpeedController] = None, embeddings: Optional[Embeddings] = None, turn_detector: Optional[TurnDetector] = None)
 ```
 
 Initialize the default pipeline.
@@ -592,8 +538,6 @@ Initialize the default pipeline.
   Optional punctuation restoration model.
 - `caption_rewriter` (`Rewriter | BaseChatModel | None, optional`)
   Optional caption rewriter or chat model.
-- `thought_rewriter` (`Rewriter | BaseChatModel | None, optional`)
-  Optional thought rewriter or chat model.
 - `vad` (`VAD | None, optional`)
   Optional voice activity detector.
 - `speech_enhancer` (`SpeechEnhancer | None, optional`)
@@ -673,14 +617,6 @@ _Defined in `xtalk.pipelines.default`._
 
 ```python
 def get_caption_rewriter_model(self)
-```
-
-#### get_thought_rewriter_model
-
-_Defined in `xtalk.pipelines.default`._
-
-```python
-def get_thought_rewriter_model(self)
 ```
 
 #### get_vad_model
@@ -917,16 +853,6 @@ def restore_conversation(self, *, messages: list[dict[str, Any]]) -> None
 
 Restore persisted conversation history into the session agent.
 
-#### restore_turn_state
-
-_Defined in `xtalk.serving.service`._
-
-```python
-def restore_turn_state(self, *, last_turn_id: int) -> None
-```
-
-Restore per-manager turn counters from persisted state.
-
 #### send_session_attached
 
 _Defined in `xtalk.serving.service`._
@@ -984,7 +910,7 @@ register or override managers for custom behavior.
 
 ### Class Fields
 
-- `MANAGER_CLASSES: list[Type[Manager]]` = `[ASRManager, LLMAgentManager, TTSManager, CaptionerManager, ThoughtManager, RetrievalManager, TurnTakingManager, LatencyManager, VADManager, EnhancerManager, SpeakerManager, EmbeddingsManager, RecordingManager, TurnDetectorManager]`
+- `MANAGER_CLASSES: list[Type[Manager]]` = `[ASRManager, LLMAgentContextManager, LLMAgentConsumptionManager, DirectAudioManager, TTSManager, TTSPlaybackManager, CaptionerManager, RetrievalManager, TurnTakingManager, LatencyManager, VADManager, EnhancerManager, SpeakerManager, EmbeddingsManager, RecordingManager, TurnDetectorManager]`
 
 ### Methods
 
@@ -1067,7 +993,7 @@ Create a ``BaseEvent`` subclass dynamically.
 ```pycon
 >>> CustomEvent = create_event_class(
 ...     name="CustomEvent",
-...     fields={"text": "", "turn_id": 0},
+...     fields={"text": ""},
 ... )
 ```
 

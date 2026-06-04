@@ -1,6 +1,6 @@
 X-Talk 的大多数模型与执行逻辑都运行在服务端。客户端主要负责访问麦克风、传输音频、收发 WebSocket 消息，以及处理轻量级的会话逻辑。
 
-客户端 API 已经发布为独立包 [xtalk-client](https://www.npmjs.com/package/xtalk-client)，其公开接口与 `frontend/src` 中的实现保持一致。
+客户端 API 已经发布为独立包 [xtalk-client](https://www.npmjs.com/package/xtalk-client)，其公开接口由 `frontend/src/index.ts` 导出。
 
 ## 客户端最简接入
 
@@ -44,7 +44,7 @@ await session.open();
 
 ```html
 <script type="module">
-    const { createSession } = await import("https://unpkg.com/xtalk-client@latest/dist/index.js");
+    const { createSession } = await import("https://unpkg.com/xtalk-client@0.2.6/dist/index.js");
 
     const wsUrl =
         location.protocol === "https:"

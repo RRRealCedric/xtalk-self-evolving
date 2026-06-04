@@ -6,7 +6,7 @@
 
 # Interface: Session
 
-Defined in: [session/types.ts:90](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L90)
+Defined in: session/types.ts:86
 
 Public session controller exposed by the frontend entrypoint.
 
@@ -16,7 +16,7 @@ Public session controller exposed by the frontend entrypoint.
 
 > **muted**: `boolean`
 
-Defined in: [session/types.ts:130](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L130)
+Defined in: session/types.ts:126
 
 Whether microphone capture is currently muted.
 
@@ -26,7 +26,7 @@ Whether microphone capture is currently muted.
 
 > `readonly` **state**: `object`
 
-Defined in: [session/types.ts:108](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L108)
+Defined in: session/types.ts:104
 
 Current conversation state snapshot.
 
@@ -82,6 +82,18 @@ Current conversation state snapshot.
 
 > **thought**: `string`
 
+#### tool\_call
+
+> **tool\_call**: `object`
+
+##### tool\_call.args
+
+> **args**: `Record`&lt;`string`, `any`&gt;
+
+##### tool\_call.name
+
+> **name**: `string`
+
 #### user
 
 > **user**: `ConversationUser` \| `null`
@@ -92,7 +104,7 @@ Current conversation state snapshot.
 
 > **changeVoice**(`voiceName`): `Promise`&lt;`void`&gt;
 
-Defined in: [session/types.ts:136](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L136)
+Defined in: session/types.ts:132
 
 Requests a voice change for subsequent assistant synthesis.
 
@@ -114,7 +126,7 @@ Target voice identifier.
 
 > **close**(): `Promise`&lt;`void`&gt;
 
-Defined in: [session/types.ts:98](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L98)
+Defined in: session/types.ts:94
 
 Closes the active runtime connection and audio resources.
 
@@ -128,7 +140,7 @@ Closes the active runtime connection and audio resources.
 
 > **getSessions**(): `Promise`&lt;`SessionSummary`[]&gt;
 
-Defined in: [session/types.ts:147](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L147)
+Defined in: session/types.ts:143
 
 Fetches available persisted sessions for the current user.
 
@@ -142,7 +154,7 @@ Fetches available persisted sessions for the current user.
 
 > **onFullAudioChunk**(`callback`): `void`
 
-Defined in: [session/types.ts:126](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L126)
+Defined in: session/types.ts:122
 
 Registers a callback for merged full-duplex PCM chunks.
 
@@ -164,7 +176,7 @@ Full audio listener.
 
 > **onInputAudioChunk**(`callback`): `void`
 
-Defined in: [session/types.ts:114](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L114)
+Defined in: session/types.ts:110
 
 Registers a callback for microphone input PCM chunks.
 
@@ -186,7 +198,7 @@ Input audio listener.
 
 > **onOutputAudioChunk**(`callback`): `void`
 
-Defined in: [session/types.ts:120](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L120)
+Defined in: session/types.ts:116
 
 Registers a callback for speaker output PCM chunks.
 
@@ -208,7 +220,7 @@ Output audio listener.
 
 > **onStateChange**(`callback`): `void`
 
-Defined in: [session/types.ts:104](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L104)
+Defined in: session/types.ts:100
 
 Registers a callback that runs whenever the conversation state changes.
 
@@ -230,7 +242,7 @@ State change listener.
 
 > **open**(): `Promise`&lt;`void`&gt;
 
-Defined in: [session/types.ts:94](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L94)
+Defined in: session/types.ts:90
 
 Opens the session runtime and performs authentication if needed.
 
@@ -244,7 +256,7 @@ Opens the session runtime and performs authentication if needed.
 
 > **switchSession**(`sessionId`): `Promise`&lt;`void`&gt;
 
-Defined in: [session/types.ts:153](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L153)
+Defined in: session/types.ts:149
 
 Switches the active conversation to a persisted session or starts a new one.
 
@@ -266,7 +278,7 @@ Target session identifier, or `null` to start a new session.
 
 > **uploadFile**(`file`, `endpoint?`): `Promise`&lt;`void`&gt;
 
-Defined in: [session/types.ts:143](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/types.ts#L143)
+Defined in: session/types.ts:139
 
 Uploads a file into the current session context.
 

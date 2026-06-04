@@ -9,16 +9,11 @@ export { createSessionAPI };
 type AuthorizedOperation = <T>(operation: (token: string) => Promise<T>) => Promise<T>;
 
 function mapSessionMessages(messages: SessionDetail["messages"]): ConversationMessage[] {
-    return messages.map((message) => {
-        const mapped: ConversationMessage = {
-            role: message.role,
-            content: message.content,
-        };
-        if (typeof message.turn_id === "number") {
-            mapped.turnId = message.turn_id;
-        }
-        return mapped;
-    });
+    return messages.map((message) => ({
+        role: message.role,
+        content: message.content,
+        final: true,
+    }));
 }
 
 function createSessionAPI(

@@ -4,14 +4,12 @@ from ..interfaces import Manager
 from ..events import (
     VADSpeechStart,
     VADSpeechEnd,
-    TurnLLMAgentStartRequested,
     TurnLLMAgentStopRequested,
     TurnASRStartRequested,
     TurnASRPauseRequested,
     TurnASREndRequested,
     TurnDetectorStartGeneration,
     TurnDetectorStopSpeaking,
-    ASRResultFinal,
     TTSPlaybackFinished,
 )
 from ...pipelines import Pipeline
@@ -68,16 +66,6 @@ class TurnTakingManager(Manager):
             await self.event_bus.publish(
                 TurnASRPauseRequested(session_id=self.session_id)
             )
-
-    @Manager.event_handler(ASRResultFinal)
-    async def _on_asr_final(self, event: ASRResultFinal):
-        """ASR final result triggers LLM generation."""
-        await self.event_bus.publish(
-            TurnLLMAgentStartRequested(
-                session_id=self.session_id,
-                text=event.text,
-            )
-        )
 
     @Manager.event_handler(TTSPlaybackFinished)
     async def _on_tts_playback_finished(self, _event: TTSPlaybackFinished) -> None:

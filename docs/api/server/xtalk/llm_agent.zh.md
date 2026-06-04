@@ -10,6 +10,136 @@ class Agent(ABC)
 
 Xtalk 所使用的会话式 Agent 抽象接口。
 
+### Methods
+
+#### content_to_text
+
+```python
+def content_to_text(content: Any) -> str
+```
+
+将模型内容块规范化为纯文本。
+
+#### accept
+
+```python
+def accept(self, context: AgentContext) -> Iterable[AgentOutput]
+```
+
+接收一次增量上下文更新，并产生零个或多个输出项。
+
+#### async_accept
+
+```python
+async def async_accept(self, context: AgentContext) -> AsyncIterator[AgentOutput]
+```
+
+异步接收一次增量上下文更新。
+
+#### sync_iter_from_async
+
+```python
+def sync_iter_from_async(self, async_iter: AsyncIterator[T]) -> Iterable[T]
+```
+
+将异步迭代器桥接为同步生成器。
+
+#### clone
+
+```python
+def clone(self) -> 'Agent'
+```
+
+为新会话克隆 Agent。
+
+#### restore_history
+
+```python
+def restore_history(self, messages: list[dict[str, Any]]) -> None
+```
+
+将持久化的对话消息恢复到 Agent 状态中。
+
+#### get_chat_history
+
+```python
+def get_chat_history(self, with_system: bool = False) -> str | None
+```
+
+返回序列化后的对话历史；`with_system` 控制是否包含系统提示。
+
+#### add_tools
+
+```python
+def add_tools(self, tools: list[BaseTool | Callable[[], BaseTool]]) -> None
+```
+
+向 Agent 附加工具或工具工厂。
+
+## AgentContext
+
+_定义于 `xtalk.llm_agent.interfaces`。_
+
+```python
+class AgentContext(TypedDict)
+```
+
+Agent 接收的增量上下文更新。`type` 标识上下文流类型，`data` 携带由事件派生出的负载。
+
+## AgentOutput
+
+_定义于 `xtalk.llm_agent.interfaces`。_
+
+```python
+AgentOutput
+```
+
+**Value:** `Union[str, ToolCall, ToolCallResult]`
+
+## ChatHistory
+
+_定义于 `xtalk.llm_agent.interfaces`。_
+
+```python
+class ChatHistory
+```
+
+管理聊天历史，并支持与播放状态相关的助手消息合并。
+
+### Methods
+
+#### __init__
+
+```python
+def __init__(self, system_prompt: str) -> None
+```
+
+使用一条系统消息初始化历史。
+
+#### messages
+
+```python
+def messages(self) -> list[BaseMessage]
+```
+
+返回当前消息列表。
+
+#### append_message
+
+```python
+def append_message(self, message: BaseMessage) -> None
+```
+
+原样追加一条消息。
+
+#### append_or_update_ai_message
+
+```python
+def append_or_update_ai_message(self, full_text: str, *, final: bool) -> None
+```
+
+追加或合并一条受播放控制的助手消息。
+
 ## DummyAgent
 
 _定义于 `xtalk.llm_agent.dummy`。_
@@ -18,172 +148,133 @@ _定义于 `xtalk.llm_agent.dummy`。_
 class DummyAgent(Agent)
 ```
 
-用于测试的哑 LLM Agent。
-该实现会忽略输入并返回预设响应。
+用于测试的哑 Agent。该实现总是返回相同的预设文本。
 
 ## DefaultAgent
 
 _定义于 `xtalk.llm_agent.default`。_
 
 ```python
-class DefaultAgent(TemplateAgent)
+class DefaultAgent(Agent)
 ```
 
-构建在 `TemplateAgent` 之上的默认场景 Agent。
+默认的语音优先对话 Agent 实现。
 
-## TemplateAgent
+### Class Fields
 
-_定义于 `xtalk.llm_agent.template`。_
+- `BASE_PROMPT`
+  默认系统提示词，约束回复风格、工具使用和搜索策略。
+
+## LTSAgent
+
+_定义于 `xtalk.llm_agent.lts`。_
 
 ```python
-class TemplateAgent(Agent)
+class LTSAgent(Agent)
 ```
 
-基于可复用 `ScenarioSpec` 模板构建的具体 `Agent` 实现。
+面向长对话状态管理的 Agent 实现。
 
-## AgentRequest
+### Methods
 
-_定义于 `xtalk.llm_agent.runtime`。_
+#### accept
 
 ```python
-@dataclass
-class AgentRequest
+def accept(self, context: AgentContext) -> Iterable[AgentOutput]
 ```
 
-传入 Agent 运行时的单轮请求对象。
+接收增量上下文更新。
 
-## AgentRuntime
-
-_定义于 `xtalk.llm_agent.runtime`。_
+#### async_accept
 
 ```python
-class AgentRuntime
+async def async_accept(self, context: AgentContext) -> AsyncIterator[AgentOutput]
 ```
 
-面向单个会话、与具体场景无关的执行引擎。
+异步接收增量上下文更新。
 
-## AgentSession
-
-_定义于 `xtalk.llm_agent.runtime`。_
+#### clone
 
 ```python
-@dataclass
-class AgentSession
+def clone(self) -> 'Agent'
 ```
 
-可变的会话级运行时状态。
+为新会话克隆 Agent。
 
-## ContextAdapter
-
-_定义于 `xtalk.llm_agent.runtime`。_
+#### restore_history
 
 ```python
-class ContextAdapter(Protocol)
+def restore_history(self, messages: list[dict[str, Any]]) -> None
 ```
 
-将 `PipelineContext` 转换为稳定 `TurnContext` 的适配协议。
+恢复持久化消息。
 
-## MutableToolProvider
-
-_定义于 `xtalk.llm_agent.template`。_
+#### get_chat_history
 
 ```python
-class MutableToolProvider(ToolProvider)
+def get_chat_history(self, with_system: bool = False) -> str | None
 ```
 
-提供一组可在运行时扩展、且可安全克隆的工具列表。
+获取序列化后的历史记录。
 
-## OutputPolicy
-
-_定义于 `xtalk.llm_agent.runtime`。_
+#### add_tools
 
 ```python
-class OutputPolicy(Protocol)
+def add_tools(self, tools: list[BaseTool | Callable[[], BaseTool]]) -> None
 ```
 
-在输出下游消费者之前规范化模型文本的协议。
+附加工具或工具工厂。
 
-## PromptBuilder
+## ExperimentalAgent
 
-_定义于 `xtalk.llm_agent.runtime`。_
+_定义于 `xtalk.llm_agent.experimental`。_
 
 ```python
-class PromptBuilder(Protocol)
+class ExperimentalAgent(Agent)
 ```
 
-构建场景特定提示词和用户消息的协议。
+实验性的 Agent 实现，支持主动问候与附和策略。
 
-## ScenarioSpec
+### Class Fields
 
-_定义于 `xtalk.llm_agent.runtime`。_
+- `BASE_SYSTEM_PROMPT`
+  基础系统提示词。
+- `GREETING_GEN_PROMPT`
+  主动问候生成提示词。
+- `BACKCHANNEL_JUDGE_PROMPT`
+  附和判断提示词。
+
+## PlaybackAIMessageMeta
+
+_定义于 `xtalk.llm_agent.interfaces`。_
 
 ```python
-@dataclass
-class ScenarioSpec
+class PlaybackAIMessageMeta
 ```
 
-注入到 `AgentRuntime` 中的场景定义。
+跟踪一条受播放管理的助手消息的合并状态。
 
-## TextChunkEvent
+### Class Fields
 
-_定义于 `xtalk.llm_agent.runtime`。_
+- `final: bool` = `False`
+- `prefix: str | None` = `None`
+
+## ToolCallResultArgs
+
+_定义于 `xtalk.llm_agent.tools.utils`。_
 
 ```python
-@dataclass
-class TextChunkEvent
+class ToolCallResultArgs(TypedDict)
 ```
 
-由运行时发出的纯文本片段事件。
+描述一次已完成工具调用的序列化结果；其中 `name` 保存工具名，`args` 保存原始参数，`content` 保存文本结果。
 
-## ToolCallEvent
+## ToolCallResult
 
-_定义于 `xtalk.llm_agent.runtime`。_
+_定义于 `xtalk.llm_agent.tools.utils`。_
 
 ```python
-@dataclass
-class ToolCallEvent
+class ToolCallResult(ToolCall)
 ```
 
-由模型请求执行的工具调用事件。
-
-## ToolProvider
-
-_定义于 `xtalk.llm_agent.runtime`。_
-
-```python
-class ToolProvider(Protocol)
-```
-
-返回当前场景和当前轮次可用工具的协议。
-
-## ToolResultEvent
-
-_定义于 `xtalk.llm_agent.runtime`。_
-
-```python
-@dataclass
-class ToolResultEvent
-```
-
-由运行时发出的已完成工具结果事件。
-
-## TurnContext
-
-_定义于 `xtalk.llm_agent.runtime`。_
-
-```python
-@dataclass
-class TurnContext
-```
-
-从 `PipelineContext` 派生出的、面向场景的结构化上下文。
-
-## TurnHook
-
-_定义于 `xtalk.llm_agent.runtime`。_
-
-```python
-class TurnHook(ABC)
-```
-
-用于在运行时执行前后注入场景特定行为的扩展点。
+工具执行完成后发出的结构化工具调用结果事件。

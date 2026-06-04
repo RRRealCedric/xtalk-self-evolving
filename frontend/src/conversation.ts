@@ -4,7 +4,7 @@ export type { ConversationMessage, ConversationState, ConversationUser };
 type ConversationMessage = {
     role: "user" | "assistant" | "info";
     content: string;
-    turnId?: number;
+    final?: boolean;
 }
 
 type ConversationUser = {
@@ -53,6 +53,7 @@ type ConversationState = ReturnType<typeof defaultConversation>;
 
 class Conversation {
     private _state: ConversationState = defaultConversation();
+    private messagePrefixes: Array<string | undefined> = [];
     private stateChangeCallbacks = new Set<(state: ConversationState) => void>();
     private fullAudioChunkCallback: (pcmChunkInt16: ArrayBuffer, sampleRate: number) => void = (_chunk, _sr) => { };
 
@@ -93,7 +94,11 @@ class Conversation {
 
     switch(sessionId: string | null, messages: ConversationMessage[]): void {
         this._state.sessionId = sessionId;
-        this._state.messages = [...messages];
+        this._state.messages = messages.map((message) => ({
+            ...message,
+            final: true,
+        }));
+        this.messagePrefixes = this._state.messages.map(() => undefined);
         this._state.streamState = "idle";
         this._state.thought = "";
         this._state.caption = "";
@@ -109,26 +114,70 @@ class Conversation {
     appendMessage(message: ConversationMessage): void {
         if (message.role === "info") {
             this._state.messages.push(message);
+            this.messagePrefixes.push(undefined);
             this.notifyStateChange();
             return;
         }
 
-        for (let i = this._state.messages.length - 1; i >= 0; i--) {
-            const msg = this._state.messages[i]!;
-            if (msg.role === message.role && msg.turnId === message.turnId) {
-                msg.content = message.content;
-                const lastMsg = this._state.messages[this._state.messages.length - 1];
-                if (lastMsg && lastMsg.role === "info") {
-                    this._state.messages.splice(this._state.messages.length - 1, 1);
-                    this._state.messages.splice(i, 0, lastMsg);
-                }
+        const final = message.final ?? false;
+        const lastIndex = this._state.messages.length - 1;
+        const lastMessage = this._state.messages[lastIndex];
+
+        if (lastMessage?.role === message.role && !lastMessage.final) {
+            const prefix = this.messagePrefixes[lastIndex];
+            if (prefix && message.content.startsWith(prefix)) {
+                lastMessage.content = message.content.slice(prefix.length);
+            } else {
+                lastMessage.content = message.content;
+                this.messagePrefixes[lastIndex] = undefined;
+            }
+            lastMessage.final = final;
+            this.notifyStateChange();
+            return;
+        }
+
+        const previousSameRole = this.findPreviousSameRoleMessage(message.role);
+        let content = message.content;
+        let prefix: string | undefined;
+
+        if (
+            previousSameRole &&
+            !previousSameRole.message.final &&
+            message.content.startsWith(previousSameRole.fullContent)
+        ) {
+            prefix = previousSameRole.fullContent;
+            content = message.content.slice(prefix.length);
+            if (final) {
+                previousSameRole.message.final = true;
+            }
+            if (!content) {
                 this.notifyStateChange();
                 return;
             }
         }
 
-        this._state.messages.push(message);
+        this._state.messages.push({
+            role: message.role,
+            content,
+            final,
+        });
+        this.messagePrefixes.push(prefix);
         this.notifyStateChange();
+    }
+
+    private findPreviousSameRoleMessage(
+        role: Exclude<ConversationMessage["role"], "info">,
+    ): { message: ConversationMessage; fullContent: string } | undefined {
+        for (let i = this._state.messages.length - 1; i >= 0; i--) {
+            const message = this._state.messages[i];
+            if (message?.role === role) {
+                return {
+                    message,
+                    fullContent: `${this.messagePrefixes[i] ?? ""}${message.content}`,
+                };
+            }
+        }
+        return undefined;
     }
 
     updateLatency(latency: Conversation["state"]["latency"]): void {

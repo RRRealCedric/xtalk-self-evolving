@@ -17,13 +17,12 @@ from ..events import (
     TTSPaused,
     TTSResumed,
     TTSFinished,
-    LLMAgentResponseUpdate,
-    LLMAgentResponseFinish,
+    ResponseUpdate,
+    ResponseFinish,
     ErrorOccurred,
-    TTSChunkGenerated,
+    TTSChunkReady,
     TTSVoiceChange,
     TTSEmotionChange,
-    ThoughtUpdated,
     CaptionUpdated,
     LatencyMetricsUpdated,
     ToolCallOccurred,
@@ -155,13 +154,7 @@ class OutputGateway(EventListenerMixin):
     async def _forward_asr(self, action: str, event) -> None:
         """Forward an ASR result (partial or final) to the frontend."""
         display_text = event.display_text or event.text
-        await self._forward(
-            action,
-            {
-                "text": display_text,
-                "turn_id": event.turn_id,
-            },
-        )
+        await self._forward(action, {"text": display_text})
 
     # ── Session ─────────────────────────────────────────────────────
 
@@ -199,17 +192,13 @@ class OutputGateway(EventListenerMixin):
     async def _send_resume_tts_signal(self, event) -> None:
         await self._forward("resume_tts", "")
 
-    @EventListenerMixin.event_handler(LLMAgentResponseUpdate, priority=5)
-    async def _send_update_resp_signal(self, event: LLMAgentResponseUpdate) -> None:
-        await self._forward(
-            "update_resp", {"text": event.text, "turn_id": event.turn_id}
-        )
+    @EventListenerMixin.event_handler(ResponseUpdate, priority=5)
+    async def _send_update_resp_signal(self, event: ResponseUpdate) -> None:
+        await self._forward("update_resp", {"text": event.text})
 
-    @EventListenerMixin.event_handler(LLMAgentResponseFinish, priority=5)
-    async def _send_finish_resp_signal(self, event: LLMAgentResponseFinish) -> None:
-        await self._forward(
-            "finish_resp", {"text": event.text, "turn_id": event.turn_id}
-        )
+    @EventListenerMixin.event_handler(ResponseFinish, priority=5)
+    async def _send_finish_resp_signal(self, event: ResponseFinish) -> None:
+        await self._forward("finish_resp", {"text": event.text})
 
     @EventListenerMixin.event_handler(TTSFinished, priority=5)
     async def _send_tts_finished_signal(self, event: TTSFinished) -> None:
@@ -222,16 +211,6 @@ class OutputGateway(EventListenerMixin):
             {
                 "speaker_id": event.speaker_id,
                 "reason": event.reason,
-            },
-        )
-
-    @EventListenerMixin.event_handler(ThoughtUpdated, priority=5)
-    async def _send_thought_updated(self, event: ThoughtUpdated) -> None:
-        await self._forward(
-            "thought_updated",
-            {
-                "text": event.text or "",
-                "is_final": bool(event.is_final),
             },
         )
 
@@ -256,8 +235,8 @@ class OutputGateway(EventListenerMixin):
             },
         )
 
-    @EventListenerMixin.event_handler(TTSChunkGenerated, priority=5)
-    async def _send_tts_chunk_signal(self, event: TTSChunkGenerated) -> None:
+    @EventListenerMixin.event_handler(TTSChunkReady, priority=5)
+    async def _send_tts_chunk_signal(self, event: TTSChunkReady) -> None:
         if hasattr(event, "audio_chunk") and event.audio_chunk:
             try:
                 await self._send_binary(event.audio_chunk)
@@ -291,13 +270,13 @@ class OutputGateway(EventListenerMixin):
 
     @EventListenerMixin.event_handler(VADSpeechStart, priority=5)
     async def _send_vad_start_signal(self, event: VADSpeechStart) -> None:
-        if event.origin != "server":
+        if event.origin == "client":
             return
         await self._forward("vad_speech_start", {"origin": event.origin})
 
     @EventListenerMixin.event_handler(VADSpeechEnd, priority=5)
     async def _send_vad_end_signal(self, event: VADSpeechEnd) -> None:
-        if event.origin != "server":
+        if event.origin == "client":
             return
         await self._forward("vad_speech_end", {"origin": event.origin})
 
@@ -326,7 +305,7 @@ class OutputGateway(EventListenerMixin):
 
     @EventListenerMixin.event_handler(ToolCallOccurred, priority=5)
     async def _send_tool_called_signal(self, event: ToolCallOccurred) -> None:
-        if event.name == "tool_call_result":
+        if event.name in {"tool_call_result", "direct_audio"}:
             return
         await self._forward(
             "tool_called",

@@ -33,89 +33,86 @@ Abstract interface for conversational agents used by Xtalk.
 
 ### Methods
 
-#### generate
+#### content_to_text
 
 _Defined in `xtalk.llm_agent.interfaces`._
 
 ```python
-def generate(self, input: Union[str, AgentInput]) -> Union[str, tuple[str, List[ToolCall]]]
+def content_to_text(content: Any) -> str
 ```
 
-Generate a complete response for the input.
+Normalize model content blocks into plain text.
 
 ##### Parameters
 
-- `input` (`str | AgentInput`)
-  Raw user text or a structured payload containing both text and
-  pipeline context.
+- `content:`
+  Content emitted by a LangChain model chunk or message.
 
 ##### Returns
 
-- `str | tuple[str, List[ToolCall]]`
-  Plain response text, or a ``(text, tool_calls)`` tuple when tool
-  calls should be surfaced alongside the final text.
+- `str`
+  Plain-text content extracted from the input.
 
-#### generate_stream
+#### accept
 
 _Defined in `xtalk.llm_agent.interfaces`._
 
 ```python
-def generate_stream(self, input: Union[str, AgentInput]) -> Iterable[Union[str, ToolCall, dict[str, Any]]]
+def accept(self, context: AgentContext) -> Iterable[AgentOutput]
 ```
 
-Stream response chunks for the input.
+Accept an incremental context update.
 
 ##### Parameters
 
-- `input` (`str | AgentInput`)
-  Raw user text or structured agent input.
+- `context` (`AgentContext`)
+  Context payload forwarded from serving-layer events.
 
 ##### Yields
 
-- `str | ToolCall | dict[str, Any]`
-  Tool calls, tool-result payloads, followed by text chunks. The
-  default implementation delegates to ``generate()`` and yields its
-  result in streaming form.
+- `AgentStreamItem`
+  Zero or more streamed response items triggered by the context
+  update.
 
-#### async_generate
-
-_Defined in `xtalk.llm_agent.interfaces`._
-
-```python
-async def async_generate(self, input: Union[str, AgentInput]) -> Union[str, tuple[str, List[ToolCall]]]
-```
-
-Asynchronously generate a complete response.
-
-##### Parameters
-
-- `input` (`str | AgentInput`)
-  Raw user text or structured agent input.
-
-##### Returns
-
-- `str | tuple[str, List[ToolCall]]`
-  Same result contract as ``generate()``.
-
-#### async_generate_stream
+#### async_accept
 
 _Defined in `xtalk.llm_agent.interfaces`._
 
 ```python
-async def async_generate_stream(self, input: Union[str, AgentInput]) -> AsyncIterator[Union[str, ToolCall, dict[str, Any]]]
+async def async_accept(self, context: AgentContext) -> AsyncIterator[AgentOutput]
 ```
 
-Asynchronously stream agent outputs.
+Asynchronously accept an incremental context update.
 
 ##### Parameters
 
-- `input` (`str | AgentInput`)
-  Raw user text or structured agent input.
+- `context` (`AgentContext`)
+  Context payload forwarded from serving-layer events.
 
 ##### Yields
 
-- `str | ToolCall | dict[str, Any]`
-  Streamed outputs from ``generate_stream()``.
+- `AgentStreamItem`
+  Streamed response items triggered by the context update.
+
+#### sync_iter_from_async
+
+_Defined in `xtalk.llm_agent.interfaces`._
+
+```python
+def sync_iter_from_async(self, async_iter: AsyncIterator[T]) -> Iterable[T]
+```
+
+Convert an async iterator into a synchronous generator.
+
+##### Parameters
+
+- `async_iter` (`AsyncIterator[T]`)
+  Async iterator to bridge into synchronous iteration.
+
+##### Yields
+
+- `T`
+  Items produced by ``async_iter``.
 
 #### clone
 
@@ -152,10 +149,16 @@ Restore persisted conversation messages into the agent state.
 _Defined in `xtalk.llm_agent.interfaces`._
 
 ```python
-def get_chat_history(self) -> str | None
+def get_chat_history(self, with_system: bool = False) -> str | None
 ```
 
 Return the serialized conversation history when available.
+
+##### Parameters
+
+- `with_system` (`bool, optional`)
+  Whether to include the system prompt message when supported by the
+  concrete implementation.
 
 ##### Returns
 
@@ -167,7 +170,7 @@ Return the serialized conversation history when available.
 _Defined in `xtalk.llm_agent.interfaces`._
 
 ```python
-def add_tools(self, tools: list[BaseTool | Callable[[], BaseTool]])
+def add_tools(self, tools: list[BaseTool | Callable[[], BaseTool]]) -> None
 ```
 
 Attach tools to the agent.
@@ -276,8 +279,12 @@ Recognize audio incrementally in streaming mode.
 - `audio` (`bytes`)
   Incremental PCM 16-bit mono audio bytes.
 - `is_final` (`bool, optional`)
-  Whether the caller is forcing a final decode because the user paused
-  or the turn ended.
+  Whether the caller is asking the ASR to treat the current point as
+  a temporary boundary and optionally flush any tail audio that would
+  otherwise remain buffered. This is only a decoding hint. It does
+  not mean the streaming state must be reset, and previously
+  recognized text for the session must be preserved so later audio
+  can continue from the accumulated result.
 - `chat_history` (`str | None, optional`)
   Serialized chat history for the current session, excluding the
   in-progress turn when unavailable.
@@ -300,8 +307,8 @@ Return the preferred streaming chunk size.
 ##### Returns
 
 - `int | None`
-  Recommended byte count for streaming accumulation, or ``None`` when
-  no preference is provided.
+  Recommended byte count for each chunk passed to
+  ``recognize_stream``, or ``None`` when no preference is provided.
 
 #### reset
 
@@ -363,7 +370,12 @@ Asynchronously recognize incremental audio input.
 - `audio` (`bytes`)
   Incremental PCM 16-bit mono audio bytes.
 - `is_final` (`bool, optional`)
-  Whether the chunk should force a final decode.
+  Whether the caller is asking the ASR to treat the current point as
+  a temporary boundary and optionally flush any tail audio that would
+  otherwise remain buffered. This is only a decoding hint. It does
+  not mean the streaming state must be reset, and previously
+  recognized text for the session must be preserved so later audio
+  can continue from the accumulated result.
 - `chat_history` (`str | None, optional`)
   Serialized chat history for the current session, excluding the
   in-progress turn when unavailable.
@@ -1059,7 +1071,7 @@ Return the lock guarding listening state changes.
 _Defined in `xtalk.speech.interfaces`._
 
 ```python
-def detect(self, audio: Optional[bytes] = None, text: Optional[str] = None, speech_pause: Optional[bool] = None) -> TurnDetectionResult | list[TurnDetectionResult]
+def detect(self, audio: Optional[bytes] = None, text: Optional[str] = None, speech_start: bool = False, speech_pause: Optional[bool] = None) -> TurnDetectionResult
 ```
 
 Detect conversational turn state from audio and/or text.
@@ -1070,23 +1082,24 @@ Detect conversational turn state from audio and/or text.
   Current PCM 16-bit mono audio frame at 16 kHz.
 - `text` (`str | None, optional`)
   ASR text for the current turn.
+- `speech_start` (`bool, optional`)
+  Whether VAD has just detected the start of speech. This may be
+  provided without ``audio`` or ``text``.
 - `speech_pause` (`bool | None, optional`)
   Whether the user appears to have paused speaking. This is typically
   provided together with ``text``.
 
 ##### Returns
 
-- `TurnDetectionResult | list[TurnDetectionResult]`
-  One or more turn-detection decisions. When multiple results are
-  returned, ``STOP_SPEAKING`` should be processed before
-  ``START_GENERATION``.
+- `TurnDetectionResult`
+  Turn-detection decision for the current input.
 
 #### async_detect
 
 _Defined in `xtalk.speech.interfaces`._
 
 ```python
-async def async_detect(self, audio: Optional[bytes] = None, text: Optional[str] = None, speech_pause: Optional[bool] = None) -> TurnDetectionResult | list[TurnDetectionResult]
+async def async_detect(self, audio: Optional[bytes] = None, text: Optional[str] = None, speech_start: bool = False, speech_pause: Optional[bool] = None) -> TurnDetectionResult
 ```
 
 Asynchronously detect conversational turn state.
@@ -1097,13 +1110,16 @@ Asynchronously detect conversational turn state.
   Current PCM 16-bit mono audio frame at 16 kHz.
 - `text` (`str | None, optional`)
   ASR text for the current turn.
+- `speech_start` (`bool, optional`)
+  Whether VAD has just detected the start of speech. This may be
+  provided without ``audio`` or ``text``.
 - `speech_pause` (`bool | None, optional`)
   Whether the user appears to have paused speaking.
 
 ##### Returns
 
-- `TurnDetectionResult | list[TurnDetectionResult]`
-  One or more turn-detection decisions.
+- `TurnDetectionResult`
+  Turn-detection decision for the current input.
 
 #### clone
 

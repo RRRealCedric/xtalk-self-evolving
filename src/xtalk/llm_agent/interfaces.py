@@ -1,115 +1,212 @@
 import asyncio
 from abc import ABC, abstractmethod
-from typing import Iterable, Union, TypedDict, List, AsyncIterator, Callable, Any
-from ..pipelines.context import PipelineContext
-from langchain_core.messages import ToolCall
+from dataclasses import dataclass
+from typing import Iterable, TypedDict, AsyncIterator, Callable, Any, Union, TypeVar
+
+from langchain_core.messages import BaseMessage, SystemMessage, AIMessage, ToolCall
 from langchain_core.tools import BaseTool
 
+from .tools.utils import ToolCallResult
 
-class AgentInput(TypedDict):
-    """Structured payload for agent generation input.
+
+class AgentContext(TypedDict):
+    """Incremental context update accepted by an agent.
 
     Notes
     -----
-    ``content`` stores the raw user text and ``context`` carries the current
-    ``PipelineContext``.
+    ``type`` identifies the logical context stream, while ``data`` carries the
+    event-derived payload for that stream.
     """
 
-    content: str
-    context: PipelineContext
+    type: str
+    data: dict[str, Any]
+
+
+AgentOutput = Union[str, ToolCall, ToolCallResult]
+T = TypeVar("T")
+
+
+@dataclass
+class PlaybackAIMessageMeta:
+    """Track merge state for one playback-managed assistant message."""
+
+    final: bool = False
+    prefix: str | None = None
+
+
+class ChatHistory:
+    """Manage chat history plus playback-aware assistant-message merging."""
+
+    def __init__(self, system_prompt: str) -> None:
+        """Initialize the history with one system message.
+
+        Parameters
+        ----------
+        system_prompt:
+            The system prompt to place at the start of the message list.
+        """
+
+        self._messages: list[BaseMessage] = [SystemMessage(content=system_prompt)]
+        self._playback_ai_meta: dict[int, PlaybackAIMessageMeta] = {}
+
+    @property
+    def messages(self) -> list[BaseMessage]:
+        """Return the current chat-history message list."""
+
+        return self._messages
+
+    def append_message(self, message: BaseMessage) -> None:
+        """Append one message to the history unchanged.
+
+        Parameters
+        ----------
+        message:
+            The message to append.
+        """
+
+        self._messages.append(message)
+
+    def append_or_update_ai_message(self, full_text: str, *, final: bool) -> None:
+        """Append or merge one playback-managed assistant message.
+
+        Parameters
+        ----------
+        full_text:
+            The cumulative assistant text confirmed by playback.
+        final:
+            Whether this update closes the playback-managed assistant message.
+        """
+
+        if not full_text:
+            return
+
+        previous_playback = self._find_previous_playback_ai_message()
+        if previous_playback is not None:
+            index, message, meta = previous_playback
+            if index == len(self._messages) - 1 and not meta.final:
+                if meta.prefix and full_text.startswith(meta.prefix):
+                    message.content = full_text[len(meta.prefix) :]
+                else:
+                    message.content = full_text
+                    meta.prefix = None
+                meta.final = final
+                return
+
+            previous_full_text = self._resolve_playback_full_text(message, meta)
+            if not meta.final and full_text.startswith(previous_full_text):
+                suffix = full_text[len(previous_full_text) :]
+                meta.final = final
+                if not suffix:
+                    return
+                self._messages.append(AIMessage(content=suffix))
+                self._playback_ai_meta[len(self._messages) - 1] = PlaybackAIMessageMeta(
+                    final=final,
+                    prefix=previous_full_text,
+                )
+                return
+
+        self._append_playback_ai_message(full_text, final=final)
+
+    def _append_playback_ai_message(self, content: str, *, final: bool) -> int:
+        """Append one playback-managed assistant message."""
+
+        message_index = len(self._messages)
+        self.append_message(AIMessage(content=content))
+        self._playback_ai_meta[message_index] = PlaybackAIMessageMeta(final=final)
+        return message_index
+
+    def _find_previous_playback_ai_message(
+        self,
+    ) -> tuple[int, AIMessage, PlaybackAIMessageMeta] | None:
+        """Return the latest playback-managed assistant message if present."""
+
+        for index in range(len(self._messages) - 1, -1, -1):
+            if index not in self._playback_ai_meta:
+                continue
+            message = self._messages[index]
+            if isinstance(message, AIMessage):
+                return index, message, self._playback_ai_meta[index]
+        return None
+
+    @staticmethod
+    def _resolve_playback_full_text(
+        message: AIMessage,
+        meta: PlaybackAIMessageMeta,
+    ) -> str:
+        """Resolve the full playback text represented by one assistant message."""
+
+        return f"{meta.prefix or ''}{message.content}"
 
 
 class Agent(ABC):
     """Abstract interface for conversational agents used by Xtalk."""
 
-    @abstractmethod
-    def generate(
-        self, input: Union[str, AgentInput]
-    ) -> Union[str, tuple[str, List[ToolCall]]]:
-        """Generate a complete response for the input.
+    @staticmethod
+    def content_to_text(content: Any) -> str:
+        """Normalize model content blocks into plain text.
 
         Parameters
         ----------
-        input : str | AgentInput
-            Raw user text or a structured payload containing both text and
-            pipeline context.
+        content:
+            Content emitted by a LangChain model chunk or message.
 
         Returns
         -------
-        str | tuple[str, List[ToolCall]]
-            Plain response text, or a ``(text, tool_calls)`` tuple when tool
-            calls should be surfaced alongside the final text.
+        str
+            Plain-text content extracted from the input.
+        """
+
+        if content is None:
+            return ""
+        if isinstance(content, str):
+            return content
+        if isinstance(content, list):
+            parts: list[str] = []
+            for item in content:
+                if isinstance(item, str):
+                    parts.append(item)
+                    continue
+                if not isinstance(item, dict):
+                    continue
+                text = item.get("text")
+                if isinstance(text, str):
+                    parts.append(text)
+            return "".join(parts)
+        return str(content)
+
+    @abstractmethod
+    def accept(self, context: AgentContext) -> Iterable[AgentOutput]:
+        """Accept an incremental context update.
+
+        Parameters
+        ----------
+        context : AgentContext
+            Context payload forwarded from serving-layer events.
+
+        Yields
+        ------
+        AgentStreamItem
+            Zero or more streamed response items triggered by the context
+            update.
         """
         pass
 
-    def generate_stream(
-        self, input: Union[str, AgentInput]
-    ) -> Iterable[Union[str, ToolCall, dict[str, Any]]]:
-        """Stream response chunks for the input.
+    async def async_accept(self, context: AgentContext) -> AsyncIterator[AgentOutput]:
+        """Asynchronously accept an incremental context update.
 
         Parameters
         ----------
-        input : str | AgentInput
-            Raw user text or structured agent input.
+        context : AgentContext
+            Context payload forwarded from serving-layer events.
 
         Yields
         ------
-        str | ToolCall | dict[str, Any]
-            Tool calls, tool-result payloads, followed by text chunks. The
-            default implementation delegates to ``generate()`` and yields its
-            result in streaming form.
-        """
-        result = self.generate(input)
-        if isinstance(result, tuple):
-            text, tool_calls = result
-            # Yield tool calls first so upstream can react early
-            for tc in tool_calls:
-                yield tc
-            yield text
-        else:
-            yield result
-
-    async def async_generate(
-        self, input: Union[str, AgentInput]
-    ) -> Union[str, tuple[str, List[ToolCall]]]:
-        """Asynchronously generate a complete response.
-
-        Parameters
-        ----------
-        input : str | AgentInput
-            Raw user text or structured agent input.
-
-        Returns
-        -------
-        str | tuple[str, List[ToolCall]]
-            Same result contract as ``generate()``.
+        AgentStreamItem
+            Streamed response items triggered by the context update.
         """
 
         loop = asyncio.get_running_loop()
-
-        def _invoke():
-            return self.generate(input)
-
-        return await loop.run_in_executor(None, _invoke)
-
-    async def async_generate_stream(
-        self, input: Union[str, AgentInput]
-    ) -> AsyncIterator[Union[str, ToolCall, dict[str, Any]]]:
-        """Asynchronously stream agent outputs.
-
-        Parameters
-        ----------
-        input : str | AgentInput
-            Raw user text or structured agent input.
-
-        Yields
-        ------
-        str | ToolCall | dict[str, Any]
-            Streamed outputs from ``generate_stream()``.
-        """
-
-        loop = asyncio.get_running_loop()
-        iterator = iter(self.generate_stream(input))
+        iterator = iter(self.accept(context))
         sentinel = object()
 
         try:
@@ -133,6 +230,45 @@ class Agent(ABC):
                 except Exception:
                     pass
 
+    def sync_iter_from_async(self, async_iter: AsyncIterator[T]) -> Iterable[T]:
+        """Convert an async iterator into a synchronous generator.
+
+        Parameters
+        ----------
+        async_iter : AsyncIterator[T]
+            Async iterator to bridge into synchronous iteration.
+
+        Yields
+        ------
+        T
+            Items produced by ``async_iter``.
+        """
+
+        loop = asyncio.new_event_loop()
+        try:
+            while True:
+                try:
+                    item = loop.run_until_complete(async_iter.__anext__())
+                except StopAsyncIteration:
+                    break
+                yield item
+        finally:
+            aclose = getattr(async_iter, "aclose", None)
+            if callable(aclose):
+                try:
+                    loop.run_until_complete(aclose())
+                except Exception:
+                    pass
+            try:
+                loop.run_until_complete(loop.shutdown_asyncgens())
+            except Exception:
+                pass
+            try:
+                loop.run_until_complete(loop.shutdown_default_executor())
+            except Exception:
+                pass
+            loop.close()
+
     @abstractmethod
     def clone(self) -> "Agent":
         """Clone the agent for a new session.
@@ -155,8 +291,14 @@ class Agent(ABC):
         """
         pass
 
-    def get_chat_history(self) -> str | None:
+    def get_chat_history(self, with_system: bool = False) -> str | None:
         """Return the serialized conversation history when available.
+
+        Parameters
+        ----------
+        with_system : bool, optional
+            Whether to include the system prompt message when supported by the
+            concrete implementation.
 
         Returns
         -------
@@ -165,7 +307,7 @@ class Agent(ABC):
         """
         return None
 
-    def add_tools(self, tools: list[BaseTool | Callable[[], BaseTool]]):
+    def add_tools(self, tools: list[BaseTool | Callable[[], BaseTool]]) -> None:
         """Attach tools to the agent.
 
         Parameters

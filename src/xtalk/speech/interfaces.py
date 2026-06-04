@@ -59,8 +59,12 @@ class ASR(ABC):
         audio : bytes
             Incremental PCM 16-bit mono audio bytes.
         is_final : bool, optional
-            Whether the caller is forcing a final decode because the user paused
-            or the turn ended.
+            Whether the caller is asking the ASR to treat the current point as
+            a temporary boundary and optionally flush any tail audio that would
+            otherwise remain buffered. This is only a decoding hint. It does
+            not mean the streaming state must be reset, and previously
+            recognized text for the session must be preserved so later audio
+            can continue from the accumulated result.
         chat_history : str | None, optional
             Serialized chat history for the current session, excluding the
             in-progress turn when unavailable.
@@ -84,8 +88,8 @@ class ASR(ABC):
         Returns
         -------
         int | None
-            Recommended byte count for streaming accumulation, or ``None`` when
-            no preference is provided.
+            Recommended byte count for each chunk passed to
+            ``recognize_stream``, or ``None`` when no preference is provided.
         """
         return None
 
@@ -136,7 +140,12 @@ class ASR(ABC):
         audio : bytes
             Incremental PCM 16-bit mono audio bytes.
         is_final : bool, optional
-            Whether the chunk should force a final decode.
+            Whether the caller is asking the ASR to treat the current point as
+            a temporary boundary and optionally flush any tail audio that would
+            otherwise remain buffered. This is only a decoding hint. It does
+            not mean the streaming state must be reset, and previously
+            recognized text for the session must be preserved so later audio
+            can continue from the accumulated result.
         chat_history : str | None, optional
             Serialized chat history for the current session, excluding the
             in-progress turn when unavailable.
@@ -485,6 +494,17 @@ class VAD(ABC):
         result = await loop.run_in_executor(None, self.is_speech, frame)
         return bool(result)
 
+    @abstractmethod
+    def clone(self) -> "VAD":
+        """Clone the VAD instance for a new session.
+
+        Returns
+        -------
+        VAD
+            Clone with shared weights and independent runtime state.
+        """
+        pass
+
 
 class SpeechEnhancer(ABC):
     """Abstract base class for speech enhancement engines.
@@ -682,6 +702,12 @@ class TurnDetectionSemantic(Enum):
     COMPLETE = "complete"
     WAIT = "wait"
     BACKCHANNEL = "backchannel"
+    SHOULD_BACKCHANNEL = "should_backchannel"
+
+
+class TurnVADResult(Enum):
+    SPEECH = 1
+    SILENCE = 2
 
 
 @dataclass(frozen=True)
@@ -694,10 +720,13 @@ class TurnDetectionResult:
         Immediate action the service should take.
     semantic : TurnDetectionSemantic
         Semantic interpretation of the current conversational state.
+    vad_result : TurnVADResult | None
+        Optional VAD result; only used when VAD is absent
     """
 
     action: TurnDetectionAction
     semantic: TurnDetectionSemantic
+    vad_result: TurnVADResult | None = None
 
 
 class TurnDetector(ABC):
@@ -750,8 +779,9 @@ class TurnDetector(ABC):
         self,
         audio: Optional[bytes] = None,
         text: Optional[str] = None,
+        speech_start: bool = False,
         speech_pause: Optional[bool] = None,
-    ) -> TurnDetectionResult | list[TurnDetectionResult]:
+    ) -> TurnDetectionResult:
         """Detect conversational turn state from audio and/or text.
 
         Parameters
@@ -760,16 +790,17 @@ class TurnDetector(ABC):
             Current PCM 16-bit mono audio frame at 16 kHz.
         text : str | None, optional
             ASR text for the current turn.
+        speech_start : bool, optional
+            Whether VAD has just detected the start of speech. This may be
+            provided without ``audio`` or ``text``.
         speech_pause : bool | None, optional
             Whether the user appears to have paused speaking. This is typically
             provided together with ``text``.
 
         Returns
         -------
-        TurnDetectionResult | list[TurnDetectionResult]
-            One or more turn-detection decisions. When multiple results are
-            returned, ``STOP_SPEAKING`` should be processed before
-            ``START_GENERATION``.
+        TurnDetectionResult
+            Turn-detection decision for the current input.
         """
         pass
 
@@ -777,8 +808,9 @@ class TurnDetector(ABC):
         self,
         audio: Optional[bytes] = None,
         text: Optional[str] = None,
+        speech_start: bool = False,
         speech_pause: Optional[bool] = None,
-    ) -> TurnDetectionResult | list[TurnDetectionResult]:
+    ) -> TurnDetectionResult:
         """Asynchronously detect conversational turn state.
 
         Parameters
@@ -787,19 +819,26 @@ class TurnDetector(ABC):
             Current PCM 16-bit mono audio frame at 16 kHz.
         text : str | None, optional
             ASR text for the current turn.
+        speech_start : bool, optional
+            Whether VAD has just detected the start of speech. This may be
+            provided without ``audio`` or ``text``.
         speech_pause : bool | None, optional
             Whether the user appears to have paused speaking.
 
         Returns
         -------
-        TurnDetectionResult | list[TurnDetectionResult]
-            One or more turn-detection decisions.
+        TurnDetectionResult
+            Turn-detection decision for the current input.
         """
         loop = asyncio.get_running_loop()
-        func = partial(self.detect, audio=audio, text=text, speech_pause=speech_pause)
-        result: TurnDetectionResult | list[TurnDetectionResult] = (
-            await loop.run_in_executor(None, func)
+        func = partial(
+            self.detect,
+            audio=audio,
+            text=text,
+            speech_start=speech_start,
+            speech_pause=speech_pause,
         )
+        result: TurnDetectionResult = await loop.run_in_executor(None, func)
         return result
 
     @abstractmethod

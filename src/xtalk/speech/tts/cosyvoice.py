@@ -5,10 +5,18 @@ import queue
 import threading
 from typing import Any, Dict, Iterable, Optional
 
+import certifi
 import dashscope
 from dashscope.audio.tts_v2 import AudioFormat, ResultCallback, SpeechSynthesizer
 
 from ..interfaces import TTS
+
+
+def _ensure_ssl_cert_file() -> None:
+    """Ensure WebSocket TLS verification can find a CA bundle."""
+
+    if not os.getenv("SSL_CERT_FILE"):
+        os.environ["SSL_CERT_FILE"] = certifi.where()
 
 
 class _QueueingCallback(ResultCallback):
@@ -57,6 +65,7 @@ class CosyVoice(TTS):
                 "DashScope API key is required. Set DASHSCOPE_API_KEY or pass api_key."
             )
 
+        _ensure_ssl_cert_file()
         dashscope.api_key = self.api_key
 
         self.model = model

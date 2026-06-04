@@ -8,7 +8,7 @@
 
 > **createSession**(`websocketURL`, `config?`): [`Session`](../interfaces/Session.md)
 
-Defined in: [session/create.ts:31](https://github.com/xcc-zach/xtalk/blob/d18912ac9c64b26c4423d8c46cb97496eb709649/frontend/src/session/create.ts#L31)
+Defined in: session/create.ts:31
 
 Creates a session client bound to the provided websocket endpoint.
 

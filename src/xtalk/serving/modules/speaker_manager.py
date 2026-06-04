@@ -42,7 +42,7 @@ class SpeakerManager(Manager):
     - Collect enhanced audio frames per turn and extract embeddings.
     - Compare against previously registered speakers.
     - Recognize an existing speaker or register a new one.
-    - Write `speaker_id` to PipelineContext and emit SpeakerRecognized events.
+    - Emit ``SpeakerRecognized`` events for downstream consumers.
     """
 
     def __init__(
@@ -128,7 +128,7 @@ class SpeakerManager(Manager):
     async def _handle_turn_end(self, event: TurnASREndRequested) -> None:
         """
         Handle end-of-turn events by running speaker identification on the buffered
-        audio chunk. Writes `speaker_id` into PipelineContext and emits status events.
+        audio chunk and emitting speaker-recognition status events.
         """
         self.speech_active = False
 
@@ -140,15 +140,13 @@ class SpeakerManager(Manager):
             async with self.buffer_lock:
                 if not self.audio_buffer:
                     # No audio: clear speaker_id and notify frontend
-                    ctx = self.pipeline.context
-                    ctx["speaker_id"] = None
-                    self.pipeline.context = ctx
                     await self.event_bus.publish(
                         SpeakerRecognized(
                             session_id=self.session_id,
                             speaker_id=None,
                             reason="no_audio",
-                        )
+                        ),
+                        wait_for_completion=True,
                     )
                     return
 
@@ -163,15 +161,13 @@ class SpeakerManager(Manager):
             audio_length_sec = len(audio_data) / (sample_rate * 2)
             if audio_length_sec < self.min_audio_length_sec:
                 # Too short: clear speaker_id and notify frontend
-                ctx = self.pipeline.context
-                ctx["speaker_id"] = None
-                self.pipeline.context = ctx
                 await self.event_bus.publish(
                     SpeakerRecognized(
                         session_id=self.session_id,
                         speaker_id=None,
                         reason="too_short",
-                    )
+                    ),
+                    wait_for_completion=True,
                 )
                 return
 
@@ -182,17 +178,15 @@ class SpeakerManager(Manager):
             # Identify or register speaker
             speaker_id = await self._identify_or_register_speaker(current_embedding)
 
-            # Update context and notify frontend
+            # Notify frontend and downstream listeners.
             self.current_speaker_id = speaker_id
-            ctx = self.pipeline.context
-            ctx["speaker_id"] = speaker_id
-            self.pipeline.context = ctx
             await self.event_bus.publish(
                 SpeakerRecognized(
                     session_id=self.session_id,
                     speaker_id=speaker_id,
                     reason="recognized",
-                )
+                ),
+                wait_for_completion=True,
             )
 
         except Exception as e:
@@ -202,16 +196,14 @@ class SpeakerManager(Manager):
                 e,
             )
             # On error, clear speaker_id and notify frontend
-            ctx = self.pipeline.context
-            ctx["speaker_id"] = None
-            self.pipeline.context = ctx
             try:
                 await self.event_bus.publish(
                     SpeakerRecognized(
                         session_id=self.session_id,
                         speaker_id=None,
                         reason="error",
-                    )
+                    ),
+                    wait_for_completion=True,
                 )
             except Exception:
                 pass

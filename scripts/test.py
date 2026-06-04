@@ -136,7 +136,6 @@ class ASRResultRecord:
 
     action: str
     text: str
-    turn_id: int | None
     received_at: float
 
 
@@ -146,6 +145,7 @@ class CaseExecutionResult:
 
     case_name: str
     output_path: Path
+    latency_samples_ms: list[float]
     criteria: CaseCriteria
     scheduled_inputs: list[ScheduledAudioInput]
     asr_results: list[ASRResultRecord]
@@ -621,6 +621,63 @@ def stereo_pcm_has_right_channel_signal(pcm_bytes: bytes) -> bool:
     return bool(np.any(stereo[:, 1]))
 
 
+def read_audio_int16(path: Path) -> tuple[np.ndarray, int]:
+    """Read an audio file as an ``int16`` NumPy array plus sample rate."""
+    audio, sample_rate = sf.read(path, dtype="int16", always_2d=True)
+    return np.asarray(audio, dtype=np.int16), int(sample_rate)
+
+
+def downmix_stereo_to_mono(audio: np.ndarray) -> np.ndarray:
+    """Downmix stereo PCM16 audio to mono while preserving headroom."""
+    if audio.ndim != 2 or audio.shape[1] < 2:
+        raise ValueError("Expected stereo audio with at least two channels")
+    stereo = audio[:, :2].astype(np.float32)
+    mono = np.mean(stereo, axis=1)
+    mono = np.clip(np.rint(mono), -32768, 32767)
+    return mono.astype(np.int16)
+
+
+def stereo_audio_has_right_channel_signal(audio: np.ndarray) -> bool:
+    """Return whether stereo PCM16 audio contains non-zero right-channel samples."""
+    if audio.ndim != 2 or audio.shape[1] < 2:
+        return False
+    return bool(np.any(audio[:, 1]))
+
+
+def write_mono_mp3(path: Path, *, audio: np.ndarray, sample_rate: int) -> None:
+    """Write mono PCM16 audio as a high-quality MP3 file."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    command = [
+        "ffmpeg",
+        "-nostdin",
+        "-y",
+        "-v",
+        "error",
+        "-f",
+        "s16le",
+        "-ar",
+        str(sample_rate),
+        "-ac",
+        "1",
+        "-i",
+        "-",
+        "-codec:a",
+        "libmp3lame",
+        "-q:a",
+        "0",
+        str(path),
+    ]
+    result = subprocess.run(
+        command,
+        input=np.asarray(audio, dtype=np.int16).tobytes(),
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        stderr = result.stderr.decode("utf-8", errors="ignore").strip()
+        raise RuntimeError(f"Failed to write MP3 {path}: {stderr}")
+
+
 def extract_active_segments(
     samples: np.ndarray,
     sample_rate: int,
@@ -680,20 +737,27 @@ def extract_active_segments(
 
 
 def compute_case_latency_samples(output_path: Path) -> list[float]:
-    """Compute user-to-AI latency samples for one stereo result WAV file.
+    """Compute user-to-AI latency samples for one stereo analysis recording.
 
     Parameters
     ----------
     output_path : Path
-        Stereo WAV path whose left/right channels are user/AI audio.
+        Stereo audio path whose left/right channels are user/AI audio.
 
     Returns
     -------
     list[float]
         One latency value in milliseconds for each matched user/AI pair.
     """
-    audio, sample_rate = sf.read(output_path, dtype="int16", always_2d=True)
-    if audio.shape[1] < 2:
+    audio, sample_rate = read_audio_int16(output_path)
+    return compute_case_latency_samples_from_array(audio, sample_rate)
+
+
+def compute_case_latency_samples_from_array(
+    audio: np.ndarray, sample_rate: int
+) -> list[float]:
+    """Compute user-to-AI latency samples from stereo PCM16 audio."""
+    if audio.ndim != 2 or audio.shape[1] < 2:
         return []
 
     user_segments = extract_active_segments(
@@ -1240,14 +1304,20 @@ class CaseRunner:
         self._error: Exception | None = None
         self._last_full_audio_at: float | None = None
         self._asr_results: list[ASRResultRecord] = []
+        self._latency_samples_ms: list[float] = []
 
     @property
     def asr_results(self) -> list[ASRResultRecord]:
         """Return ASR events collected during the case run."""
         return list(self._asr_results)
 
+    @property
+    def latency_samples_ms(self) -> list[float]:
+        """Return latency samples computed from the stereo analysis recording."""
+        return list(self._latency_samples_ms)
+
     async def run(self) -> None:
-        """Execute the case end to end and write the output WAV."""
+        """Execute the case end to end and write the final compressed output."""
         token = await self._login()
         websocket = await websockets.connect(
             self._build_authenticated_ws_url(token),
@@ -1352,19 +1422,14 @@ class CaseRunner:
             return
         if action in {"update_asr", "finish_asr"}:
             text = ""
-            turn_id: int | None = None
             if isinstance(data, dict):
                 raw_text = data.get("text")
                 if isinstance(raw_text, str):
                     text = raw_text
-                raw_turn_id = data.get("turn_id")
-                if isinstance(raw_turn_id, int):
-                    turn_id = raw_turn_id
             self._asr_results.append(
                 ASRResultRecord(
                     action=action,
                     text=text,
-                    turn_id=turn_id,
                     received_at=asyncio.get_running_loop().time(),
                 )
             )
@@ -1555,8 +1620,37 @@ class CaseRunner:
 
     async def _materialize_output(self) -> None:
         self._output_path.parent.mkdir(parents=True, exist_ok=True)
-        if await self._copy_server_recording():
-            return
+        audio, sample_rate = await self._load_analysis_audio()
+        self._latency_samples_ms = compute_case_latency_samples_from_array(
+            audio, sample_rate
+        )
+        mono_audio = downmix_stereo_to_mono(audio)
+        write_mono_mp3(self._output_path, audio=mono_audio, sample_rate=sample_rate)
+
+    async def _load_analysis_audio(self) -> tuple[np.ndarray, int]:
+        """Load the stereo recording used for post-run analysis."""
+        deadline = time.monotonic() + 2.0
+        while time.monotonic() < deadline:
+            if self._temp_recording_path.exists():
+                try:
+                    size = self._temp_recording_path.stat().st_size
+                except OSError:
+                    size = 0
+                if size > 44:
+                    audio, sample_rate = await asyncio.to_thread(
+                        read_audio_int16, self._temp_recording_path
+                    )
+                    if audio.shape[1] < 2:
+                        raise RuntimeError(
+                            f"{self._case_dir.name}: server recording is not stereo"
+                        )
+                    if not stereo_audio_has_right_channel_signal(audio):
+                        raise RuntimeError(
+                            f"{self._case_dir.name}: server recording AI channel is empty"
+                        )
+                    return audio, sample_rate
+            await asyncio.sleep(0.1)
+
         full_audio_bytes = bytes(self._full_audio_bytes)
         if not full_audio_bytes:
             raise RuntimeError(
@@ -1566,29 +1660,12 @@ class CaseRunner:
             raise RuntimeError(
                 f"{self._case_dir.name}: received full_audio_frame but AI channel is empty"
             )
-        write_pcm_wav(
-            self._output_path,
-            pcm_bytes=full_audio_bytes,
-            sample_rate=48000,
-            channels=2,
-        )
-
-    async def _copy_server_recording(self) -> bool:
-        """Copy the server-side recording file when it is available locally."""
-        deadline = time.monotonic() + 2.0
-        while time.monotonic() < deadline:
-            if self._temp_recording_path.exists():
-                try:
-                    size = self._temp_recording_path.stat().st_size
-                except OSError:
-                    size = 0
-                if size > 44:
-                    await asyncio.to_thread(
-                        shutil.copyfile, self._temp_recording_path, self._output_path
-                    )
-                    return True
-            await asyncio.sleep(0.1)
-        return False
+        audio = np.frombuffer(full_audio_bytes, dtype=np.int16)
+        if audio.size % 2 != 0:
+            raise RuntimeError(
+                f"{self._case_dir.name}: received malformed stereo PCM frame data"
+            )
+        return audio.reshape(-1, 2), 48000
 
 
 def validate_vad_configuration(config: dict[str, Any], *, with_vad: bool) -> None:
@@ -1622,7 +1699,6 @@ def build_asr_report_payload(
         {
             "action": record.action,
             "text": record.text,
-            "turn_id": record.turn_id,
             "received_at": record.received_at,
         }
         for record in asr_results
@@ -1806,6 +1882,8 @@ async def run_test_mode(args: argparse.Namespace) -> None:
             case_criteria[case_dir.name],
         )
     for case_dir in case_dirs:
+        (output_root / f"{case_dir.name}.mp3").unlink(missing_ok=True)
+        (output_root / f"{case_dir.name}.flac").unlink(missing_ok=True)
         (output_root / f"{case_dir.name}.wav").unlink(missing_ok=True)
         get_legacy_case_asr_report_path(output_root, case_dir.name).unlink(
             missing_ok=True
@@ -1832,7 +1910,7 @@ async def run_test_mode(args: argparse.Namespace) -> None:
                 runner = CaseRunner(
                     case_dir=case_dir,
                     scheduled_inputs=case_inputs[case_dir.name],
-                    output_path=output_root / f"{case_dir.name}.wav",
+                    output_path=output_root / f"{case_dir.name}.mp3",
                     temp_recording_path=temp_recording_root / f"{case_dir.name}.wav",
                     websocket_url=server.websocket_url,
                     http_base_url=server.http_base_url,
@@ -1848,7 +1926,8 @@ async def run_test_mode(args: argparse.Namespace) -> None:
                 case_results.append(
                     CaseExecutionResult(
                         case_name=case_dir.name,
-                        output_path=output_root / f"{case_dir.name}.wav",
+                        output_path=output_root / f"{case_dir.name}.mp3",
+                        latency_samples_ms=runner.latency_samples_ms,
                         criteria=case_criteria[case_dir.name],
                         scheduled_inputs=case_inputs[case_dir.name],
                         asr_results=runner.asr_results,
@@ -1871,7 +1950,7 @@ async def run_test_mode(args: argparse.Namespace) -> None:
         )
         eval_cases[case_result.case_name] = {"passed": passed}
         if case_result.error is None and case_result.output_path.exists():
-            latency_values_ms.extend(compute_case_latency_samples(case_result.output_path))
+            latency_values_ms.extend(case_result.latency_samples_ms)
 
     latency_ms = (
         sum(latency_values_ms) / float(len(latency_values_ms))

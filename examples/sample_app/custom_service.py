@@ -54,7 +54,6 @@ class CustomPipeline(DefaultPipeline):
         captioner: Optional[Captioner] = None,
         punt_restorer_model: Optional[PuntRestorer] = None,
         caption_rewriter: Optional[Rewriter | BaseChatModel] = None,
-        thought_rewriter: Optional[Rewriter | BaseChatModel] = None,
         vad: Optional[VAD] = None,
         speech_enhancer: Optional[SpeechEnhancer] = None,
         speaker_encoder: Optional[SpeakerEncoder] = None,
@@ -70,7 +69,6 @@ class CustomPipeline(DefaultPipeline):
             captioner=captioner,
             punt_restorer_model=punt_restorer_model,
             caption_rewriter=caption_rewriter,
-            thought_rewriter=thought_rewriter,
             vad=vad,
             speech_enhancer=speech_enhancer,
             speaker_encoder=speaker_encoder,
@@ -97,7 +95,7 @@ pipeline = Xtalk.create_pipeline_from_config(
 
 # Define custom events and manager
 LLMOutputRefactoredFinal = create_event_class(
-    name="LLMOutputRefactoredFinal", fields={"text": "", "turn_id": 0}
+    name="LLMOutputRefactoredFinal", fields={"text": ""}
 )
 
 
@@ -121,7 +119,6 @@ class LLMOutputRefactorManager(Manager):
             new_event = LLMOutputRefactoredFinal(
                 session_id=event.session_id,
                 text=refactored_output,
-                turn_id=event.turn_id,
             )
             await self.event_bus.publish(new_event)
 
@@ -149,7 +146,7 @@ async def output_gateway_llm_output_refactored_final_handler(
     await self.send_signal(
         {
             "action": "finish_resp",
-            "data": {"text": event.text, "turn_id": event.turn_id},
+            "data": {"text": event.text},
         }
     )
 

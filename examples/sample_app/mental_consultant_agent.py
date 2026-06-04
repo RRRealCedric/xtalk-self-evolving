@@ -3,24 +3,13 @@
 from __future__ import annotations
 
 import json
-import re
 from typing import Any, Callable, Optional
 
 from langchain.chat_models.base import BaseChatModel
 from langchain.tools import tool
 from langchain_core.tools import BaseTool
 
-from xtalk.llm_agent import (
-    AgentRequest,
-    AgentSession,
-    ContextAdapter,
-    MutableToolProvider,
-    OutputPolicy,
-    PromptBuilder,
-    ScenarioSpec,
-    TemplateAgent,
-    TurnContext,
-)
+from xtalk.llm_agent import DefaultAgent
 
 
 MENTAL_CONSULTANT_PROMPT = """
@@ -42,6 +31,7 @@ _QUESTIONS: list[str] = [
     "Over the past two weeks, how often have you felt drained or low on energy, even when you haven’t done much? Rate it from zero to three.",
     "Over the past two weeks, how often have you had thoughts that life is pointless, that you should disappear, or that hurting yourself might end everything? Zero means not at all, three means nearly every day.",
 ]
+
 
 def build_mental_questionnaire_tool() -> BaseTool:
     """Build a stateful per-session questionnaire tool factory."""
@@ -270,158 +260,8 @@ def build_mental_questionnaire_tool() -> BaseTool:
     return mental_questionnaire
 
 
-class MentalConsultantContextAdapter(ContextAdapter):
-    """Adapt pipeline context for the mental consultant scenario."""
-
-    def adapt(self, context) -> TurnContext:
-        """Convert pipeline context into a stable turn context.
-
-        Parameters
-        ----------
-        context : dict | None
-            Raw pipeline context snapshot.
-
-        Returns
-        -------
-        TurnContext
-            Structured context for the runtime.
-        """
-
-        context_dict = context or {}
-        return TurnContext(
-            speaker_id=context_dict.get("speaker_id") or None,
-            caption=context_dict.get("caption") or None,
-            thought=context_dict.get("thought") or None,
-            extras={
-                key: value
-                for key, value in context_dict.items()
-                if key not in {"speaker_id", "caption", "thought"}
-            },
-        )
-
-
-class MentalConsultantPromptBuilder(PromptBuilder):
-    """Build prompts for the mental consultant scenario."""
-
-    def __init__(self, system_prompt: str = MENTAL_CONSULTANT_PROMPT) -> None:
-        """Initialize the prompt builder.
-
-        Parameters
-        ----------
-        system_prompt : str, optional
-            Base system prompt for the scenario.
-        """
-
-        self.system_prompt = system_prompt
-        self.session_system_prompt = system_prompt
-
-    def build_system_prompt(
-        self,
-        session: AgentSession,
-        turn_context: TurnContext,
-    ) -> str:
-        """Build the system prompt for the current turn.
-
-        Parameters
-        ----------
-        session : AgentSession
-            Runtime session state.
-        turn_context : TurnContext
-            Structured turn context.
-
-        Returns
-        -------
-        str
-            Full system prompt.
-        """
-
-        del session
-        del turn_context
-        return self.session_system_prompt
-
-    def build_user_message(
-        self,
-        request: AgentRequest,
-        turn_context: TurnContext,
-    ) -> str:
-        """Build the user message content.
-
-        Parameters
-        ----------
-        request : AgentRequest
-            Current turn request.
-        turn_context : TurnContext
-            Structured turn context.
-
-        Returns
-        -------
-        str
-            User message content passed to the model.
-        """
-
-        del turn_context
-        return request.content
-
-
-class MentalConsultantOutputPolicy(OutputPolicy):
-    """Normalize text for TTS-friendly spoken responses."""
-
-    def filter_text(self, text: str) -> str:
-        """Filter one text chunk.
-
-        Parameters
-        ----------
-        text : str
-            Raw model text.
-
-        Returns
-        -------
-        str
-            TTS-friendly text.
-        """
-
-        filtered = (
-            text.replace("#", "").replace("**", "").replace("`", "").replace("-", "")
-        )
-        return re.sub(r"(\d+)\.", r"\1", filtered)
-
-
-def build_mental_consultant_scenario(
-    *,
-    system_prompt: str = MENTAL_CONSULTANT_PROMPT,
-    tools: Optional[list[BaseTool | Callable[[], BaseTool]]] = None,
-) -> tuple[ScenarioSpec, MutableToolProvider]:
-    """Build the scenario spec for the mental consultant sample.
-
-    Parameters
-    ----------
-    system_prompt : str, optional
-        Base scenario prompt.
-    tools : list[BaseTool | Callable[[], BaseTool]] | None, optional
-        Tool instances or factories enabled for the scenario.
-
-    Returns
-    -------
-    tuple[ScenarioSpec, MutableToolProvider]
-        Scenario definition and the mutable tool provider used by the agent.
-    """
-
-    prompt_builder = MentalConsultantPromptBuilder(system_prompt=system_prompt)
-    tool_provider = MutableToolProvider(
-        [build_mental_questionnaire_tool, *(tools or [])]
-    )
-    scenario = ScenarioSpec(
-        name="mental_consultant",
-        context_adapter=MentalConsultantContextAdapter(),
-        prompt_builder=prompt_builder,
-        tool_provider=tool_provider,
-        output_policy=MentalConsultantOutputPolicy(),
-    )
-    return scenario, tool_provider
-
-
-class MentalConsultantAgent(TemplateAgent):
-    """Mental consultant sample agent assembled from scenario components."""
+class MentalConsultantAgent(DefaultAgent):
+    """Mental consultant sample agent with a custom prompt and tool set."""
 
     def __init__(
         self,
@@ -429,7 +269,7 @@ class MentalConsultantAgent(TemplateAgent):
         *,
         system_prompt: str = MENTAL_CONSULTANT_PROMPT,
         tools: Optional[list[BaseTool | Callable[[], BaseTool]]] = None,
-        **_: Any,
+        **kwargs: Any,
     ) -> None:
         """Initialize the mental consultant sample agent.
 
@@ -442,17 +282,13 @@ class MentalConsultantAgent(TemplateAgent):
         tools : list[BaseTool | Callable[[], BaseTool]] | None, optional
             Additional tool instances or factories to enable alongside the
             built-in questionnaire tool.
-        **_ : Any
-            Unused compatibility parameters from broader agent configs.
+        **kwargs : Any
+            Additional ``DefaultAgent`` keyword arguments.
         """
 
-        scenario, tool_provider = build_mental_consultant_scenario(
-            system_prompt=system_prompt,
-            tools=tools,
-        )
         super().__init__(
             model=model,
-            scenario=scenario,
-            clone_kwargs={"system_prompt": system_prompt},
-            tool_provider=tool_provider,
+            system_prompt=system_prompt,
+            tools=[build_mental_questionnaire_tool, *(tools or [])],
+            **kwargs,
         )

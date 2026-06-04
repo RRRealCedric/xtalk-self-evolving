@@ -6,5 +6,5 @@ const onVadSpeechStart: ActionHandlerFunction = async (data, websocket, conversa
 }
 
 const onVadSpeechEnd: ActionHandlerFunction = async (data, websocket, conversation, outputAudioSession) => {
-    conversation.state.streamState = 'processing';
+    conversation.state.streamState = 'idle';
 }

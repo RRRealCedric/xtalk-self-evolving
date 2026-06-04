@@ -13,7 +13,8 @@ from ..events import (
     TTSPaused,
     TTSResumed,
     TTSFinished,
-    TTSChunkGenerated,
+    TTSTextSynthesized,
+    TTSChunkReady,
     TTSChunkPlayed,
     ErrorOccurred,
     TTSVoiceChange,
@@ -79,7 +80,7 @@ class TTSManager(Manager):
         self._first_sentence_ready = False
 
         # Queue for audio chunks fed to downstream consumers
-        self.tts_queue = asyncio.Queue()
+        self.tts_queue: asyncio.Queue[TTSQueueItem] = asyncio.Queue()
 
         self._segments_queue: Optional[asyncio.Queue] = None
         self._segments_task: Optional[asyncio.Task] = None
@@ -313,7 +314,7 @@ class TTSManager(Manager):
                     item = await asyncio.wait_for(self.tts_queue.get(), timeout=0.1)
 
                     # Publish audio chunks (skip if paused)
-                    if item and item.audio_chunk:
+                    if isinstance(item, TTSQueueItem) and item.audio_chunk:
                         # Apply speed control when enabled
                         processed_audio = item.audio_chunk
                         if (
@@ -331,7 +332,7 @@ class TTSManager(Manager):
                             if not self._consumer_running:
                                 break
 
-                            event = TTSChunkGenerated(
+                            event = TTSChunkReady(
                                 session_id=self.session_id,
                                 audio_chunk=chunk,
                                 sample_rate=item.sample_rate,
@@ -342,7 +343,6 @@ class TTSManager(Manager):
                             await self._track_outstanding_chunk(
                                 self._chunk_duration_ms(chunk, item.sample_rate)
                             )
-
                     # Mark task as done after processing
                     self.tts_queue.task_done()
 
@@ -461,8 +461,21 @@ class TTSManager(Manager):
 
         try:
             sample_rate = int(getattr(tts_model, "sample_rate", 48000) or 48000)
+            synthesized_duration_ms = 0.0
+            speed = 1.0
+            if self.speed_controller is not None and self.current_speed != 1.0:
+                speed = max(0.01, float(self.current_speed or 1.0))
             async for ch in self._synthesize_stream_with_fallback(tts_model, sentence):
+                synthesized_duration_ms += self._chunk_duration_ms(ch, sample_rate)
                 await self.tts_queue.put(TTSQueueItem(ch, sample_rate))
+            await self.event_bus.publish(
+                TTSTextSynthesized(
+                    session_id=self.session_id,
+                    text=sentence,
+                    audio_duration=synthesized_duration_ms / speed,
+                ),
+                wait_for_completion=True,
+            )
 
         except asyncio.CancelledError:
             raise

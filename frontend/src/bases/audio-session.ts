@@ -2,7 +2,32 @@ export { BaseInputAudioSession, BaseOutputAudioSession };
 export type { InputAudioSessionConfig, OutputAudioSessionConfig };
 
 interface InputAudioSessionConfig {
+    /**
+     * Target input sample rate forwarded to the session runtime.
+     */
     sampleRate: number;
+    /**
+     * Selects the input source implementation.
+     */
+    mode?: "microphone" | "web_bridge";
+    /**
+     * Participant identifier used by bridge-backed input implementations.
+     */
+    participantId?: string;
+    /**
+     * Bridge instance consumed by bridge-backed input implementations.
+     */
+    bridge?: unknown;
+    /**
+     * Whether the source should auto-broadcast frontend VAD when publishing output
+     * back into a shared bridge stream.
+     */
+    autoEmitVad?: boolean;
+    /**
+     * VAD redemption window used by bridge-backed input sources that emit frontend
+     * VAD automatically.
+     */
+    vadRedemptionMs?: number;
     [key: string]: any;
 }
 abstract class BaseInputAudioSession {

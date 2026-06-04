@@ -152,13 +152,6 @@ class ShutdownMixin(ABC):
         pass
 
 
-class TurnStateRestorable(ABC):
-    @abstractmethod
-    def restore_turn_state(self, *, last_turn_id: int) -> None:
-        """Restore manager turn counters from persisted session state."""
-        pass
-
-
 class Manager(EventListenerMixin, ShutdownMixin):
     """Base class for Xtalk managers.
 

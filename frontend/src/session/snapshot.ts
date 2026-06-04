@@ -36,13 +36,15 @@ function normalizePersistedMessages(value: unknown): ConversationMessage[] {
         }
         const role = normalizePersistedMessageRole((item as { role?: unknown }).role);
         const content = (item as { content?: unknown }).content;
-        const turnId = (item as { turnId?: unknown }).turnId;
+        const final = (item as { final?: unknown }).final;
         if (!role || typeof content !== "string") {
             continue;
         }
         const message: ConversationMessage = { role, content };
-        if (typeof turnId === "number" && Number.isFinite(turnId)) {
-            message.turnId = turnId;
+        if (typeof final === "boolean") {
+            message.final = final;
+        } else if (role !== "info") {
+            message.final = true;
         }
         messages.push(message);
     }
@@ -126,7 +128,7 @@ function buildPersistedConversationSnapshot(
         messages: messages.map((message) => ({
             role: message.role,
             content: message.content,
-            ...(typeof message.turnId === "number" ? { turnId: message.turnId } : {}),
+            ...(typeof message.final === "boolean" ? { final: message.final } : {}),
         })),
     };
 }

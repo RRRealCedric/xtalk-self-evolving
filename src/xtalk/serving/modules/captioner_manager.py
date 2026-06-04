@@ -140,22 +140,14 @@ class CaptionerManager(Manager):
         if text:
             # Apply rewriter (if configured) here rather than inside pipeline
             rewritten = await self._rewrite_caption(text)
-            # Update pipeline context
-            try:
-                ctx = self.pipeline.context
-                ctx["caption"] = rewritten
-                self.pipeline.context = ctx
-            except Exception as e:
-                logger.warning(
-                    "Failed to update pipeline context with refreshed caption: %s", e
-                )
             await self.event_bus.publish(
                 CaptionUpdated(
                     session_id=self.session_id,
                     text=rewritten,
                     is_final=False,
                     reason="refresh",
-                )
+                ),
+                wait_for_completion=True,
             )
 
     async def _rewrite_caption(self, caption: Optional[str]) -> Optional[str]:

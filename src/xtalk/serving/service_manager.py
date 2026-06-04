@@ -114,9 +114,6 @@ class ServiceManager:
             service.restore_conversation(
                 messages=self._persistence.list_messages(user_id, session_id),
             )
-            service.restore_turn_state(
-                last_turn_id=self._persistence.get_last_turn_id(user_id, session_id),
-            )
             await service.send_session_attached()
             await service.handle_message_loop(already_accepted=True)
         except Exception as e:

@@ -1,3 +1,5 @@
+*测试中的功能*
+
 X-Talk 提供了统一的 `scripts/test.py` 脚本，用于测试集生成和后端自动化评测。
 
 它有两种模式：
@@ -192,7 +194,7 @@ python scripts/test.py --config server_configs/sample_local.json --input logs/te
 
 测试结果目录中会包含：
 
-- `<case_name>.wav`：该 case 的完整双工录音
+- `<case_name>.mp3`：该 case 的最终单声道录音。脚本会先基于双声道会话音频完成分析，再用高质量 MP3 编码压缩以节省空间
 - `eval.json`：整体延迟和每个 case 的通过/失败汇总
 - `logs/<case_name>.asr.json`：期望文本、实际 ASR 事件以及可选的评判结果
 - `service_config.json`：本次运行使用的实际后端配置

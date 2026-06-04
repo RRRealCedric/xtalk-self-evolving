@@ -59,10 +59,6 @@ type SessionDetail = {
          * Text content associated with the message.
          */
         content: string;
-        /**
-         * Optional turn identifier assigned by the backend.
-         */
-        turn_id?: number | null;
     }>;
 };
 

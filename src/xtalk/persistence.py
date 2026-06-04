@@ -49,7 +49,6 @@ class PersistenceStore:
                     session_id TEXT NOT NULL,
                     role TEXT NOT NULL,
                     content TEXT NOT NULL,
-                    turn_id INTEGER,
                     FOREIGN KEY (session_id) REFERENCES chat_sessions(id) ON DELETE CASCADE
                 );
 
@@ -145,7 +144,7 @@ class PersistenceStore:
         with self._lock, self._connect() as conn:
             rows = conn.execute(
                 """
-                SELECT role, content, turn_id
+                SELECT role, content
                 FROM chat_messages
                 WHERE session_id = ?
                 ORDER BY id ASC
@@ -156,7 +155,6 @@ class PersistenceStore:
             {
                 "role": str(row["role"]),
                 "content": str(row["content"]),
-                "turn_id": row["turn_id"],
             }
             for row in rows
         ]
@@ -178,7 +176,6 @@ class PersistenceStore:
         session_id: str,
         role: str,
         content: str,
-        turn_id: int | None = None,
     ) -> None:
         normalized = content.strip()
         if not normalized:
@@ -191,10 +188,10 @@ class PersistenceStore:
         with self._lock, self._connect() as conn:
             conn.execute(
                 """
-                INSERT INTO chat_messages (session_id, role, content, turn_id)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO chat_messages (session_id, role, content)
+                VALUES (?, ?, ?)
                 """,
-                (session_id, role, normalized, turn_id),
+                (session_id, role, normalized),
             )
 
             if role == "user":
@@ -208,14 +205,3 @@ class PersistenceStore:
                         "UPDATE chat_sessions SET title = ? WHERE id = ?",
                         (_build_title(normalized), session_id),
                     )
-
-    def get_last_turn_id(self, user_id: str, session_id: str) -> int:
-        if not self.user_owns_session(user_id, session_id):
-            raise KeyError(session_id)
-        with self._lock, self._connect() as conn:
-            row = conn.execute(
-                "SELECT MAX(turn_id) AS last_turn_id FROM chat_messages WHERE session_id = ?",
-                (session_id,),
-            ).fetchone()
-        value = row["last_turn_id"] if row is not None else None
-        return int(value or 0)

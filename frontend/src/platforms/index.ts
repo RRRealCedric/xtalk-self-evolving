@@ -7,6 +7,11 @@ import { BasePersistenceStore } from "../bases/persistence";
 import { BaseDeferredTaskScheduler } from "../bases/task-scheduler";
 import { BaseWebSocket } from "../bases/websocket";
 import {
+    WebBridgeInputAudioSession,
+    createWebAudioBridge as createWebAudioBridgeInternal,
+} from "./web-audio-bridge";
+import type { WebAudioBridge } from "./web-audio-bridge";
+import {
     WebDeferredTaskScheduler,
     WebEncoding,
     WebHTTPClient,
@@ -19,8 +24,16 @@ import {
 } from "./web";
 
 export {
+    createAudioBridge,
     getPlatformRuntime,
 };
+export type {
+    WebAudioBridge,
+    WebAudioBridgePublishOptions,
+    WebAudioBridgeUserInputConfig,
+    WebBridgeInputAudioSessionConfig,
+    WebBridgeParticipantId,
+} from "./web-audio-bridge";
 
 type PlatformRuntime = {
     createInputAudioSession(config: InputAudioSessionConfig): BaseInputAudioSession;
@@ -54,6 +67,9 @@ function detectPlatform(): Platform {
 
 const WEB_PLATFORM_RUNTIME: PlatformRuntime = {
     createInputAudioSession(config) {
+        if (config.mode === "web_bridge") {
+            return new WebBridgeInputAudioSession(config as any);
+        }
         return new WebInputAudioSession(config);
     },
     createOutputAudioSession(config) {
@@ -91,6 +107,20 @@ function getPlatformRuntime(): PlatformRuntime {
     switch (detectPlatform()) {
         case Platform.Web:
             return WEB_PLATFORM_RUNTIME;
+        default:
+            throw new Error("Unknown platform");
+    }
+}
+
+/**
+ * Create an audio bridge for the detected frontend platform.
+ *
+ * @returns A new platform audio bridge instance.
+ */
+function createAudioBridge(): WebAudioBridge {
+    switch (detectPlatform()) {
+        case Platform.Web:
+            return createWebAudioBridgeInternal();
         default:
             throw new Error("Unknown platform");
     }

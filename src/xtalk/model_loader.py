@@ -24,7 +24,6 @@ MODEL_REGISTRY: dict[str, list[ImportSpec]] = {
     "speaker_encoder": ["xtalk.speech.speaker_encoder"],
     "captioner": ["xtalk.speech.captioner"],
     "caption_rewriter": ["xtalk.rewriter"],
-    "thought_rewriter": ["xtalk.rewriter"],
     "vad": ["xtalk.speech.vad"],
     "speech_enhancer": ["xtalk.speech.speech_enhancer"],
     "speech_speed_controller": ["xtalk.speech.speech_speed_controller"],

@@ -33,7 +33,7 @@ _定义于 `xtalk.serving.events`。_
 def create_event_class(*, name: str, fields: dict[str, Any] | None = None, type_name: str | None = None) -> Type[BaseEvent]
 ```
 
-动态创建 ``BaseEvent`` 子类。
+动态创建 `BaseEvent` 子类。
 
 ### Parameters
 
@@ -42,21 +42,12 @@ def create_event_class(*, name: str, fields: dict[str, Any] | None = None, type_
 - `fields` (`dict[str, Any] | None, optional`)
   字段名到默认值的映射，值类型会从默认值推断。
 - `type_name` (`str | None, optional`)
-  事件总线类型字符串。省略时默认使用 ``name.lower()``。
+  事件总线类型字符串。省略时默认使用 `name.lower()`。
 
 ### Returns
 
 - `Type[BaseEvent]`
-  继承自 ``BaseEvent`` 的 dataclass 类型。
-
-### Examples
-
-```pycon
->>> CustomEvent = create_event_class(
-...     name="CustomEvent",
-...     fields={"text": "", "turn_id": 0},
-... )
-```
+  继承自 `BaseEvent` 的 dataclass 类型。
 
 ## WebSocketMessageReceived
 
@@ -122,6 +113,18 @@ Agent 响应增量更新事件。
 
 某一轮中的 Agent 最终文本。
 
+## ResponseUpdate
+
+对外统一的响应增量事件。
+
+## ResponseFinish
+
+对外统一的响应完成事件。
+
+## TTSTextSynthesized
+
+一段文本已经完成 TTS 合成。
+
 ## TTSVoiceChange
 
 TTS 参考音频切换事件。
@@ -134,15 +137,13 @@ TTS 情绪切换事件。
 
 TTS 语速切换事件。
 
-## TTSChunkGenerated
+## TTSChunkReady
 
-TTS 音频块生成事件。
-该事件当前也会携带 `sample_rate` 字段。
+TTS 音频块已就绪。
 
 ## TTSChunkPlayed
 
 前端确认某个 TTS 音频块已经播放完成。
-该事件由 `InputGateway` 在收到 `tts_chunk_played` 后发布，便于下游监听器按 FIFO 顺序观察前端播放完成情况。
 
 ## TTSPlaybackFinished
 
@@ -160,17 +161,21 @@ TTS 播放完成事件。
 
 Caption 更新事件。
 
-## ThoughtUpdated
-
-Thought 更新事件。
-
 ## ToolCallOccurred
 
-LLM/Agent 工具调用通知。
+LLM 或 Agent 工具调用通知。
 
 ## RetrievalUpdated
 
 检索结果更新事件。
+
+## EmbeddingStatusUpdated
+
+嵌入写入状态更新事件。
+
+## LLMAgentLoop
+
+驱动 Agent 循环处理的事件。
 
 ## TextForEmbeddingReady
 
@@ -200,9 +205,9 @@ LLM/Agent 工具调用通知。
 
 请求刷出 TTS 缓冲。
 
-## TurnLLMAgentStartRequested
+## ConsumeLLMAgentGenerationRequested
 
-请求启动 LLM Agent 生成。
+请求消费 Agent 已生成的内容。
 
 ## TurnLLMAgentResumeRequested
 

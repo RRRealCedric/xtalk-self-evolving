@@ -32,85 +32,85 @@ Xtalk 所使用的会话式 Agent 抽象接口。
 
 ### Methods
 
-#### generate
+#### content_to_text
 
 _定义于 `xtalk.llm_agent.interfaces`。_
 
 ```python
-def generate(self, input: Union[str, AgentInput]) -> Union[str, tuple[str, List[ToolCall]]]
+def content_to_text(content: Any) -> str
 ```
 
-为输入生成完整响应。
+将模型内容块规范化为纯文本。
 
 ##### Parameters
 
-- `input` (`str | AgentInput`)
-  原始用户文本，或同时包含文本和管道上下文的结构化载荷。
+- `content`
+  LangChain 模型消息或分块产生的内容。
 
 ##### Returns
 
-- `str | tuple[str, List[ToolCall]]`
-  纯文本响应，或在需要暴露工具调用时返回 ``(text, tool_calls)`` 元组。
+- `str`
+  从输入中提取出的纯文本内容。
 
-#### generate_stream
+#### accept
 
 _定义于 `xtalk.llm_agent.interfaces`。_
 
 ```python
-def generate_stream(self, input: Union[str, AgentInput]) -> Iterable[Union[str, ToolCall, dict[str, Any]]]
+def accept(self, context: AgentContext) -> Iterable[AgentOutput]
 ```
 
-为输入流式输出响应片段。
+接收一次增量上下文更新。
 
 ##### Parameters
 
-- `input` (`str | AgentInput`)
-  原始用户文本或结构化 Agent 输入。
+- `context` (`AgentContext`)
+  由服务层事件转发而来的上下文负载。
 
 ##### Yields
 
-- `str | ToolCall | dict[str, Any]`
-  先产出工具调用和工具结果负载，再产出文本片段。默认实现会委托给 ``generate()``，并以流式形式产出其结果。
+- `AgentStreamItem`
+  由该次更新触发的零个或多个流式输出项。
 
-#### async_generate
-
-_定义于 `xtalk.llm_agent.interfaces`。_
-
-```python
-async def async_generate(self, input: Union[str, AgentInput]) -> Union[str, tuple[str, List[ToolCall]]]
-```
-
-异步生成完整响应。
-
-##### Parameters
-
-- `input` (`str | AgentInput`)
-  原始用户文本或结构化 Agent 输入。
-
-##### Returns
-
-- `str | tuple[str, List[ToolCall]]`
-  与 ``generate()`` 相同的结果约定。
-
-#### async_generate_stream
+#### async_accept
 
 _定义于 `xtalk.llm_agent.interfaces`。_
 
 ```python
-async def async_generate_stream(self, input: Union[str, AgentInput]) -> AsyncIterator[Union[str, ToolCall, dict[str, Any]]]
+async def async_accept(self, context: AgentContext) -> AsyncIterator[AgentOutput]
 ```
 
-异步流式输出 Agent 结果。
+异步接收一次增量上下文更新。
 
 ##### Parameters
 
-- `input` (`str | AgentInput`)
-  原始用户文本或结构化 Agent 输入。
+- `context` (`AgentContext`)
+  由服务层事件转发而来的上下文负载。
 
 ##### Yields
 
-- `str | ToolCall | dict[str, Any]`
-  来自 ``generate_stream()`` 的流式输出。
+- `AgentStreamItem`
+  由该次更新触发的流式输出项。
+
+#### sync_iter_from_async
+
+_定义于 `xtalk.llm_agent.interfaces`。_
+
+```python
+def sync_iter_from_async(self, async_iter: AsyncIterator[T]) -> Iterable[T]
+```
+
+将异步迭代器转换为同步生成器。
+
+##### Parameters
+
+- `async_iter` (`AsyncIterator[T]`)
+  待桥接的异步迭代器。
+
+##### Yields
+
+- `T`
+  `async_iter` 产生的各项内容。
 
 #### clone
 
@@ -125,7 +125,7 @@ def clone(self) -> 'Agent'
 ##### Returns
 
 - `Agent`
-  适用于会话的 Agent 实例。
+  适用于新会话的 Agent 实例。
 
 #### restore_history
 
@@ -137,32 +137,32 @@ def restore_history(self, messages: list[dict[str, Any]]) -> None
 
 将持久化的对话消息恢复到 Agent 状态中。
 
-##### Parameters
-
-- `messages` (`list[dict[str, Any]]`)
-  按会话历史顺序排列的持久化聊天消息。
-
 #### get_chat_history
 
 _定义于 `xtalk.llm_agent.interfaces`。_
 
 ```python
-def get_chat_history(self) -> str | None
+def get_chat_history(self, with_system: bool = False) -> str | None
 ```
 
 当可用时，返回序列化后的对话历史。
 
+##### Parameters
+
+- `with_system` (`bool, optional`)
+  在具体实现支持时，是否包含系统提示消息。
+
 ##### Returns
 
 - `str | None`
-  对话历史；如果没有则为 ``None``。
+  对话历史；如果没有则为 `None`。
 
 #### add_tools
 
 _定义于 `xtalk.llm_agent.interfaces`。_
 
 ```python
-def add_tools(self, tools: list[BaseTool | Callable[[], BaseTool]])
+def add_tools(self, tools: list[BaseTool | Callable[[], BaseTool]]) -> None
 ```
 
 向 Agent 附加工具。
@@ -194,16 +194,6 @@ def rewrite(self, input: str) -> str
 
 重写输入文本。
 
-##### Parameters
-
-- `input` (`str`)
-  待重写的源文本。
-
-##### Returns
-
-- `str`
-  重写后的文本。
-
 #### async_rewrite
 
 _定义于 `xtalk.rewriter.interfaces`。_
@@ -213,16 +203,6 @@ async def async_rewrite(self, input: str) -> str
 ```
 
 异步重写输入文本。
-
-##### Parameters
-
-- `input` (`str`)
-  待重写的源文本。
-
-##### Returns
-
-- `str`
-  重写后的文本。
 
 ## ASR
 
@@ -246,16 +226,6 @@ def recognize(self, audio: bytes) -> str
 
 识别完整音频缓冲区。
 
-##### Parameters
-
-- `audio` (`bytes`)
-  PCM 16-bit 单声道音频字节。
-
-##### Returns
-
-- `str`
-  识别出的文本。
-
 #### recognize_stream
 
 _定义于 `xtalk.speech.interfaces`。_
@@ -271,7 +241,7 @@ def recognize_stream(self, audio: bytes, *, is_final: bool = False, chat_history
 - `audio` (`bytes`)
   增量 PCM 16-bit 单声道音频字节。
 - `is_final` (`bool, optional`)
-  调用方是否因为用户停顿或轮次结束而强制进行最终解码。
+  调用方是否希望把当前点视为一个临时边界，并在需要时刷出原本会保留在缓冲中的尾部音频。这只是解码提示，并不意味着必须重置流式状态；之前已经识别出的文本应继续保留，以便后续音频在累计结果上继续识别。
 - `chat_history` (`str | None, optional`)
   当前会话的序列化聊天历史；在不可用时不包含进行中的轮次。
 
@@ -293,7 +263,7 @@ def stream_chunk_bytes_hint(self) -> int | None
 ##### Returns
 
 - `int | None`
-  建议积累的字节数；如果没有偏好则为 ``None``。
+  建议每次传给 `recognize_stream` 的分块字节数；如果没有偏好则为 `None`。
 
 #### reset
 
@@ -315,11 +285,6 @@ def clone(self) -> 'ASR'
 
 为新会话克隆 ASR 实例。
 
-##### Returns
-
-- `ASR`
-  共享权重但具有独立运行时状态的克隆实例。
-
 #### async_recognize
 
 _定义于 `xtalk.speech.interfaces`。_
@@ -329,16 +294,6 @@ async def async_recognize(self, audio: bytes) -> str
 ```
 
 异步识别完整音频缓冲区。
-
-##### Parameters
-
-- `audio` (`bytes`)
-  PCM 16-bit 单声道音频字节。
-
-##### Returns
-
-- `str`
-  识别出的文本。
 
 #### async_recognize_stream
 
@@ -355,7 +310,7 @@ async def async_recognize_stream(self, audio: bytes, *, is_final: bool = False, 
 - `audio` (`bytes`)
   增量 PCM 16-bit 单声道音频字节。
 - `is_final` (`bool, optional`)
-  该分块是否应触发最终解码。
+  调用方是否希望把当前点视为一个临时边界，并在需要时刷出原本会保留在缓冲中的尾部音频。这只是解码提示，并不意味着必须重置流式状态；之前已经识别出的文本应继续保留，以便后续音频在累计结果上继续识别。
 - `chat_history` (`str | None, optional`)
   当前会话的序列化聊天历史；在不可用时不包含进行中的轮次。
 
@@ -373,50 +328,6 @@ class TTS(ABC)
 ```
 
 文本转语音引擎的抽象基类。
-
-### Methods
-
-#### synthesize
-
-_定义于 `xtalk.speech.interfaces`。_
-
-```python
-def synthesize(self, text: str) -> bytes
-```
-
-为完整文本输入合成音频。
-
-##### Parameters
-
-- `text` (`str`)
-  待合成文本。
-
-##### Returns
-
-- `bytes`
-  48 kHz 的 PCM 16-bit 单声道音频字节。
-
-#### synthesize_stream
-
-_定义于 `xtalk.speech.interfaces`。_
-
-```python
-def synthesize_stream(self, text: str, **kwargs) -> Iterable[bytes]
-```
-
-为文本输入流式输出合成音频块。
-
-##### Parameters
-
-- `text` (`str`)
-  待合成文本。
-- `**kwargs`
-  模型特定的流式选项。
-
-##### Yields
-
-- `bytes`
-  48 kHz 的 PCM 16-bit 单声道音频字节。
 
 ## Captioner
 
@@ -491,3 +402,47 @@ class TurnDetector(ABC)
 ```
 
 轮次检测器的抽象接口。
+
+### Methods
+
+#### detect
+
+_定义于 `xtalk.speech.interfaces`。_
+
+```python
+def detect(self, audio: Optional[bytes] = None, text: Optional[str] = None, speech_start: bool = False, speech_pause: Optional[bool] = None) -> TurnDetectionResult
+```
+
+根据音频和文本检测当前回合状态。
+
+##### Parameters
+
+- `audio` (`bytes | None, optional`)
+  当前 16 kHz PCM 16-bit 单声道音频帧。
+- `text` (`str | None, optional`)
+  当前回合的 ASR 文本。
+- `speech_start` (`bool, optional`)
+  VAD 是否刚刚检测到语音开始。该参数可以在没有 `audio` 或 `text` 的情况下单独提供。
+- `speech_pause` (`bool | None, optional`)
+  用户是否看起来暂停了说话。
+
+#### async_detect
+
+_定义于 `xtalk.speech.interfaces`。_
+
+```python
+async def async_detect(self, audio: Optional[bytes] = None, text: Optional[str] = None, speech_start: bool = False, speech_pause: Optional[bool] = None) -> TurnDetectionResult
+```
+
+异步检测当前回合状态。
+
+##### Parameters
+
+- `audio` (`bytes | None, optional`)
+  当前 16 kHz PCM 16-bit 单声道音频帧。
+- `text` (`str | None, optional`)
+  当前回合的 ASR 文本。
+- `speech_start` (`bool, optional`)
+  VAD 是否刚刚检测到语音开始。该参数可以在没有 `audio` 或 `text` 的情况下单独提供。
+- `speech_pause` (`bool | None, optional`)
+  用户是否看起来暂停了说话。

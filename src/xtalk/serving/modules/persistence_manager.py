@@ -6,7 +6,7 @@ from typing import Any
 from ...log_utils import logger
 from ...persistence import PersistenceStore
 from ..event_bus import EventBus
-from ..events import ASRResultFinal, LLMAgentResponseFinish
+from ..events import ASRResultFinal, ResponseFinish
 from ..interfaces import Manager
 
 
@@ -43,7 +43,6 @@ class PersistenceManager(Manager):
                 session_id=self.session_id,
                 role="user",
                 content=event.text,
-                turn_id=event.turn_id,
             )
         except Exception as exc:
             logger.warning(
@@ -52,9 +51,9 @@ class PersistenceManager(Manager):
                 exc,
             )
 
-    @Manager.event_handler(LLMAgentResponseFinish, priority=-100)
+    @Manager.event_handler(ResponseFinish, priority=-100)
     async def _persist_assistant_message(
-        self, event: LLMAgentResponseFinish
+        self, event: ResponseFinish
     ) -> None:
         if self._persistence is None or self._user_id is None:
             return
@@ -64,7 +63,6 @@ class PersistenceManager(Manager):
                 session_id=self.session_id,
                 role="assistant",
                 content=event.text,
-                turn_id=event.turn_id,
             )
         except Exception as exc:
             logger.warning(

@@ -1,6 +1,6 @@
 from typing import Optional, Any
 import asyncio
-from ..interfaces import Manager, TurnStateRestorable
+from ..interfaces import Manager
 from ..event_bus import EventBus
 from ...pipelines import Pipeline
 from ..events import (
@@ -97,9 +97,6 @@ class AudioConsumer:
         self._consumer_idle_event.set()
         # Start audio consumer task immediately
         self._audio_consumer_task = asyncio.create_task(self._audio_consumer())
-        # TODO: better turn behavior
-        self._turn_id = 1
-
     async def accept_audio_frame(self, audio_frame: bytes):
         # Add audio_frame to pre-buffer if consumer not started; add audio_frame to recognition queue if started
         if not self._consumer_running():
@@ -134,7 +131,7 @@ class AudioConsumer:
         await self._recognize_and_publish(audio, is_asr_end=False, is_final_chunk=True)
 
     async def end(self):
-        # Stop consumer, do one recognition, publish ASRResultFinal, clean up states (including reset ASR) and increment turn
+        # Stop consumer, do one recognition, publish ASRResultFinal, clean up states (including reset ASR)
         # Break stop-once invariance warning
         if self._ended:
             logger.warning(f"AudioConsumer ended repeatedly; do early return")
@@ -144,7 +141,6 @@ class AudioConsumer:
         audio = await self._audio_queue.get()
         await self._recognize_and_publish(audio, is_asr_end=True, is_final_chunk=True)
         await self._reset_states()
-        self._turn_id += 1
 
     async def _audio_consumer(self):
         while True:
@@ -169,9 +165,6 @@ class AudioConsumer:
             await self._audio_consumer_task
         except asyncio.CancelledError:
             pass
-
-    def restore_turn_state(self, *, last_turn_id: int) -> None:
-        self._turn_id = max(last_turn_id + 1, 1)
 
     # Helpers
     def _consumer_running(self):
@@ -201,6 +194,8 @@ class AudioConsumer:
                 is_final=is_final_chunk,
                 chat_history=self._turn_chat_history,
             )
+        if self._is_blank_text(recognized_text):
+            return
         if is_asr_end:
             self._recognized_text = recognized_text
             await self._publish_event(
@@ -208,7 +203,6 @@ class AudioConsumer:
                     session_id=self._session_id,
                     text=recognized_text,
                     display_text=recognized_text,
-                    turn_id=self._turn_id,
                 )
             )
         else:
@@ -220,10 +214,14 @@ class AudioConsumer:
                     session_id=self._session_id,
                     text=recognized_text,
                     display_text=recognized_text,
-                    turn_id=self._turn_id,
                     speech_pause=is_final_chunk,
                 )
             )
+
+    @staticmethod
+    def _is_blank_text(text: str) -> bool:
+        """Return whether recognized text is empty after trimming whitespace."""
+        return not text.strip()
 
     async def _publish_event(self, event: BaseEvent):
         await self._event_bus.publish(event)
@@ -252,7 +250,7 @@ class AudioConsumer:
             return None
 
 
-class ASRManager(Manager, TurnStateRestorable):
+class ASRManager(Manager):
     def __init__(
         self,
         event_bus: EventBus,
@@ -283,6 +281,3 @@ class ASRManager(Manager, TurnStateRestorable):
     async def shutdown(self):
         # Task cancellation
         await self._audio_consumer.shutdown()
-
-    def restore_turn_state(self, *, last_turn_id: int) -> None:
-        self._audio_consumer.restore_turn_state(last_turn_id=last_turn_id)

@@ -21,50 +21,25 @@ class OutputGateway(EventListenerMixin)
 - `config` (`dict[str, Any] | None, optional`)
   与输出行为相关的服务配置。
 
-### Methods
-
-#### __init__
-
-_定义于 `xtalk.serving.modules.output_gateway`。_
-
-```python
-def __init__(self, event_bus: EventBus, session_id: str, websocket: WebSocket, config: dict[str, Any] | None = None)
-```
-
-#### send_signal
-
-_定义于 `xtalk.serving.modules.output_gateway`。_
-
-```python
-async def send_signal(self, message: dict) -> None
-```
-
-向前端发送 JSON 载荷。
-
-##### Parameters
-
-- `message` (`dict`)
-  要通过 WebSocket 发送的可 JSON 序列化载荷。
-
-#### send_session_attached
-
-_定义于 `xtalk.serving.modules.output_gateway`。_
-
-```python
-async def send_session_attached(self) -> None
-```
-
-向前端发送已挂接的会话标识符。
-
 ## ASRManager
 
 _定义于 `xtalk.serving.modules.asr_manager`。_
 
 ```python
-class ASRManager(Manager, TurnStateRestorable)
+class ASRManager(Manager)
 ```
 
-支持通过 `restore_turn_state()` 恢复轮次状态。
+会话级 ASR 管理器。
+
+## DirectAudioManager
+
+_定义于 `xtalk.serving.modules.direct_audio_manager`。_
+
+```python
+class DirectAudioManager(Manager)
+```
+
+将 `direct_audio` 工具调用转发到外发音频流。
 
 ## EmbeddingsManager
 
@@ -73,6 +48,8 @@ _定义于 `xtalk.serving.modules.embeddings_manager`。_
 ```python
 class EmbeddingsManager(Manager)
 ```
+
+会话级嵌入写入与检索存储管理器。
 
 ## EnhancerManager
 
@@ -94,16 +71,25 @@ class LatencyManager(EventListenerMixin)
 
 监听 VAD、ASR、LLM、TTS 事件的会话级延迟跟踪器。
 
-## LLMAgentManager
+## LLMAgentContextManager
 
-_定义于 `xtalk.serving.modules.llm_agent_manager`。_
+_定义于 `xtalk.serving.modules.llm_agent_context_manager`。_
 
 ```python
-class LLMAgentManager(Manager, TurnStateRestorable)
+class LLMAgentContextManager(Manager)
 ```
 
-驱动 LLM Agent 生成并协调 TTS 流式处理。
-同样支持通过 `restore_turn_state()` 恢复轮次状态。
+将会话上下文事件转发给配置好的 LLM Agent。
+
+## LLMAgentConsumptionManager
+
+_定义于 `xtalk.serving.modules.llm_agent_consumption_manager`。_
+
+```python
+class LLMAgentConsumptionManager(Manager)
+```
+
+消费 Agent 产生的流式输出，并将其转成后续事件。
 
 ## SpeakerManager
 
@@ -115,15 +101,15 @@ class SpeakerManager(Manager)
 
 会话作用域的说话人识别管理器。
 
-## ThoughtManager
+## TTSPlaybackManager
 
-_定义于 `xtalk.serving.modules.thought_manager`。_
+_定义于 `xtalk.serving.modules.tts_playback_manager`。_
 
 ```python
-class ThoughtManager(Manager)
+class TTSPlaybackManager(Manager)
 ```
 
-周期性刷新对话 Thought 的管理器。
+跟踪前端播放进度并协调 TTS 播放状态。
 
 ## TTSManager
 
@@ -134,7 +120,6 @@ class TTSManager(Manager)
 ```
 
 处理流式合成和控制的事件驱动 TTS 管理器。
-类字段还包括 `TTS_CHUNK_MS = 100` 与 `MAX_OUTSTANDING_MS = 300`。
 
 ## TurnTakingManager
 
@@ -144,6 +129,8 @@ _定义于 `xtalk.serving.modules.turn_taking_manager`。_
 class TurnTakingManager(Manager)
 ```
 
+协调回合切换与打断策略。
+
 ## VADManager
 
 _定义于 `xtalk.serving.modules.vad_manager`。_
@@ -151,3 +138,5 @@ _定义于 `xtalk.serving.modules.vad_manager`。_
 ```python
 class VADManager(Manager)
 ```
+
+语音活动检测管理器。

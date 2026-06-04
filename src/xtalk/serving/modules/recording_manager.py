@@ -33,7 +33,7 @@ from ..events import (
     AudioFrameReceived,
     FullAudioFrameReady,
     TTSPaused,
-    TTSChunkGenerated,
+    TTSChunkReady,
     TTSResumed,
     TTSStarted,
     TTSStopped,
@@ -596,8 +596,8 @@ class RecordingManager(Manager):
             return
         self._tts_wakeup.set()
 
-    @Manager.event_handler(TTSChunkGenerated, priority=50)
-    async def _on_tts_chunk_generated(self, event: TTSChunkGenerated) -> None:
+    @Manager.event_handler(TTSChunkReady, priority=50)
+    async def _on_tts_chunk_generated(self, event: TTSChunkReady) -> None:
         """Queue generated TTS chunks for right-channel scheduling."""
         if not self._enabled:
             return

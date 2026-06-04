@@ -13,4 +13,5 @@
 
 ## 函数
 
+- [createAudioBridge](functions/createAudioBridge.zh.md)
 - [createSession](functions/createSession.zh.md)

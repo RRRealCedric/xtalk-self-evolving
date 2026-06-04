@@ -1,6 +1,6 @@
 X-Talk keeps most models and execution on the server side. The client is mainly responsible for microphone access, audio streaming, WebSocket messaging, and lightweight session logic.
 
-The client API is published as [xtalk-client](https://www.npmjs.com/package/xtalk-client), and its public interface follows the implementation in `frontend/src`.
+The client API is published as [xtalk-client](https://www.npmjs.com/package/xtalk-client), and its public interface is exported from `frontend/src/index.ts`.
 
 ## Minimal client setup
 
@@ -44,7 +44,7 @@ If you do not want to bundle the client package yourself, you can load it direct
 
 ```html
 <script type="module">
-    const { createSession } = await import("https://unpkg.com/xtalk-client@latest/dist/index.js");
+    const { createSession } = await import("https://unpkg.com/xtalk-client@0.2.6/dist/index.js");
 
     const wsUrl =
         location.protocol === "https:"

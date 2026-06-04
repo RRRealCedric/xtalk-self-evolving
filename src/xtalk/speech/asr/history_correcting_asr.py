@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import inspect
+import json
 from typing import Any
 
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -33,9 +34,14 @@ You correct the final ASR transcript for the current user turn.
 
 Use the previous chat history only to resolve likely ASR mistakes.
 Keep the user's original language.
+Make only local changes; do not rewrite the whole sentence.
 Do not answer the user.
 Do not add new information.
-Only output the corrected transcript text.
+Return exactly one JSON object and nothing else.
+The JSON object must contain keys "changes" and "result".
+"changes" must be a JSON object whose keys are original words or phrases and
+whose values are the corrected words or phrases.
+"result" must be the corrected full sentence.
 """.strip()
 
     def __init__(
@@ -223,7 +229,15 @@ Only output the corrected transcript text.
         if payload is None:
             return raw_text
         try:
-            corrected = self._rewriter.rewrite(payload).strip()
+            model_output = self._rewriter.rewrite(payload).strip()
+            corrected = self._extract_corrected_result(model_output)
+        except (json.JSONDecodeError, ValueError, TypeError) as exc:
+            logger.warning(
+                "HistoryCorrectingASR correction returned invalid JSON, "
+                "falling back to raw text: %s",
+                exc,
+            )
+            return raw_text
         except Exception as exc:
             logger.warning("HistoryCorrectingASR correction failed: %s", exc)
             return raw_text
@@ -244,11 +258,61 @@ Only output the corrected transcript text.
         if payload is None:
             return raw_text
         try:
-            corrected = (await self._rewriter.async_rewrite(payload)).strip()
+            model_output = (await self._rewriter.async_rewrite(payload)).strip()
+            corrected = self._extract_corrected_result(model_output)
+        except (json.JSONDecodeError, ValueError, TypeError) as exc:
+            logger.warning(
+                "HistoryCorrectingASR async correction returned invalid JSON, "
+                "falling back to raw text: %s",
+                exc,
+            )
+            return raw_text
         except Exception as exc:
             logger.warning("HistoryCorrectingASR async correction failed: %s", exc)
             return raw_text
         return corrected or raw_text
+
+    @staticmethod
+    def _extract_corrected_result(model_output: str) -> str:
+        """Extract the corrected transcript from a structured JSON response.
+
+        Parameters
+        ----------
+        model_output : str
+            Raw LLM output expected to contain a single JSON object.
+
+        Returns
+        -------
+        str
+            Corrected full sentence from the ``result`` field.
+
+        Raises
+        ------
+        ValueError
+            Raised when the model output cannot be parsed as the expected JSON
+            object.
+        """
+
+        stripped = model_output.strip()
+        if stripped.startswith("```"):
+            lines = stripped.splitlines()
+            if lines and lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].startswith("```"):
+                lines = lines[:-1]
+            stripped = "\n".join(lines).strip()
+
+        payload = json.loads(stripped)
+        if not isinstance(payload, dict):
+            raise ValueError("Correction output must be a JSON object.")
+
+        changes = payload.get("changes")
+        result = payload.get("result", "")
+        if not isinstance(changes, dict):
+            raise ValueError("Correction output field 'changes' must be an object.")
+        if not isinstance(result, str):
+            raise ValueError("Correction output field 'result' must be a string.")
+        return result.strip()
 
     @staticmethod
     def _build_correction_payload(

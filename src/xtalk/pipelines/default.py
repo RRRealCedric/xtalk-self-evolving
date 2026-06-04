@@ -6,9 +6,9 @@ from typing import Optional, Any
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.embeddings import Embeddings
 
-from ..llm_agent.interfaces import Agent
+from ..llm_agent import Agent
 from ..rewriter.interfaces import Rewriter
-from ..rewriter.simple import DefaultCaptionRewriter, DefaultThoughtRewriter
+from ..rewriter.simple import DefaultCaptionRewriter
 from ..speech.interfaces import (
     ASR,
     TTS,
@@ -55,8 +55,6 @@ class DefaultPipeline(Pipeline):
         Optional punctuation restoration model.
     caption_rewriter : Rewriter | BaseChatModel | None, optional
         Optional caption rewriter or chat model to wrap as a rewriter.
-    thought_rewriter : Rewriter | BaseChatModel | None, optional
-        Optional thought rewriter or chat model to wrap as a rewriter.
     vad : VAD | None, optional
         Optional voice activity detector.
     speech_enhancer : SpeechEnhancer | None, optional
@@ -103,12 +101,8 @@ class DefaultPipeline(Pipeline):
     caption_rewriter: Optional[Rewriter] = field(
         default=None, metadata={"init_key": "caption_rewriter", "clone": False}
     )
-    thought_rewriter: Optional[Rewriter] = field(
-        default=None, metadata={"init_key": "thought_rewriter", "clone": False}
-    )
-
     vad_model: Optional[VAD] = field(
-        default=None, metadata={"init_key": "vad", "clone": False}
+        default=None, metadata={"init_key": "vad", "clone": True}
     )
     enhancer_model: Optional[SpeechEnhancer] = field(
         default=None, metadata={"init_key": "speech_enhancer", "clone": True}
@@ -136,7 +130,6 @@ class DefaultPipeline(Pipeline):
         captioner: Optional[Captioner] = None,
         punt_restorer_model: Optional[PuntRestorer] = None,
         caption_rewriter: Optional[Rewriter | BaseChatModel] = None,
-        thought_rewriter: Optional[Rewriter | BaseChatModel] = None,
         vad: Optional[VAD] = None,
         speech_enhancer: Optional[SpeechEnhancer] = None,
         speaker_encoder: Optional[SpeakerEncoder] = None,
@@ -164,8 +157,6 @@ class DefaultPipeline(Pipeline):
             Optional punctuation restoration model.
         caption_rewriter : Rewriter | BaseChatModel | None, optional
             Optional caption rewriter or chat model.
-        thought_rewriter : Rewriter | BaseChatModel | None, optional
-            Optional thought rewriter or chat model.
         vad : VAD | None, optional
             Optional voice activity detector.
         speech_enhancer : SpeechEnhancer | None, optional
@@ -199,11 +190,6 @@ class DefaultPipeline(Pipeline):
             self.caption_rewriter = DefaultCaptionRewriter(model=caption_rewriter)
         else:
             self.caption_rewriter = caption_rewriter
-
-        if isinstance(thought_rewriter, BaseChatModel):
-            self.thought_rewriter = DefaultThoughtRewriter(model=thought_rewriter)
-        else:
-            self.thought_rewriter = thought_rewriter
 
     # --------------------------
     # clone (declarative, extensible, and inheritance-friendly)
@@ -256,9 +242,6 @@ class DefaultPipeline(Pipeline):
 
     def get_caption_rewriter_model(self):
         return self.caption_rewriter
-
-    def get_thought_rewriter_model(self):
-        return self.thought_rewriter
 
     def get_vad_model(self):
         return self.vad_model

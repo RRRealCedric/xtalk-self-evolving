@@ -224,9 +224,6 @@ function getConversationMessageKey(message, index) {
     if (message.role === 'info') {
         return `info:${index}`;
     }
-    if (message.turnId != null) {
-        return `${message.role}:${message.turnId}`;
-    }
     return `${message.role}:index:${index}`;
 }
 
@@ -239,7 +236,7 @@ function syncConversationMessages(messages) {
                 ...chatTimeline[timelineIndex],
                 role: message.role,
                 content: message.content,
-                turnId: message.turnId,
+                final: message.final,
             };
             return;
         }
@@ -250,7 +247,7 @@ function syncConversationMessages(messages) {
             key,
             role: message.role,
             content: message.content,
-            turnId: message.turnId,
+            final: message.final,
         });
     });
 }

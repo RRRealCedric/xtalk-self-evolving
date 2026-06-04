@@ -72,7 +72,7 @@ Create a ``BaseEvent`` subclass dynamically.
 ```pycon
 >>> CustomEvent = create_event_class(
 ...     name="CustomEvent",
-...     fields={"text": "", "turn_id": 0},
+...     fields={"text": ""},
 ... )
 ```
 
@@ -164,7 +164,6 @@ class ASRResultPartial(BaseEvent)
 - `TYPE: ClassVar[str]` = `'asr.result_partial'`
 - `text: str` = `''`
 - `display_text: str` = `''`
-- `turn_id: int` = `0`
 - `speech_pause: bool` = `False`
 
 ## ASRResultFinal
@@ -181,7 +180,6 @@ class ASRResultFinal(BaseEvent)
 - `TYPE: ClassVar[str]` = `'asr.result_final'`
 - `text: str` = `''`
 - `display_text: str` = `''`
-- `turn_id: int` = `0`
 
 ## LLMFirstChunk
 
@@ -291,7 +289,6 @@ class LLMAgentResponseUpdate(BaseEvent)
 
 - `TYPE: ClassVar[str]` = `'llm_agent.response_update'`
 - `text: str` = `''`
-- `turn_id: int` = `0`
 
 ## LLMAgentResponseFinish
 
@@ -302,20 +299,83 @@ _Defined in `xtalk.serving.events`._
 class LLMAgentResponseFinish(BaseEvent)
 ```
 
-Final text emitted by the agent for a turn.
+Final text emitted by the agent for one response.
 
 ### Attributes
 
 - `text` (`str`)
   Final response text.
-- `turn_id` (`int`)
-  Turn identifier associated with the response.
 
 ### Class Fields
 
 - `TYPE: ClassVar[str]` = `'llm_agent.response_finish'`
 - `text: str` = `''`
-- `turn_id: int` = `0`
+
+## ResponseUpdate
+
+_Defined in `xtalk.serving.events`._
+
+```python
+@dataclass
+class ResponseUpdate(BaseEvent)
+```
+
+Text prefix whose corresponding TTS playback progress has been confirmed.
+
+### Attributes
+
+- `text` (`str`)
+  Text prefix that has been played to the user.
+
+### Class Fields
+
+- `TYPE: ClassVar[str]` = `'response.update'`
+- `text: str` = `''`
+
+## ResponseFinish
+
+_Defined in `xtalk.serving.events`._
+
+```python
+@dataclass
+class ResponseFinish(BaseEvent)
+```
+
+Final text whose corresponding TTS playback has finished.
+
+### Attributes
+
+- `text` (`str`)
+  Final response text whose playback completed.
+
+### Class Fields
+
+- `TYPE: ClassVar[str]` = `'response.finish'`
+- `text: str` = `''`
+
+## TTSTextSynthesized
+
+_Defined in `xtalk.serving.events`._
+
+```python
+@dataclass
+class TTSTextSynthesized(BaseEvent)
+```
+
+Text marker emitted after one synthesized text segment is fully produced.
+
+### Attributes
+
+- `text` (`str`)
+  Text segment that was synthesized.
+- `audio_duration` (`float`)
+  Estimated playback duration of the synthesized audio in milliseconds.
+
+### Class Fields
+
+- `TYPE: ClassVar[str]` = `'tts.text_synthesized'`
+- `text: str` = `''`
+- `audio_duration: float` = `0.0`
 
 ## TTSVoiceChange
 
@@ -360,18 +420,20 @@ class TTSSpeedChange(BaseEvent)
 - `TYPE: ClassVar[str]` = `'tts.speed_changed'`
 - `speed: float` = `1.0`
 
-## TTSChunkGenerated
+## TTSChunkReady
 
 _Defined in `xtalk.serving.events`._
 
 ```python
 @dataclass
-class TTSChunkGenerated(BaseEvent)
+class TTSChunkReady(BaseEvent)
 ```
+
+Indicates one TTS audio chunk is ready for sending. Not emitted when the chunk is generated.
 
 ### Class Fields
 
-- `TYPE: ClassVar[str]` = `'tts.chunk_generated'`
+- `TYPE: ClassVar[str]` = `'tts.chunk_ready'`
 - `audio_chunk: bytes` = `b''`
 - `sample_rate: int` = `48000`
 
@@ -454,21 +516,6 @@ class CaptionUpdated(BaseEvent)
 - `is_final: bool` = `False`
 - `reason: str` = `''`
 
-## ThoughtUpdated
-
-_Defined in `xtalk.serving.events`._
-
-```python
-@dataclass
-class ThoughtUpdated(BaseEvent)
-```
-
-### Class Fields
-
-- `TYPE: ClassVar[str]` = `'thought.updated'`
-- `text: str` = `''`
-- `is_final: bool` = `False`
-
 ## ToolCallOccurred
 
 _Defined in `xtalk.serving.events`._
@@ -500,6 +547,39 @@ class RetrievalUpdated(BaseEvent)
 - `TYPE: ClassVar[str]` = `'retrieval.updated'`
 - `text: str` = `''`
 - `is_final: bool` = `False`
+
+## EmbeddingStatusUpdated
+
+_Defined in `xtalk.serving.events`._
+
+```python
+@dataclass
+class EmbeddingStatusUpdated(BaseEvent)
+```
+
+Embedding lifecycle update consumed by the LLM agent context manager.
+
+### Class Fields
+
+- `TYPE: ClassVar[str]` = `'embedding.status_updated'`
+- `status: str` = `''`
+- `text: str | None` = `None`
+- `vector_store_instance: Any` = `None`
+
+## LLMAgentLoop
+
+_Defined in `xtalk.serving.events`._
+
+```python
+@dataclass
+class LLMAgentLoop(BaseEvent)
+```
+
+Request one agent-context accept loop iteration for the session.
+
+### Class Fields
+
+- `TYPE: ClassVar[str]` = `'llm.agent_loop'`
 
 ## TextForEmbeddingReady
 
@@ -601,20 +681,21 @@ class TurnTTSFlushRequested(BaseEvent)
 
 - `TYPE: ClassVar[str]` = `'turn.tts_flush_requested'`
 
-## TurnLLMAgentStartRequested
+## ConsumeLLMAgentGenerationRequested
 
 _Defined in `xtalk.serving.events`._
 
 ```python
 @dataclass
-class TurnLLMAgentStartRequested(BaseEvent)
+class ConsumeLLMAgentGenerationRequested(BaseEvent)
 ```
+
+Request consumption of one LLM-agent output stream.
 
 ### Class Fields
 
-- `TYPE: ClassVar[str]` = `'turn.llm_agent_start_requested'`
-- `text: str` = `''`
-- `context_snapshot: PipelineContext | None` = `None`
+- `TYPE: ClassVar[str]` = `'llm_agent.consume_generation_requested'`
+- `stream: AsyncIterator[AgentOutput]`
 
 ## TurnLLMAgentResumeRequested
 

@@ -78,6 +78,7 @@ See [Supported Models](../docs/supported_models.md) for the full list of model t
 > **Note**
 > Most model implementations are client-side adapters. You may also need to start the model instance itself according to its corresponding instructions.
 
+
 ## Customize service behavior
 
 You can also customize service behavior, such as whether to save session audio under `logs/` and whether to send full session audio back to the client:
@@ -89,3 +90,82 @@ You can also customize service behavior, such as whether to save session audio u
 ```
 
 See [all service configuration](../docs/service_config.md) for the full list of service configuration options.
+
+
+## Frontend configuration
+
+The frontend accepts a `SessionConfig` through `createSession(wsUrl, config)`. It currently supports three groups of options:
+
+- `inputConfig`
+- `outputConfig`
+- `serviceURLs`
+
+For example:
+
+```ts
+const session = createSession(wsUrl, {
+    inputConfig: {
+        sampleRate: 16000,
+        enableVAD: true,
+        enableEnhancer: true,
+        vadRedemptionMs: 500,
+    },
+    outputConfig: {
+        sampleRate: 48000,
+    },
+    serviceURLs: {
+        login: "/api/auth/login",
+        sessions: "/api/sessions",
+        sessionDetail: (sessionId) => `/api/sessions/${sessionId}`,
+        upload: "/api/upload",
+    },
+});
+```
+
+### inputConfig
+
+`inputConfig` controls the frontend input audio session. In normal browser microphone mode, the most commonly used fields are:
+
+- `sampleRate`
+  Input audio sample rate. The default is `16000`.
+- `enableVAD`
+  Whether to enable frontend VAD. The default is `true`.
+- `enableEnhancer`
+  Whether to enable frontend speech enhancement. The default is `true`.
+- `vadRedemptionMs`
+  VAD redemption window in milliseconds.
+
+Bridge mode with `mode: "web_bridge"` also supports:
+
+- `mode`
+  Either `"microphone"` or `"web_bridge"`.
+- `participantId`
+  Participant identifier for bridge-backed input.
+- `bridge`
+  Shared audio bridge instance.
+- `autoEmitVad`
+  Whether to auto-broadcast frontend VAD events in bridge mode.
+
+### outputConfig
+
+`outputConfig` currently mainly supports:
+
+- `sampleRate`
+  Output playback sample rate. The default is `48000`.
+
+### serviceURLs
+
+`serviceURLs` overrides auxiliary HTTP endpoints. It currently supports:
+
+- `login`
+- `sessions`
+- `sessionDetail`
+  This can be either a fixed URL or a function of the form `(sessionId) => URL`.
+- `upload`
+
+If omitted, the frontend derives default URLs automatically from `wsUrl`:
+
+- `POST /api/auth/login`
+- `GET /api/sessions`
+- `GET /api/sessions/{session_id}`
+- `POST /api/upload`

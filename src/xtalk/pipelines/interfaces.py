@@ -15,7 +15,6 @@ from ..speech.interfaces import (
 )
 from ..rewriter.interfaces import Rewriter
 from ..llm_agent.interfaces import Agent
-from .context import PipelineContext
 
 
 class PipelineOutputBase(TypedDict):
@@ -62,46 +61,6 @@ class Pipeline(ABC):
     managers. Sample applications commonly subclass ``DefaultPipeline`` to add
     extra components while retaining this interface.
     """
-
-    # Context dict shared across modules for runtime state (thought/caption/etc.)
-    _context: "PipelineContext"
-
-    @property
-    def context(self) -> "PipelineContext":
-        """Return the runtime context shared across managers.
-
-        Returns
-        -------
-        PipelineContext
-            Mutable context dictionary initialized with the standard Xtalk
-            runtime keys on first access.
-
-        Notes
-        -----
-        Callers typically read from the returned dictionary directly. Replacing
-        the entire context should be done via the setter.
-        """
-        if not hasattr(self, "_context"):
-            # Initialize default context (fields default to None)
-            self._context = {
-                "thought": None,
-                "caption": None,
-                "speaker_id": None,
-                "text_to_embed": None,
-                "vector_store_instance": None,
-            }
-        return self._context
-
-    @context.setter
-    def context(self, value: "PipelineContext") -> None:
-        """Replace the shared runtime context.
-
-        Parameters
-        ----------
-        value : PipelineContext
-            Context dictionary to store on the pipeline instance.
-        """
-        self._context = value
 
     @abstractmethod
     def clone(self) -> "Pipeline":
@@ -172,16 +131,6 @@ class Pipeline(ABC):
         -------
         Rewriter | None
             Caption rewriter or ``None``.
-        """
-        return None
-
-    def get_thought_rewriter_model(self) -> Rewriter | None:
-        """Return the thought rewriter used by ``ThoughtManager``.
-
-        Returns
-        -------
-        Rewriter | None
-            Thought rewriter or ``None``.
         """
         return None
 

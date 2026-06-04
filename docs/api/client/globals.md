@@ -13,4 +13,5 @@ Public frontend client APIs for creating and controlling X-Talk sessions.
 
 ## Functions
 
+- [createAudioBridge](functions/createAudioBridge.md)
 - [createSession](functions/createSession.md)
