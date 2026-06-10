@@ -6,6 +6,7 @@ from .modules.enhancer_manager import EnhancerManager
 from .modules.latency_manager import LatencyManager
 from .modules.llm_agent_context_manager import LLMAgentContextManager
 from .modules.llm_agent_generation_manager import LLMAgentConsumptionManager
+from .modules.psych_sop_manager import PsychSOPManager
 from .modules.speaker_manager import SpeakerManager
 from .modules.tts_playback_manager import TTSPlaybackManager
 from .modules.tts_manager import TTSManager
@@ -21,6 +22,7 @@ __all__ = [
     "LatencyManager",
     "LLMAgentContextManager",
     "LLMAgentConsumptionManager",
+    "PsychSOPManager",
     "SpeakerManager",
     "TTSPlaybackManager",
     "TTSManager",

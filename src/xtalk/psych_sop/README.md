@@ -46,6 +46,7 @@ src/xtalk/psych_sop/
 ├── safety_guard.py
 ├── prompts.yaml
 ├── counseling_agent.py
+├── runtime.py
 ├── memory_backend.py
 ├── episode_logger.py
 ├── evolution_summarizer.py
@@ -53,6 +54,9 @@ src/xtalk/psych_sop/
 
 examples/psych_sop_demo/
 └── demo_cli.py
+
+examples/psych_sop_voice_demo/
+└── server.py
 
 tests/
 ├── test_psych_scale_engine.py
@@ -333,6 +337,30 @@ class SafetyGuard:
 
 未来如果接 LLM，可以把 `CounselingAgent.render()` 替换或扩展成 LLM call，同时保留当前 deterministic context。
 
+### `runtime.py`
+
+可复用的 PsychSOP 会话运行时。CLI 和 X-Talk voice demo 都调用同一个 runtime，避免把状态机逻辑复制到多个入口。
+
+核心接口：
+
+```python
+runtime = PsychSOPRuntime(scale_id="GAD-7")
+assistant_text = runtime.start()
+assistant_text = runtime.accept_text("同意")
+snapshot = runtime.snapshot()
+episode_path = runtime.finish(status="aborted")
+```
+
+职责：
+
+- 初始化 SOP、量表引擎、安全规则、回复 agent、memory 和 episode logger。
+- 渲染首轮 greeting。
+- 接收一轮用户文本并推进 SOP。
+- 在 completed、crisis、aborted 时保存 episode log。
+- 写入 `scale_state_summary` 和 `evolution_memory`。
+
+`PsychSOPRuntime` 不读 stdin，不 print，不依赖 WebSocket，因此可以被 CLI、测试、X-Talk manager 或未来的 LLM-backed agent adapter 复用。
+
 ### `memory_backend.py`
 
 心理 demo 的轻量 memory 接口。
@@ -439,6 +467,27 @@ evolution_memory
 - `PsychMemoryBackend`
 - `EpisodeLogger`
 - `EvolutionSummarizer`
+
+### `examples/psych_sop_voice_demo/server.py`
+
+独立的 X-Talk voice demo server。它不会修改默认 `DefaultService` 行为，而是在示例服务里注册 `PsychSOPManager`。
+
+运行方式示例：
+
+```bash
+PYTHONPATH=src python examples/psych_sop_voice_demo/server.py \
+  --config ../ali_config.json \
+  --scale GAD-7 \
+  --reset-memory
+```
+
+内部接入方式：
+
+- `LLMAgentLoop` 触发 `PsychSOPRuntime.start()`，生成开场提示。
+- `ASRResultFinal` 触发 `PsychSOPRuntime.accept_text()`。
+- `PsychSOPManager` 把规则回复包装成 `ConsumeLLMAgentGenerationRequested` stream。
+- 后续复用现有 `LLMAgentConsumptionManager`、`TTSManager`、`TTSPlaybackManager`、`OutputGateway`。
+- 示例服务禁用默认 `LLMAgentContextManager` 对 `ASRResultFinal` 和 `LLMAgentLoop` 的处理，避免默认 LLM agent 与 PsychSOP 双响应。
 
 ## CLI 运行方式
 
@@ -660,7 +709,7 @@ text input
 
 ```text
 ASRResultFinal
-  -> PsychSOPManager or PsychSOPAgentAdapter
+  -> PsychSOPManager
   -> SafetyGuard
   -> SOPNavigator
   -> ScaleEngine

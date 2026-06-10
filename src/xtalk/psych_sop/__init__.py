@@ -10,8 +10,10 @@ from .scale_engine import ScaleEngine
 from .scale_loader import ScaleLoader
 from .safety_guard import SafetyGuard
 from .sop_navigator import SOPNavigator
+from .runtime import PsychSOPRuntime
 
 __all__ = [
+    "PsychSOPRuntime",
     "ScaleEngine",
     "ScaleLoader",
     "SafetyGuard",
