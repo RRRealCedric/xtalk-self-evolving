@@ -1,0 +1,59 @@
+{
+  "title": "PHQ-9 Patient Health Questionnaire",
+  "description": "A 9-item depression assessment tool for initial diagnosis and tracking of depressive symptom severity.",
+  "introductions": {
+    "scoring_rule": "Assign scores of 0, 1, 2, and 3 to the responses: 'Not at all', 'Several days', 'More than half the days', 'Nearly every day'. Total score ranges from 0 to 27.",
+    "diagnosis_criteria": {
+      "major_depression": "At least 5 items scored 2 or 3, including #1 or #2",
+      "other_depression": "2 to 4 items scored 2 or 3, including #1 or #2"
+    },
+    "monitoring_guidelines": "Patients may complete the PHQ-9 at baseline and at regular intervals (e.g., every 2 weeks). Use the same scoring system to track symptom changes."
+  },
+  "score_interpretation": {
+    "1-4": "Minimal depression",
+    "5-9": "Mild depression",
+    "10-14": "Moderate depression",
+    "15-19": "Moderately severe depression",
+    "20-27": "Severe depression"
+  },
+  "questions": [
+    "1. Little interest or pleasure in doing things",
+    "2. Feeling down, depressed, or hopeless",
+    "3. Trouble falling or staying asleep, or sleeping too much",
+    "4. Feeling tired or having little energy",
+    "5. Poor appetite or overeating",
+    "6. Feeling bad about yourself, or that you are a failure or let your family down",
+    "7. Trouble concentrating on things (e.g., reading, watching TV)",
+    "8. Moving or speaking slowly / being fidgety or restless more than usual",
+    "9. Thoughts of being better off dead, or hurting yourself"
+  ],
+  "options": [
+    {
+      "text": "Not at all",
+      "score": 0
+    },
+    {
+      "text": "Several days",
+      "score": 1
+    },
+    {
+      "text": "More than half the days",
+      "score": 2
+    },
+    {
+      "text": "Nearly every day",
+      "score": 3
+    }
+  ],
+  "additional_questions": [
+    {
+      "question": "If you checked any problems, how difficult have they made it for you to do your work, take care of things at home, or get along with other people?",
+      "options": [
+        "Not difficult at all",
+        "Somewhat difficult",
+        "Very difficult",
+        "Extremely difficult"
+      ]
+    }
+  ]
+}

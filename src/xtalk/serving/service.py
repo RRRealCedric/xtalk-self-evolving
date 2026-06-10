@@ -28,6 +28,7 @@ from .modules.turn_detector_manager import TurnDetectorManager
 from .modules.tts_playback_manager import TTSPlaybackManager
 from .modules.persistence_manager import PersistenceManager
 from .events import BaseEvent, LLMAgentLoop
+from ..memory.manager import MemoryManager
 from ..pipelines import Pipeline
 from .interfaces import EventListenerMixin, EventOverrides
 
@@ -401,6 +402,7 @@ class DefaultService(Service):
         VADManager,
         EnhancerManager,
         SpeakerManager,
+        MemoryManager,
         EmbeddingsManager,
         RecordingManager,
         TurnDetectorManager,

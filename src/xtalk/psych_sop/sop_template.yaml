@@ -1,0 +1,141 @@
+sop_id: psych_scale_interview_v0.1
+global_rules:
+  - Do not diagnose.
+  - Ask one question at a time.
+  - Do not lead the user's answer.
+  - Respect skip and stop requests.
+  - If self-harm risk appears, stop the scale and enter crisis protocol.
+  - Do not provide medication advice.
+  - Do not claim to replace a psychologist, counselor, or psychiatrist.
+crisis_response: >
+  我听到你可能正处在危险或非常痛苦的状态。这个 demo 不能处理紧急危机，
+  也不能替代专业帮助。请你现在优先保证安全，立即联系当地紧急服务、
+  身边可信任的人、专业机构或你所在地区的危机热线。如果你身边有可以信任的人，
+  请尽快让对方陪在你身边。
+nodes:
+  - id: START
+    goal: Start the demo and greet the user.
+    allowed_actions: [greet]
+    transitions:
+      - condition: always
+        next: EXPLAIN_BOUNDARY
+    prompt_hints:
+      - Warmly greet the user and keep the tone short.
+  - id: EXPLAIN_BOUNDARY
+    goal: Explain non-diagnostic boundary.
+    allowed_actions: [explain_boundary]
+    transitions:
+      - condition: always
+        next: GET_CONSENT
+    prompt_hints:
+      - Explain that this is a screening demo, not clinical diagnosis.
+  - id: GET_CONSENT
+    goal: Ask consent to proceed.
+    allowed_actions: [ask_consent]
+    transitions:
+      - condition: user_accepts
+        next: GOAL_INQUIRY
+      - condition: user_refuses
+        next: ABORTED
+      - condition: user_quits
+        next: ABORTED
+    prompt_hints:
+      - Ask whether the user wants to continue.
+  - id: GOAL_INQUIRY
+    goal: Ask the user's goal for this scale interview.
+    allowed_actions: [ask_goal]
+    transitions:
+      - condition: user_quits
+        next: ABORTED
+      - condition: user_responds
+        next: SCALE_SELECTION
+    prompt_hints:
+      - Ask what the user wants to understand today.
+  - id: SCALE_SELECTION
+    goal: Select PHQ-9 or GAD-7 for the first demo.
+    allowed_actions: [select_scale]
+    transitions:
+      - condition: scale_selected
+        next: RISK_CHECK
+      - condition: user_quits
+        next: ABORTED
+    prompt_hints:
+      - Offer PHQ-9 and GAD-7. Mention SCL-90 is load-only in this demo.
+  - id: RISK_CHECK
+    goal: Check immediate safety before scale loop.
+    allowed_actions: [risk_check]
+    transitions:
+      - condition: high_risk
+        next: CRISIS_RESPONSE
+      - condition: no_high_risk
+        next: SCALE_LOOP
+      - condition: user_quits
+        next: ABORTED
+    prompt_hints:
+      - Ask whether there is immediate danger or self-harm risk.
+  - id: SCALE_LOOP
+    goal: Ask current scale item and parse response.
+    allowed_actions: [ask_scale_item, record_answer, skip_question, clarify_item]
+    transitions:
+      - condition: needs_clarification
+        next: CLARIFY_ITEM
+      - condition: answer_recorded
+        next: RECORD_ANSWER
+      - condition: user_skips
+        next: RECORD_ANSWER
+      - condition: user_quits
+        next: ABORTED
+    prompt_hints:
+      - Ask one scale item at a time without changing its meaning.
+  - id: CLARIFY_ITEM
+    goal: Explain the current item without leading the answer.
+    allowed_actions: [clarify_item]
+    transitions:
+      - condition: always
+        next: SCALE_LOOP
+    prompt_hints:
+      - Explain wording neutrally and repeat the available options.
+  - id: RECORD_ANSWER
+    goal: Advance the scale state after answer or skip.
+    allowed_actions: [advance_or_compute]
+    transitions:
+      - condition: has_next_question
+        next: SCALE_LOOP
+      - condition: scale_completed
+        next: COMPUTE_SCORE
+    prompt_hints:
+      - Avoid commentary on the user's answer.
+  - id: COMPUTE_SCORE
+    goal: Compute score deterministically.
+    allowed_actions: [compute_score]
+    transitions:
+      - condition: score_computed
+        next: EXPLAIN_RESULT
+    prompt_hints:
+      - Use deterministic scale scoring.
+  - id: EXPLAIN_RESULT
+    goal: Explain result with non-diagnostic wording.
+    allowed_actions: [explain_result]
+    transitions:
+      - condition: always
+        next: SUPPORTIVE_CLOSE
+    prompt_hints:
+      - Use screening-result language only.
+  - id: SUPPORTIVE_CLOSE
+    goal: Close supportively and log the episode.
+    allowed_actions: [supportive_close]
+    transitions: []
+    prompt_hints:
+      - Encourage reflection and professional support if needed.
+  - id: CRISIS_RESPONSE
+    goal: Stop the scale and provide crisis response.
+    allowed_actions: [crisis_response]
+    transitions: []
+    prompt_hints:
+      - Do not continue the scale. Encourage immediate support.
+  - id: ABORTED
+    goal: Respect stop request and close.
+    allowed_actions: [abort]
+    transitions: []
+    prompt_hints:
+      - Respect the user's decision and do not pressure continuation.

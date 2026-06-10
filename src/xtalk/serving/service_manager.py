@@ -6,6 +6,7 @@ from fastapi import WebSocket
 
 from ..log_utils import logger
 from ..persistence import PersistenceStore
+from ..memory.interfaces import MemoryStore
 
 from .service import Service, DefaultService
 from ..pipelines import Pipeline
@@ -20,6 +21,7 @@ class ServiceManager:
         service_config: dict[str, Any] | None = None,
         service_prototype: Service | None = None,
         persistence_store: PersistenceStore | None = None,
+        memory_store: MemoryStore | None = None,
     ):
         self.active_services: Dict[str, Service] = {}
         if pipeline is None and service_prototype is None:
@@ -28,6 +30,7 @@ class ServiceManager:
         self._pipeline = pipeline
         self._service_config = service_config
         self._persistence = persistence_store
+        self._memory_store = memory_store
 
     async def create_service(
         self,
@@ -38,9 +41,12 @@ class ServiceManager:
     ) -> Service:
         """Create a new Service instance bound to the given WebSocket."""
         service_config_overrides: dict[str, Any] = {}
+        if user_id is not None:
+            service_config_overrides["user_id"] = user_id
         if self._persistence is not None and user_id is not None:
             service_config_overrides["persistence_store"] = self._persistence
-            service_config_overrides["user_id"] = user_id
+        if self._memory_store is not None and user_id is not None:
+            service_config_overrides["memory_store"] = self._memory_store
 
         service = (
             DefaultService(
@@ -91,7 +97,7 @@ class ServiceManager:
 
         if self._persistence is None:
             await self._connect_without_persistence(
-                websocket, already_accepted=already_accepted
+                websocket, already_accepted=already_accepted, user_id=user_id
             )
             return
 
@@ -127,7 +133,11 @@ class ServiceManager:
                 await self.remove_service(service.session_id)
 
     async def _connect_without_persistence(
-        self, websocket: WebSocket, *, already_accepted: bool = False
+        self,
+        websocket: WebSocket,
+        *,
+        already_accepted: bool = False,
+        user_id: str | None = None,
     ) -> None:
         """Handle authenticated websocket sessions without persistence state."""
         service: Service | None = None
@@ -135,7 +145,7 @@ class ServiceManager:
             if not already_accepted:
                 await websocket.accept()
             await self._receive_attach_request(websocket)
-            service = await self.create_service(websocket)
+            service = await self.create_service(websocket, user_id=user_id)
             await service.send_session_attached()
             await service.handle_message_loop(already_accepted=True)
         except Exception as e:

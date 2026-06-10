@@ -14,6 +14,8 @@ from fastapi import (
 from langchain_core.tools import BaseTool
 
 from .auth import JWTAuth, extract_bearer_token, resolve_auth_config
+from .memory.schema import MemoryItem
+from .memory.store import SQLiteMemoryStore
 from .persistence import PersistenceStore
 from .serving.service_manager import ServiceManager
 from .pipelines import Pipeline
@@ -58,14 +60,23 @@ class Xtalk:
         auth_secret, auth_ttl_seconds = resolve_auth_config(service_config)
 
         self._persistence = (
-            PersistenceStore(Path(data_dir).expanduser().resolve() / "chat_history.sqlite3")
+            PersistenceStore(
+                Path(data_dir).expanduser().resolve() / "chat_history.sqlite3"
+            )
             if self._persistence_enabled
+            else None
+        )
+        self._memory_enabled = self._is_memory_enabled(service_config)
+        self._memory_store = (
+            SQLiteMemoryStore(self._resolve_memory_db_path(service_config, data_dir))
+            if self._memory_enabled
             else None
         )
         self._auth = JWTAuth(secret=auth_secret, ttl_seconds=auth_ttl_seconds)
         self._service_manager = ServiceManager(
             service_prototype=service_prototype,
             persistence_store=self._persistence,
+            memory_store=self._memory_store,
         )
         self._pipeline = service_prototype.pipeline
         self._session_limiter = (
@@ -215,9 +226,7 @@ class Xtalk:
         if (
             self._persistence is not None
             and user_id is not None
-            and not self._persistence.user_owns_session(
-            user_id, session_id
-            )
+            and not self._persistence.user_owns_session(user_id, session_id)
         ):
             raise ValueError(f"Session {session_id} not found for user {user_id}.")
         service = self._service_manager.get_service(session_id)
@@ -285,9 +294,12 @@ class Xtalk:
         sessions_path: str = "/api/sessions",
         session_detail_path: str = "/api/sessions/{session_id}",
         upload_path: str = "/api/upload",
+        memories_path: str = "/api/memories",
+        memory_search_path: str = "/api/memories/search",
+        memory_detail_path: str = "/api/memories/{memory_id}",
         ws_path: str = "/ws",
     ) -> None:
-        """Mount the built-in auth, session, upload, and websocket routes."""
+        """Mount the built-in auth, session, memory, upload, and websocket routes."""
 
         def _require_http_user(request: Request) -> str:
             token = extract_bearer_token(request.headers.get("authorization"))
@@ -351,6 +363,91 @@ class Xtalk:
                 await self.embed_text(session_id=session_id, text=text, user_id=user_id)
             except ValueError as exc:
                 raise HTTPException(status_code=404, detail=str(exc)) from exc
+            return {"status": "ok"}
+
+        @app.get(memories_path)
+        async def _list_memories_route(
+            request: Request,
+            limit: int = 50,
+            offset: int = 0,
+        ) -> dict[str, Any]:
+            user_id = _require_http_user(request)
+            if self._memory_store is None:
+                return {"memories": []}
+            memories = await self._memory_store.list(
+                user_id=user_id,
+                limit=limit,
+                offset=offset,
+            )
+            return {"memories": [self._memory_to_dict(item) for item in memories]}
+
+        @app.post(memories_path)
+        async def _create_memory_route(request: Request) -> dict[str, Any]:
+            user_id = _require_http_user(request)
+            if self._memory_store is None:
+                raise HTTPException(status_code=404, detail="Memory is disabled")
+            data = await request.json()
+            content = str(data.get("content") or "").strip()
+            if not content:
+                raise HTTPException(status_code=400, detail="Missing memory content")
+            memory_type = str(data.get("type") or "semantic")
+            session_id = data.get("session_id")
+            memory_id = await self._memory_store.add(
+                MemoryItem(
+                    id=str(uuid.uuid4()),
+                    user_id=user_id,
+                    session_id=str(session_id) if session_id else None,
+                    type=memory_type,
+                    content=content,
+                    source=str(data.get("source") or "debug_api"),
+                    confidence=float(data.get("confidence") or 1.0),
+                    metadata=(
+                        data.get("metadata")
+                        if isinstance(data.get("metadata"), dict)
+                        else {}
+                    ),
+                )
+            )
+            return {"memory_id": memory_id}
+
+        @app.get(memory_search_path)
+        async def _search_memories_route(
+            request: Request,
+            q: str,
+            limit: int = 5,
+        ) -> dict[str, Any]:
+            user_id = _require_http_user(request)
+            if self._memory_store is None:
+                return {"memories": []}
+            results = await self._memory_store.search(
+                user_id=user_id,
+                query=q,
+                limit=limit,
+            )
+            return {
+                "memories": [
+                    {
+                        **self._memory_to_dict(result.item),
+                        "score": result.score,
+                    }
+                    for result in results
+                ]
+            }
+
+        @app.delete(memory_detail_path)
+        async def _delete_memory_route(
+            request: Request,
+            memory_id: str,
+        ) -> dict[str, Any]:
+            user_id = _require_http_user(request)
+            if self._memory_store is None:
+                raise HTTPException(status_code=404, detail="Memory is disabled")
+            deleted = await self._memory_store.delete(
+                user_id=user_id,
+                memory_id=memory_id,
+            )
+            if not deleted:
+                raise HTTPException(status_code=404, detail="Memory not found")
             return {"status": "ok"}
 
         @app.websocket(ws_path)
@@ -424,6 +521,54 @@ class Xtalk:
             if normalized in {"1", "true", "yes", "on"}:
                 return True
         return bool(value)
+
+    @staticmethod
+    def _is_memory_enabled(service_config: dict[str, Any]) -> bool:
+        """Return whether long-term memory storage is enabled."""
+        memory_config = service_config.get("memory")
+        if not isinstance(memory_config, dict):
+            return True
+        value = memory_config.get("enabled", True)
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            if normalized in {"0", "false", "no", "off"}:
+                return False
+            if normalized in {"1", "true", "yes", "on"}:
+                return True
+        return bool(value)
+
+    @staticmethod
+    def _resolve_memory_db_path(
+        service_config: dict[str, Any],
+        data_dir: str,
+    ) -> Path:
+        memory_config = service_config.get("memory")
+        if isinstance(memory_config, dict):
+            sqlite_path = memory_config.get("sqlite_path")
+            if sqlite_path:
+                return Path(str(sqlite_path)).expanduser().resolve()
+            memory_data_dir = memory_config.get("data_dir")
+            if memory_data_dir:
+                return (
+                    Path(str(memory_data_dir)).expanduser().resolve() / "memory.sqlite3"
+                )
+        return Path(data_dir).expanduser().resolve() / "memory" / "memory.sqlite3"
+
+    @staticmethod
+    def _memory_to_dict(item: MemoryItem) -> dict[str, Any]:
+        return {
+            "id": item.id,
+            "session_id": item.session_id,
+            "type": item.type,
+            "content": item.content,
+            "source": item.source,
+            "confidence": item.confidence,
+            "metadata": item.metadata,
+            "created_at": item.created_at,
+            "updated_at": item.updated_at,
+        }
 
     @classmethod
     def _load_pipeline(

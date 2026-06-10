@@ -1,0 +1,28 @@
+risk_levels:
+  high:
+    self_harm:
+      - 不想活
+      - 自杀
+      - 想死
+      - 结束生命
+      - 伤害自己
+      - 割腕
+      - 跳楼
+      - 活不下去
+      - 不如死了
+    harm_to_others:
+      - 杀了别人
+      - 伤害别人
+      - 杀人
+  moderate:
+    panic:
+      - 崩溃
+      - 喘不过气
+      - 恐慌
+      - 惊恐
+    unknown:
+      - 受不了
+      - 没希望
+      - 绝望
+interrupt_levels:
+  - high

@@ -47,6 +47,8 @@ Your response should be catered to the given Chat history, e.g. respond in the s
 """
 
 _AGENT_CONTEXTS_KEY = "_agent_runtime_contexts"
+
+
 @dataclass
 class AgentSession:
     """Mutable per-session state for the default LLM agent.
@@ -70,6 +72,7 @@ class _TurnState:
 
     speaker_id: str | None = None
     caption: str | None = None
+    memories: list[dict[str, Any]] = field(default_factory=list)
 
 
 def get_context_data(
@@ -289,7 +292,9 @@ class DefaultToolProvider(MutableToolProvider):
                 continue
             tools_by_name[tool.name] = tool
 
-        for name, dynamic_tool in (session.metadata.get("dynamic_tools", {}) or {}).items():
+        for name, dynamic_tool in (
+            session.metadata.get("dynamic_tools", {}) or {}
+        ).items():
             if isinstance(dynamic_tool, BaseTool):
                 tools_by_name[name] = dynamic_tool
 
@@ -481,6 +486,7 @@ The system should distinguish users based on their speaker IDs, with one user ma
         """
 You are a multimodal conversational assistant with access to:
 1) Non-verbal environmental context extracted from recent audio, wrapped in <caption>...</caption>.
+2) Relevant long-term user memory, wrapped in <memory>...</memory>.
 
 About <caption>:
 - It describes the user's environment, emotional cues, ambient sounds, and relevant non-verbal context.
@@ -488,14 +494,20 @@ About <caption>:
 - Use it only to enrich understanding and respond more naturally, not to hallucinate details that are not implied.
 - DO NOT reveal <caption> content directly in your replies.
 
+About <memory>:
+- It contains durable user-specific facts, preferences, projects, and prior decisions.
+- Use it only when it is relevant to the latest user message.
+- DO NOT quote the memory block directly or mention that you are using stored memory.
+- If memory conflicts with the user's current explicit message, prioritize the user's current message.
+
 When generating your final response:
-- Use <caption> as a private hint to better understand the user's situation.
+- Use <caption> and <memory> as private hints to better understand the user's situation.
 - Never output the tags themselves, nor refer to them explicitly.
 - Do NOT invent nonexistent sensations, emotions, or events.
 - Focus on giving a helpful, grounded, natural reply to the user's last message.
 - If caption and user text conflict, ALWAYS prioritize the user's explicit message.
 
-Caption:
+Caption and memory:
 """.strip()
     )
 
@@ -592,9 +604,14 @@ Caption:
     def _filter_text(self, text: str) -> str:
         """Normalize one response fragment for TTS output."""
 
-        filtered = text.replace("#", "").replace("**", "").replace("`", "").replace(
-            "-",
-            "",
+        filtered = (
+            text.replace("#", "")
+            .replace("**", "")
+            .replace("`", "")
+            .replace(
+                "-",
+                "",
+            )
         )
         return re.sub(r"(\d+)\.", r"\1", filtered)
 
@@ -603,19 +620,43 @@ Caption:
 
         speaker_context = get_context_data(self._session, "speaker")
         caption_context = get_context_data(self._session, "caption")
+        memory_context = get_context_data(self._session, "memory")
+        memories = memory_context.get("memories")
         return _TurnState(
             speaker_id=speaker_context.get("speaker_id") or None,
             caption=caption_context.get("text") or None,
+            memories=memories if isinstance(memories, list) else [],
         )
 
     def _build_system_prompt(self, turn_state: _TurnState) -> str:
         """Build the system prompt for the current turn."""
 
-        parts = [f"<current_date>{datetime.now().strftime('%Y-%m-%d %A')}</current_date>"]
+        parts = [
+            f"<current_date>{datetime.now().strftime('%Y-%m-%d %A')}</current_date>"
+        ]
         if turn_state.caption:
             parts.append(f"<caption>{turn_state.caption.strip()}</caption>")
+        memories = self._format_memories(turn_state.memories)
+        if memories:
+            parts.append(f"<memory>{memories}</memory>")
         session_system_prompt = f"{self.system_prompt}\n\n{self.CONTEXT_AWARE_PROMPT}"
         return f"{session_system_prompt}\n" + "\n".join(parts)
+
+    @staticmethod
+    def _format_memories(memories: list[dict[str, Any]]) -> str:
+        """Format retrieved memory context for private prompt injection."""
+
+        lines: list[str] = []
+        for memory in memories[:10]:
+            if isinstance(memory, dict):
+                content = str(memory.get("content") or "").strip()
+                memory_type = str(memory.get("type") or "memory").strip()
+            else:
+                content = str(memory).strip()
+                memory_type = "memory"
+            if content:
+                lines.append(f"- [{memory_type}] {content}")
+        return "\n".join(lines)
 
     def _build_user_message(
         self,
@@ -633,7 +674,9 @@ Caption:
         """Ensure the first session message contains the current system prompt."""
 
         prompt = self._build_system_prompt(turn_state)
-        if self._session.messages and isinstance(self._session.messages[0], SystemMessage):
+        if self._session.messages and isinstance(
+            self._session.messages[0], SystemMessage
+        ):
             self._session.messages[0].content = prompt
             return
         self._session.messages.insert(0, SystemMessage(content=prompt))
@@ -735,7 +778,9 @@ Caption:
 
         user_content = self._build_user_message(request, turn_state)
         if turn_state.speaker_id:
-            user_message = HumanMessage(content=user_content, name=turn_state.speaker_id)
+            user_message = HumanMessage(
+                content=user_content, name=turn_state.speaker_id
+            )
         else:
             user_message = HumanMessage(content=user_content)
         self._session.messages.append(user_message)
@@ -823,7 +868,9 @@ Caption:
                 return
 
             if status == "finished":
-                self._register_embedding_search_tool(payload.get("vector_store_instance"))
+                self._register_embedding_search_tool(
+                    payload.get("vector_store_instance")
+                )
 
             text = await self._build_embedding_direct_output(
                 status=status,

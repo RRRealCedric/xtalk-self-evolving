@@ -1,0 +1,51 @@
+{
+  "title": "GAD-7 Anxiety",
+  "description": "Generalized Anxiety Disorder 7-item (GAD-7) scale. Used for screening and measuring the severity of generalized anxiety disorder.",
+  "introductions": {
+    "scoring_rule": "Assign scores of 0, 1, 2, and 3 to the responses: 'not at all', 'several days', 'more than half the days', and 'nearly every day', respectively. Total score ranges from 0 to 21."
+  },
+  "score_interpretation": {
+    "0-4": "Minimal anxiety",
+    "5-9": "Mild anxiety",
+    "10-14": "Moderate anxiety",
+    "15-21": "Severe anxiety"
+  },
+  "questions": [
+    "1. Feeling nervous, anxious, or on edge",
+    "2. Not being able to stop or control worrying",
+    "3. Worrying too much about different things",
+    "4. Trouble relaxing",
+    "5. Being so restless that it is hard to sit still",
+    "6. Becoming easily annoyed or irritable",
+    "7. Feeling afraid, as if something awful might happen"
+  ],
+  "options": [
+    {
+      "text": "Not at all",
+      "score": 0
+    },
+    {
+      "text": "Several days",
+      "score": 1
+    },
+    {
+      "text": "More than half the days",
+      "score": 2
+    },
+    {
+      "text": "Nearly every day",
+      "score": 3
+    }
+  ],
+  "additional_questions": [
+    {
+      "question": "If you checked any problems, how difficult have they made it for you to do your work, take care of things at home, or get along with other people?",
+      "options": [
+        "Not difficult at all",
+        "Somewhat difficult",
+        "Very difficult",
+        "Extremely difficult"
+      ]
+    }
+  ]
+}

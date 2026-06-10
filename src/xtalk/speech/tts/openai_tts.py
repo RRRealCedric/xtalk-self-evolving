@@ -138,7 +138,9 @@ class OpenAITTS(TTS):
         url = f"{self.base_url}/audio/speech"
         timeout = aiohttp.ClientTimeout(total=self._timeout)
         try:
-            async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with aiohttp.ClientSession(
+                timeout=timeout, trust_env=True
+            ) as session:
                 async with session.post(
                     url,
                     headers=self._get_headers(),
@@ -160,7 +162,9 @@ class OpenAITTS(TTS):
         url = f"{self.base_url}/audio/speech"
         timeout = aiohttp.ClientTimeout(total=self._timeout)
         try:
-            async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with aiohttp.ClientSession(
+                timeout=timeout, trust_env=True
+            ) as session:
                 async with session.post(
                     url,
                     headers=self._get_headers(),
@@ -170,17 +174,18 @@ class OpenAITTS(TTS):
                         body = await resp.text()
                         raise RuntimeError(f"HTTP {resp.status}: {body[:200]}")
 
-                    # For OpenAI TTS, streaming returns audio format chunks (like mp3).
-                    # We might not be able to easily resample chunks on the fly without a stateful resampler.
-                    # As a naive implementation for PCM, we assume chunks can be yielded directly
-                    # if the sample rate matches, or we accumulate and decode.
+                    if self.response_format == "pcm":
+                        async for chunk in resp.content.iter_chunked(4096):
+                            if chunk:
+                                yield chunk
+                        return
 
-                    # Note: If true streaming resampling is required, we need a buffered resampler.
-                    # Here we just yield the raw chunks. If response_format='pcm' and target is 24k, it works.
-                    # Otherwise, client needs to handle format.
+                    buffer = bytearray()
                     async for chunk in resp.content.iter_chunked(4096):
                         if chunk:
-                            yield chunk
+                            buffer.extend(chunk)
+                    if buffer:
+                        yield self._resample_bytes(bytes(buffer))
         except aiohttp.ClientError as exc:
             raise RuntimeError(
                 f"Failed to stream speech with OpenAITTS: {exc}"

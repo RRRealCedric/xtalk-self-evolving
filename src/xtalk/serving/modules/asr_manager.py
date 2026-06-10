@@ -97,6 +97,7 @@ class AudioConsumer:
         self._consumer_idle_event.set()
         # Start audio consumer task immediately
         self._audio_consumer_task = asyncio.create_task(self._audio_consumer())
+
     async def accept_audio_frame(self, audio_frame: bytes):
         # Add audio_frame to pre-buffer if consumer not started; add audio_frame to recognition queue if started
         if not self._consumer_running():
@@ -203,7 +204,8 @@ class AudioConsumer:
                     session_id=self._session_id,
                     text=recognized_text,
                     display_text=recognized_text,
-                )
+                ),
+                wait_for_completion=True,
             )
         else:
             if recognized_text == self._recognized_text and not is_final_chunk:
@@ -223,8 +225,13 @@ class AudioConsumer:
         """Return whether recognized text is empty after trimming whitespace."""
         return not text.strip()
 
-    async def _publish_event(self, event: BaseEvent):
-        await self._event_bus.publish(event)
+    async def _publish_event(
+        self,
+        event: BaseEvent,
+        *,
+        wait_for_completion: bool = False,
+    ):
+        await self._event_bus.publish(event, wait_for_completion=wait_for_completion)
 
     async def _reset_states(self):
         self._recognized_text = ""

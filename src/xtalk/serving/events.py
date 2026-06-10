@@ -254,6 +254,7 @@ class TTSSpeedChange(BaseEvent):
 @dataclass
 class TTSChunkReady(BaseEvent):
     """Indicates one TTS audio chunk is ready for sending. Not emitted when the chunk is generated."""
+
     TYPE: ClassVar[str] = "tts.chunk_ready"
     audio_chunk: bytes = b""
     sample_rate: int = 48000
@@ -313,6 +314,21 @@ class RetrievalUpdated(BaseEvent):
     TYPE: ClassVar[str] = "retrieval.updated"
     text: str = ""
     is_final: bool = False
+
+
+@dataclass
+class MemoryRetrieved(BaseEvent):
+    TYPE: ClassVar[str] = "memory.retrieved"
+    memories: list[dict[str, Any]] = field(default_factory=list)
+    query: str = ""
+
+
+@dataclass
+class MemoryUpdated(BaseEvent):
+    TYPE: ClassVar[str] = "memory.updated"
+    memory_id: str = ""
+    action: str = ""
+    content: str = ""
 
 
 @dataclass

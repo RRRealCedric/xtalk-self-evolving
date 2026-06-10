@@ -1,0 +1,280 @@
+{
+  "title": "SCL-90",
+  "description": "The SCL-90 is a psychological symptom self-report tool that evaluates a wide range of psychological problems and symptoms of psychopathology over the past 7 days. It includes 90 items across 9 primary symptom dimensions.",
+  "introductions": {
+    "scoring_rule": {
+      "response_scale": {
+        "0": "NOT AT ALL",
+        "1": "A LITTLE BIT",
+        "2": "MODERATELY",
+        "3": "QUITE A BIT",
+        "4": "EXTREMELY"
+      },
+      "raw_score_range": [
+        0,
+        4
+      ],
+      "original_response_range": [
+        1,
+        5
+      ],
+      "transformation": "score = response - 1",
+      "total_score": {
+        "items": [
+          "SCL90_1",
+          "SCL90_2",
+          "...",
+          "SCL90_90"
+        ],
+        "method": "sum_all_items - 90"
+      },
+      "subscales": {
+        "Somatization": {
+          "items": [
+            "SCL90_1",
+            "SCL90_4",
+            "SCL90_12",
+            "SCL90_27",
+            "SCL90_40",
+            "SCL90_42",
+            "SCL90_48",
+            "SCL90_49",
+            "SCL90_52",
+            "SCL90_53",
+            "SCL90_56",
+            "SCL90_58"
+          ],
+          "method": "sum_selected_items - 12"
+        },
+        "Obsessive_Compulsive": {
+          "items": [
+            "SCL90_3",
+            "SCL90_9",
+            "SCL90_10",
+            "SCL90_28",
+            "SCL90_38",
+            "SCL90_45",
+            "SCL90_46",
+            "SCL90_51",
+            "SCL90_55",
+            "SCL90_65"
+          ],
+          "method": "sum_selected_items - 10"
+        },
+        "Interpersonal_Sensitivity": {
+          "items": [
+            "SCL90_6",
+            "SCL90_21",
+            "SCL90_34",
+            "SCL90_36",
+            "SCL90_37",
+            "SCL90_41",
+            "SCL90_61",
+            "SCL90_69",
+            "SCL90_73"
+          ],
+          "method": "sum_selected_items - 9"
+        },
+        "Depression": {
+          "items": [
+            "SCL90_5",
+            "SCL90_14",
+            "SCL90_15",
+            "SCL90_20",
+            "SCL90_22",
+            "SCL90_26",
+            "SCL90_29",
+            "SCL90_30",
+            "SCL90_31",
+            "SCL90_32",
+            "SCL90_54",
+            "SCL90_71",
+            "SCL90_79"
+          ],
+          "method": "sum_selected_items - 13"
+        },
+        "Anxiety": {
+          "items": [
+            "SCL90_2",
+            "SCL90_17",
+            "SCL90_23",
+            "SCL90_33",
+            "SCL90_39",
+            "SCL90_57",
+            "SCL90_72",
+            "SCL90_78",
+            "SCL90_80",
+            "SCL90_86"
+          ],
+          "method": "sum_selected_items - 10"
+        },
+        "Hostility": {
+          "items": [
+            "SCL90_11",
+            "SCL90_24",
+            "SCL90_63",
+            "SCL90_67",
+            "SCL90_74",
+            "SCL90_81"
+          ],
+          "method": "sum_selected_items - 6"
+        },
+        "Phobic_Anxiety": {
+          "items": [
+            "SCL90_13",
+            "SCL90_25",
+            "SCL90_47",
+            "SCL90_50",
+            "SCL90_70",
+            "SCL90_82",
+            "SCL90_84"
+          ],
+          "method": "sum_selected_items - 7"
+        },
+        "Paranoid_Ideation": {
+          "items": [
+            "SCL90_7",
+            "SCL90_16",
+            "SCL90_35",
+            "SCL90_62",
+            "SCL90_68",
+            "SCL90_76",
+            "SCL90_83",
+            "SCL90_85"
+          ],
+          "method": "sum_selected_items - 8"
+        },
+        "Psychoticism": {
+          "items": [
+            "SCL90_8",
+            "SCL90_18",
+            "SCL90_43",
+            "SCL90_68",
+            "SCL90_75",
+            "SCL90_88",
+            "SCL90_90"
+          ],
+          "method": "sum_selected_items - 7"
+        }
+      },
+      "copyright": "Copyright © 2000–2009 by Dr. John M. Gottman and Dr. Julie Schwartz Gottman. Distributed under license by The Gottman Institute, Inc."
+    }
+  },
+  "score_interpretation": {
+    "note": "Higher scores indicate more severe psychological distress."
+  },
+  "questions": [
+    "1. Headaches",
+    "2. Nervousness or shakiness inside",
+    "3. Unwanted thoughts, words, or ideas that won’t leave your mind",
+    "4. Faintness or dizziness",
+    "5. Loss of sexual interest or pleasure",
+    "6. Feeling critical of others",
+    "7. The idea that someone else can control your thoughts",
+    "8. Feeling others are to blame for most of your troubles",
+    "9. Trouble remembering things",
+    "10. Worried about sloppiness or carelessness",
+    "11. Feeling easily annoyed or irritated",
+    "12. Pains in heart or chest",
+    "13. Feeling afraid in open spaces or on the streets",
+    "14. Feeling low in energy or slowed down",
+    "15. Thoughts of ending your life",
+    "16. Hearing voices that other people do not hear",
+    "17. Trembling",
+    "18. Feeling that most people cannot be trusted",
+    "19. Poor appetite",
+    "20. Crying easily",
+    "21. Feeling shy or uneasy with the opposite sex",
+    "22. Feeling of being trapped or caught",
+    "23. Suddenly scared for no reason",
+    "24. Temper outbursts that you could not control",
+    "25. Feeling afraid to go out of your house alone",
+    "26. Blaming yourself for things",
+    "27. Pains in lower back",
+    "28. Feeling blocked in getting things done",
+    "29. Feeling lonely",
+    "30. Feeling blue",
+    "31. Worrying too much about things",
+    "32. Feeling no interest in things",
+    "33. Feeling fearful",
+    "34. Your feelings being easily hurt",
+    "35. Other people being aware of your private thoughts",
+    "36. Feeling others do not understand you or are unsympathetic",
+    "37. Feeling that people are unfriendly or dislike you",
+    "38. Having to do things very slowly to insure correctness",
+    "39. Heart pounding or racing",
+    "40. Nausea or upset stomach",
+    "41. Feeling inferior to others",
+    "42. Soreness of your muscles",
+    "43. Feeling that you are watched or talked about by others",
+    "44. Trouble falling asleep",
+    "45. Having to check and double-check what you do",
+    "46. Difficulty making decisions",
+    "47. Feeling afraid to travel on buses, subways, trains",
+    "48. Trouble getting your breath",
+    "49. Hot or cold spells",
+    "51. Your mind going blank",
+    "52. Numbness or tingling in parts of your body",
+    "53. A lump in your throat",
+    "54. Feeling hopeless about the future",
+    "55. Trouble concentrating",
+    "56. Feeling weak in parts of your body",
+    "57. Feeling tense or keyed up",
+    "58. Heavy feelings in your arms or legs",
+    "59. Thoughts of death or dying",
+    "60. Overeating",
+    "61. Feeling uneasy when people are watching or talking about you",
+    "62. Having thoughts that are not your own",
+    "63. Having urges to beat, injure, or harm someone",
+    "64. Awakening in the early morning",
+    "65. Having to repeat the same actions such as touching, counting, washing",
+    "66. Sleep that is restless or disturbed",
+    "67. Having urges to break or smash things",
+    "68. Having ideas or beliefs that others do not share",
+    "69. Feeling very self-conscious with others",
+    "70. Feeling uneasy in crowds, such as shopping or at a movie",
+    "71. Feeling everything is an effort",
+    "72. Spells of terror or panic",
+    "73. Feeling uncomfortable about eating or drinking in public",
+    "74. Getting into frequent arguments",
+    "75. Feeling nervous when you are left alone",
+    "76. Others not giving you proper credit for your achievements",
+    "77. Feeling lonely even when you are with people",
+    "78. Feeling so restless you couldn’t sit still",
+    "79. Feelings of worthlessness",
+    "80. Feeling that familiar things are strange or unreal",
+    "81. Shouting or throwing things",
+    "82. Feeling afraid you will faint in public",
+    "83. Feeling that people will take advantage of you if you let them",
+    "84. Having thoughts about sex that bother you a lot",
+    "85. The idea that you should be punished for your sins",
+    "86. Feeling pushed to get things done",
+    "87. The idea that something serious is wrong with your body",
+    "88. Never feeling close to another person",
+    "89. Feelings of guilt",
+    "90. The idea that something is wrong with your mind"
+  ],
+  "options": [
+    {
+      "text": "Not at all",
+      "score": 0
+    },
+    {
+      "text": "A little bit",
+      "score": 1
+    },
+    {
+      "text": "Moderately",
+      "score": 2
+    },
+    {
+      "text": "Quite",
+      "score": 3
+    },
+    {
+      "text": "Extremely",
+      "score": 4
+    }
+  ],
+  "additional_questions": []
+}

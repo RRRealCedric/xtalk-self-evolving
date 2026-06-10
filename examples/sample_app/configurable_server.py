@@ -4,7 +4,7 @@ import mimetypes
 import os
 from pathlib import Path
 
-os.environ["NO_PROXY"] = "*"
+os.environ.setdefault("NO_PROXY", "127.0.0.1,localhost")
 
 from fastapi import FastAPI, Request  # noqa: E402
 from fastapi.responses import HTMLResponse, JSONResponse  # noqa: E402

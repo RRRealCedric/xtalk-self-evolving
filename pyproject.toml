@@ -141,6 +141,9 @@ example = [
 [tool.setuptools]
 package-dir = {"" = "src"}
 
+[tool.setuptools.package-data]
+"xtalk.psych_sop" = ["*.yaml", "data/pysc/*"]
+
 [tool.setuptools_scm]
 version_scheme = "post-release"
 local_scheme   = "no-local-version"

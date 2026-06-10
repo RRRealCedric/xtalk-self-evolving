@@ -27,6 +27,7 @@ from ..events import (
     LatencyMetricsUpdated,
     ToolCallOccurred,
     RetrievalUpdated,
+    MemoryRetrieved,
     SpeakerRecognized,
     FullAudioFrameReady,
 )
@@ -232,6 +233,16 @@ class OutputGateway(EventListenerMixin):
             {
                 "text": event.text or "",
                 "is_final": bool(event.is_final),
+            },
+        )
+
+    @EventListenerMixin.event_handler(MemoryRetrieved, priority=5)
+    async def _send_memory_retrieved(self, event: MemoryRetrieved) -> None:
+        await self._forward(
+            "memory_retrieved",
+            {
+                "query": event.query,
+                "memories": event.memories or [],
             },
         )
 

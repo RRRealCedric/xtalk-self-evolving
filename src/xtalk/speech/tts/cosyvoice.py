@@ -6,8 +6,6 @@ import threading
 from typing import Any, Dict, Iterable, Optional
 
 import certifi
-import dashscope
-from dashscope.audio.tts_v2 import AudioFormat, ResultCallback, SpeechSynthesizer
 
 from ..interfaces import TTS
 
@@ -19,24 +17,47 @@ def _ensure_ssl_cert_file() -> None:
         os.environ["SSL_CERT_FILE"] = certifi.where()
 
 
-class _QueueingCallback(ResultCallback):
-    """Pushes streaming PCM chunks into a queue; signals completion via sentinel."""
+def _load_dashscope_tts() -> tuple[Any, Any, type[Any], type[Any]]:
+    """Import DashScope TTS dependencies lazily."""
 
-    def __init__(self, chunk_queue: queue.Queue[object], sentinel: object) -> None:
-        super().__init__()
-        self._queue = chunk_queue
-        self._sentinel = sentinel
+    try:
+        import dashscope
+        from dashscope.audio.tts_v2 import (
+            AudioFormat,
+            ResultCallback,
+            SpeechSynthesizer,
+        )
+    except ImportError as exc:
+        raise ImportError(
+            "CosyVoice requires the optional DashScope dependency. "
+            "Install it with `pip install dashscope` or `pip install xtalk[ali]`."
+        ) from exc
+    return dashscope, AudioFormat, ResultCallback, SpeechSynthesizer
 
-    def on_data(self, data: bytes) -> None:
-        if data:
-            self._queue.put(data)
 
-    def on_error(self, message: str) -> None:
-        self._queue.put(RuntimeError(f"CosyVoice streaming error: {message}"))
-        self._queue.put(self._sentinel)
+def _build_queueing_callback_cls(result_callback_cls: type[Any]) -> type[Any]:
+    """Create a DashScope callback class that forwards chunks into a queue."""
 
-    def on_complete(self) -> None:
-        self._queue.put(self._sentinel)
+    class QueueingCallback(result_callback_cls):
+        """Push streaming PCM chunks into a queue and signal completion."""
+
+        def __init__(self, chunk_queue: queue.Queue[object], sentinel: object) -> None:
+            super().__init__()
+            self._queue = chunk_queue
+            self._sentinel = sentinel
+
+        def on_data(self, data: bytes) -> None:
+            if data:
+                self._queue.put(data)
+
+        def on_error(self, message: str) -> None:
+            self._queue.put(RuntimeError(f"CosyVoice streaming error: {message}"))
+            self._queue.put(self._sentinel)
+
+        def on_complete(self) -> None:
+            self._queue.put(self._sentinel)
+
+    return QueueingCallback
 
 
 class CosyVoice(TTS):
@@ -59,6 +80,13 @@ class CosyVoice(TTS):
         stream_timeout: float = 30.0,
         extra_request_params: Optional[Dict[str, Any]] = None,
     ) -> None:
+        (
+            dashscope,
+            audio_format_cls,
+            result_callback_cls,
+            speech_synthesizer_cls,
+        ) = _load_dashscope_tts()
+
         self.api_key = api_key or os.getenv("DASHSCOPE_API_KEY")
         if not self.api_key:
             raise ValueError(
@@ -70,12 +98,14 @@ class CosyVoice(TTS):
 
         self.model = model
         self.voice = voice
-        self._audio_format = AudioFormat.PCM_48000HZ_MONO_16BIT  # force PCM 48k
+        self._audio_format = audio_format_cls.PCM_48000HZ_MONO_16BIT  # force PCM 48k
         self._sample_rate = self.DEFAULT_SAMPLE_RATE
         self._stream_timeout = float(stream_timeout)
         self._extra_request_params: Dict[str, Any] = (
             extra_request_params.copy() if extra_request_params else {}
         )
+        self._speech_synthesizer_cls = speech_synthesizer_cls
+        self._callback_cls = _build_queueing_callback_cls(result_callback_cls)
 
     def clone(self) -> "CosyVoice":
         return CosyVoice(
@@ -93,7 +123,7 @@ class CosyVoice(TTS):
         if not text:
             raise ValueError("Text for CosyVoice synthesis cannot be empty.")
 
-        synthesizer = SpeechSynthesizer(
+        synthesizer = self._speech_synthesizer_cls(
             model=self.model,
             voice=self.voice,
             format=self._audio_format,
@@ -126,8 +156,8 @@ class CosyVoice(TTS):
         sentinel = object()
 
         def _worker() -> None:
-            callback = _QueueingCallback(chunk_queue, sentinel)
-            synthesizer = SpeechSynthesizer(
+            callback = self._callback_cls(chunk_queue, sentinel)
+            synthesizer = self._speech_synthesizer_cls(
                 model=self.model,
                 voice=self.voice,
                 format=self._audio_format,
