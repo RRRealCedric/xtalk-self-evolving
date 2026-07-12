@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+import unicodedata
 from pathlib import Path
 from typing import Any
 
@@ -23,27 +25,114 @@ SUPPORTED_RUNNABLE_SCALES = {"GAD-7", "PHQ-9"}
 TERMINAL_NODES = {"SUPPORTIVE_CLOSE", "CRISIS_RESPONSE", "ABORTED"}
 
 
-def normalize_scale_id(value: str) -> str:
-    """Normalize user-facing scale ids."""
+def _compact_scale_token(text: str) -> str:
+    """Reduce text to uppercase ASCII alphanumerics after NFKC folding.
 
-    text = value.strip().upper().replace("_", "-")
-    aliases = {"GAD7": "GAD-7", "PHQ9": "PHQ-9", "SCL90": "SCL-90"}
-    return aliases.get(text, text)
+    Turns ``"GAD-7"``, ``"gad 7"``, fullwidth ``"ＧＡＤ７"``, ``"gad7。"`` and
+    ``"我想做gad7"`` all into a string containing ``"GAD7"``, so scale-name
+    matching is robust to ASR spacing, punctuation, fullwidth characters and
+    surrounding text.
+
+    Parameters
+    ----------
+    text : str
+        Arbitrary user or config text.
+
+    Returns
+    -------
+    str
+        The input with every non ``[A-Z0-9]`` character removed.
+    """
+
+    return re.sub(r"[^A-Z0-9]", "", unicodedata.normalize("NFKC", text).upper())
+
+
+def normalize_scale_id(value: str) -> str:
+    """Normalize user-facing scale ids.
+
+    Canonicalizes common ASR/voice variants of a scale *name* by folding to a
+    compact alphanumeric token (see :func:`_compact_scale_token`), so that
+    ``"GAD-7"``, ``"gad 7"``, ``"ＧＡＤ７"`` and ``"gad7。"`` all map to
+    ``"GAD-7"``. Anything that is not an exact scale token gets only a light
+    normalization, which preserves the strict ``__init__`` contract: a bare
+    ``"GAD"`` does not become a runnable id.
+
+    Parameters
+    ----------
+    value : str
+        Raw scale id from config or user text.
+
+    Returns
+    -------
+    str
+        A canonical scale id when recognized, else a lightly normalized string.
+    """
+
+    compact = _compact_scale_token(value)
+    compact_aliases = {"GAD7": "GAD-7", "PHQ9": "PHQ-9", "SCL90": "SCL-90"}
+    if compact in compact_aliases:
+        return compact_aliases[compact]
+    return unicodedata.normalize("NFKC", value).strip().upper().replace("_", "-")
 
 
 def select_scale(user_text: str, default_scale: str) -> str | None:
-    """Select a runnable scale from free-form user text."""
+    """Select a runnable scale from free-form (often ASR'd) user text.
+
+    Tries, in order: empty input maps to ``default_scale``; an unambiguous
+    scale-name token (robust to ASR letter/spacing variants and to the name
+    being embedded in a sentence); a Chinese symptom word; a positional
+    reference (GAD-7 is offered first, PHQ-9 second); and an accept-default
+    phrase. Returns ``None`` only when the choice is genuinely ambiguous or
+    unrecognized, so the caller can re-prompt.
+
+    Parameters
+    ----------
+    user_text : str
+        Free-form user reply at the scale-selection step.
+    default_scale : str
+        Scale to use for empty input or an explicit "default" request.
+
+    Returns
+    -------
+    str | None
+        A runnable scale id (``"GAD-7"`` or ``"PHQ-9"``), or ``None``.
+    """
 
     text = user_text.strip()
     if not text:
         return default_scale
-    normalized = normalize_scale_id(text)
-    if normalized in SUPPORTED_RUNNABLE_SCALES:
-        return normalized
-    if "焦虑" in text:
-        return "GAD-7"
-    if "抑郁" in text or "情绪" in text or "低落" in text:
-        return "PHQ-9"
+
+    compact = _compact_scale_token(text)
+    has_gad = "GAD" in compact
+    has_phq = "PHQ" in compact
+    if has_gad ^ has_phq:
+        return "GAD-7" if has_gad else "PHQ-9"
+
+    wants_gad = "焦虑" in text
+    wants_phq = any(word in text for word in ("抑郁", "情绪", "低落", "心情", "难过"))
+    if wants_gad ^ wants_phq:
+        return "GAD-7" if wants_gad else "PHQ-9"
+
+    first = any(word in text for word in ("第一", "第1", "前面", "头一个"))
+    second = any(word in text for word in ("第二", "第2", "后面"))
+    if first ^ second:
+        return "GAD-7" if first else "PHQ-9"
+
+    accept_default = (
+        "默认",
+        "都行",
+        "都可以",
+        "随便",
+        "任意",
+        "你定",
+        "听你的",
+        "可以",
+        "好的",
+        "行",
+    )
+    if any(word in text for word in accept_default):
+        return default_scale
+
     return None
 
 
@@ -223,7 +312,9 @@ class PsychSOPRuntime:
             return self._episode_path
 
         final_status = status or self.status
-        final_failure_type = failure_type if failure_type is not None else self.failure_type
+        final_failure_type = (
+            failure_type if failure_type is not None else self.failure_type
+        )
         if final_status == "failed" and final_failure_type is None:
             final_failure_type = "unexpected_exit"
         if final_status == "aborted" and self.engine.state:
@@ -294,7 +385,11 @@ class PsychSOPRuntime:
         if node_id == "SCALE_SELECTION":
             maybe_scale = select_scale(user_text, self.default_scale)
             if maybe_scale is None:
-                return "目前请在 GAD-7 和 PHQ-9 中选择一个。"
+                return (
+                    "想先了解焦虑，就说“焦虑”或“第一个”；"
+                    "想先了解情绪低落，就说“情绪”或“第二个”；"
+                    "也可以直接说“默认”。"
+                )
             self.selected_scale = maybe_scale
             self.scale = self.engine.load_scale(self.selected_scale)
             self.logger.episode["scale_id"] = self.selected_scale
@@ -331,8 +426,7 @@ class PsychSOPRuntime:
         if option_id is None or confidence < 0.6:
             self.logger.increment_clarification()
             return (
-                "我还不能确定你的选择。请回复 0、1、2、3，"
-                "或输入“解释”“跳过”“退出”。"
+                "我还不能确定你的选择。请回复 0、1、2、3，" "或输入“解释”“跳过”“退出”。"
             )
         if self.engine.state is None:
             return "当前量表还没有开始，请先继续流程。"

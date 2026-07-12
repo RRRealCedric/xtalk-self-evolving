@@ -825,6 +825,38 @@ deterministic state
 6. 为每个 session 存储独立 runtime。
 7. 将 speaker/user id 与 memory user id 对齐。
 
+### 七、SCID 双 LM 语音模式
+
+当前新增了第一版 SCID 双 LM 语音评估 runtime：
+
+```text
+ASRResultFinal
+  -> SCIDDualLMManager
+  -> SCIDDualLMRuntime
+  -> AssessmentLedger
+  -> DeepSeekAssessor or RuleBasedAssessor
+  -> frontend dialogue model
+  -> ConsumeLLMAgentGenerationRequested
+  -> TTS
+```
+
+启动示例：
+
+```bash
+cd xtalk
+DEEPSEEK_API_KEY=<your_key> PYTHONPATH=src python examples/psych_sop_voice_demo/server.py \
+  --config ../ali_config.json \
+  --mode scid \
+  --backend-model deepseek-v4-pro
+```
+
+安全边界：
+
+- DeepSeek key 只从 `DEEPSEEK_API_KEY` 环境变量读取，不写入配置或日志。
+- 前台小模型只负责口语化转述，不负责评分或诊断。
+- 后台模型输出必须经过 JSON parser 和 `AssessmentLedger` 校验后才写入状态。
+- 当前覆盖范围是扫描模块 + F/G/K 重点模块入口，不是完整 346 页 SCID。
+
 ## 当前 TODO 标注
 
 代码中已有这些 TODO：
@@ -847,7 +879,7 @@ deterministic state
 - 当前危机识别只做关键词，不可作为安全系统上线。
 - 当前 memory 是单用户调试模式，不适合多用户真实环境。
 - 当前没有隐私合规、数据脱敏、访问控制、审计策略。
-- 当前没有接入真实 X-Talk voice pipeline。
+- SCID 当前仅通过 `examples/psych_sop_voice_demo/server.py --mode scid` 接入 X-Talk voice pipeline。
 - 当前没有使用真实 PsychologySOP 手册生成完整 SOP。
 
 ## 推荐开发顺序

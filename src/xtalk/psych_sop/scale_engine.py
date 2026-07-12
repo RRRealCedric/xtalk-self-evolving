@@ -2,11 +2,66 @@
 
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import asdict
 from typing import Any
 
 from .scale_loader import ScaleLoader
 from .scale_schema import ScaleOption, ScaleSessionState, ScaleSpec
+
+
+_CN_NUMERAL_TO_INT = {
+    "零": 0,
+    "〇": 0,
+    "一": 1,
+    "壹": 1,
+    "二": 2,
+    "两": 2,
+    "俩": 2,
+    "贰": 2,
+    "三": 3,
+    "叁": 3,
+    "四": 4,
+    "五": 5,
+    "六": 6,
+    "七": 7,
+    "八": 8,
+    "九": 9,
+}
+
+# Particles/punctuation an ASR may wrap a bare number in, e.g. "选三"/"第1个"/"2。".
+_ANSWER_PARTICLES = "选第是答号项个。，、！？!?,.　 "
+
+
+def _numeric_option(normalized_text: str) -> int | None:
+    """Return the integer a bare numeric answer refers to, or ``None``.
+
+    Handles ASCII/fullwidth digits and standalone Chinese numerals (e.g. ASR
+    output ``"一"``/``"二"``/``"三"``, or ``"选三"``/``"第1个"``), ignoring common
+    wrapper particles and surrounding punctuation. Numbers embedded inside other
+    words (``"一点"``, ``"一半"``) are deliberately not matched, so frequency
+    phrases still fall through to keyword parsing.
+
+    Parameters
+    ----------
+    normalized_text : str
+        Text already passed through ``unicodedata.normalize("NFKC", ...)`` and
+        lowercased.
+
+    Returns
+    -------
+    int | None
+        The referenced integer, or ``None`` if the text is not a bare number.
+    """
+
+    core = normalized_text
+    for particle in _ANSWER_PARTICLES:
+        core = core.replace(particle, "")
+    if len(core) != 1:
+        return None
+    if core.isdigit():
+        return int(core)
+    return _CN_NUMERAL_TO_INT.get(core)
 
 
 class ScaleEngine:
@@ -146,16 +201,36 @@ class ScaleEngine:
         self.state.touch()
 
     def parse_answer(self, user_text: str) -> tuple[int | None, float, str]:
-        """Map user text to an option id with a coarse confidence."""
+        """Map user text (often ASR output) to an option id with a coarse confidence.
+
+        Accepts a bare number in several forms — ASCII or fullwidth digits and
+        spoken Chinese numerals such as ``"一"``/``"二"``/``"三"`` (see
+        :func:`_numeric_option`) — then the option's own description text, then a
+        coarse Chinese frequency-keyword fallback. Only option ids that exist in
+        the loaded scale are returned.
+
+        Parameters
+        ----------
+        user_text : str
+            Raw user/ASR answer for the current item.
+
+        Returns
+        -------
+        tuple[int | None, float, str]
+            ``(option_id, confidence, reason)``; ``option_id`` is ``None`` when
+            nothing matched.
+        """
 
         self._require_scale()
         assert self.scale is not None
-        text = user_text.strip().lower()
+        option_ids = {option.option_id for option in self.scale.options}
+        normalized = unicodedata.normalize("NFKC", user_text).strip().lower()
+
+        numeric = _numeric_option(normalized)
+        if numeric is not None and numeric in option_ids:
+            return numeric, 1.0, "matched_option_id"
         for option in self.scale.options:
-            if text == str(option.option_id):
-                return option.option_id, 1.0, "matched_option_id"
-        for option in self.scale.options:
-            if option.description and option.description.lower() in text:
+            if option.description and option.description.lower() in normalized:
                 return option.option_id, 0.95, "matched_option_text"
 
         keyword_map = {
@@ -165,7 +240,9 @@ class ScaleEngine:
             3: ["每天", "几乎每天", "总是", "非常", "严重", "almost every day"],
         }
         for option_id, keywords in keyword_map.items():
-            if any(keyword in text for keyword in keywords):
+            if option_id not in option_ids:
+                continue
+            if any(keyword in normalized for keyword in keywords):
                 return option_id, 0.7, "matched_keyword"
         return None, 0.0, "unrecognized"
 

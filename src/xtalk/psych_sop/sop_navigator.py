@@ -1,5 +1,7 @@
 """Rule-based SOP navigation for the psychology demo."""
 
+# TODO: YAML 里的 transitions 没有真正被使用;规则匹配太简单
+
 from __future__ import annotations
 
 from pathlib import Path
