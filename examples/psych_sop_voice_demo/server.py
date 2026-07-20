@@ -29,6 +29,14 @@ mimetypes.add_type("application/javascript", ".mjs")
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse command-line options for the PsychSOP voice demo.
+
+    Returns
+    -------
+    argparse.Namespace
+        Parsed command-line arguments.
+    """
+
     parser = argparse.ArgumentParser(description="X-Talk PsychSOP Voice Demo Server")
     parser.add_argument("--config", required=True, type=str, help="X-Talk config path")
     parser.add_argument("--port", type=int, help="Port number")
@@ -41,8 +49,58 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--backend-model",
-        default="deepseek-v4-pro",
-        help="Backend diagnostic model used in --mode scid.",
+        default=None,
+        help=(
+            "Backend diagnostic model used in --mode scid. "
+            "Overrides the config value when provided."
+        ),
+    )
+    parser.add_argument(
+        "--scid-observer-model",
+        default=None,
+        help="Optional faster model for the asynchronous SCID observer.",
+    )
+    parser.add_argument(
+        "--scid-runtime-mode",
+        choices=("sequential", "parallel", "realtime"),
+        default=None,
+        help="SCID runtime response mode. Overrides the config value when provided.",
+    )
+    parser.add_argument(
+        "--scid-observer-mode",
+        choices=("off", "shadow", "active"),
+        default=None,
+        help=(
+            "Run the incremental observer off, shadow-only, or action-enabled. "
+            "Overrides the config value when provided."
+        ),
+    )
+    parser.add_argument(
+        "--scid-candidate-pregeneration",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Pre-generate safe action-conditioned foreground utterances.",
+    )
+    parser.add_argument(
+        "--scid-optimistic-scan",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Allow one active observer-guided speculative scan step.",
+    )
+    parser.add_argument(
+        "--scid-observer-confidence-threshold",
+        type=float,
+        default=None,
+        help="Minimum observer confidence for optimistic scan advance.",
+    )
+    parser.add_argument(
+        "--scid-frontend-initial-timeout",
+        type=float,
+        default=None,
+        help=(
+            "Seconds to wait for the foreground LM to render the first "
+            "non-committal SCID response before using a local fallback."
+        ),
     )
     parser.add_argument("--reset-memory", action="store_true")
     return parser.parse_args()
@@ -62,7 +120,26 @@ if args.reset_memory:
     service_config["psych_sop_reset_memory"] = True
 service_config.setdefault("psych_sop_experiment_id", "psych_sop_voice_demo")
 service_config.setdefault("scid_experiment_id", "scid_voice_demo")
-service_config["scid_backend_model"] = args.backend_model
+if args.backend_model:
+    service_config["scid_backend_model"] = args.backend_model
+if args.scid_observer_model:
+    service_config["scid_observer_model"] = args.scid_observer_model
+if args.scid_runtime_mode is not None:
+    service_config["scid_runtime_mode"] = args.scid_runtime_mode
+if args.scid_observer_mode is not None:
+    service_config["scid_observer_mode"] = args.scid_observer_mode
+if args.scid_candidate_pregeneration is not None:
+    service_config["scid_candidate_pregeneration"] = args.scid_candidate_pregeneration
+if args.scid_optimistic_scan is not None:
+    service_config["scid_optimistic_scan"] = args.scid_optimistic_scan
+if args.scid_observer_confidence_threshold is not None:
+    service_config["scid_observer_confidence_threshold"] = (
+        args.scid_observer_confidence_threshold
+    )
+if args.scid_frontend_initial_timeout is not None:
+    service_config["scid_frontend_initial_timeout_seconds"] = (
+        args.scid_frontend_initial_timeout
+    )
 
 service = DefaultService(pipeline=pipeline, service_config=service_config)
 if args.mode == "scid":
@@ -105,6 +182,14 @@ except Exception:
 
 @app.get("/api/voices")
 async def get_reference_audios():
+    """Return reference voice definitions from the X-Talk configuration.
+
+    Returns
+    -------
+    fastapi.responses.JSONResponse
+        JSON response containing the configured voices under the ``audios`` key.
+    """
+
     with open(args.config, "r", encoding="utf-8") as f:
         loaded_config = json.load(f)
         try:
@@ -116,6 +201,19 @@ async def get_reference_audios():
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
+    """Render the voice demo's root page.
+
+    Parameters
+    ----------
+    request : fastapi.Request
+        Incoming request used to build the template response.
+
+    Returns
+    -------
+    starlette.templating._TemplateResponse
+        Rendered ``index.html`` template response.
+    """
+
     return templates.TemplateResponse(request=request, name="index.html")
 
 
