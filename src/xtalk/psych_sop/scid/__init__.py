@@ -1,6 +1,11 @@
 """SCID dual-LM voice assessment runtime."""
 
-from .assessment.backend import BackgroundAssessor, DeepSeekAssessor, RuleBasedAssessor
+from .assessment.backend import (
+    AssessmentRequest,
+    BackgroundAssessor,
+    DeepSeekAssessor,
+    RuleBasedAssessor,
+)
 from .dialogue.candidate_cache import CandidateUtteranceCache
 from .dialogue.foreground import (
     FastForegroundPolicy,
@@ -15,8 +20,6 @@ from .dialogue.frontend import (
 from .dialogue.repair import RepairRequest
 from .orchestration.runtime import (
     SCIDDualLMRuntime,
-    SCIDProgressiveRuntimeResponse,
-    SCIDRealtimeRuntimeResponse,
     SCIDRuntimeResponse,
 )
 from .policy.latency_controller import ClinicalLatencyController, LatencyPlan
@@ -51,6 +54,7 @@ from .state.telemetry import SCIDLatencyTrace
 __all__ = [
     "AssessmentDecision",
     "AssessmentLedger",
+    "AssessmentRequest",
     "BackgroundAssessor",
     "CandidateUtteranceCache",
     "ClinicalBlackboard",
@@ -77,8 +81,6 @@ __all__ = [
     "SCIDPDFWidgetExtractor",
     "SCIDInteractionRouter",
     "SCIDLatencyTrace",
-    "SCIDProgressiveRuntimeResponse",
-    "SCIDRealtimeRuntimeResponse",
     "SCIDRouteDecision",
     "SCIDRuntimeResponse",
     "SCIDTemplate",

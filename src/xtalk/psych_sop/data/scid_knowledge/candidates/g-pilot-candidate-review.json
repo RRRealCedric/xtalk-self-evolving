@@ -1,0 +1,130 @@
+{
+  "candidate_bundle_id": "scid5-zh-g-pilot-candidates",
+  "candidate_bundle_sha256": "8f75a26df4be47d4f3a9d3f9cf63a0fbbce6888ae692887eec7b3297225819e7",
+  "candidate_decisions": [
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:S9",
+      "candidate_node_id": "S9",
+      "expression_decision": "pending",
+      "notes": "",
+      "semantics_decision": "pending",
+      "slots_and_scores_decision": "pending",
+      "source_decision": "pending",
+      "transition_decision": "pending"
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:S9.PROBE.OCCURRENCE",
+      "candidate_node_id": "S9.PROBE.OCCURRENCE",
+      "expression_decision": "pending",
+      "notes": "",
+      "semantics_decision": "pending",
+      "slots_and_scores_decision": "pending",
+      "source_decision": "pending",
+      "transition_decision": "pending"
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:G3",
+      "candidate_node_id": "G3",
+      "expression_decision": "pending",
+      "notes": "",
+      "semantics_decision": "pending",
+      "slots_and_scores_decision": "pending",
+      "source_decision": "pending",
+      "transition_decision": "pending"
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:G6",
+      "candidate_node_id": "G6",
+      "expression_decision": "pending",
+      "notes": "",
+      "semantics_decision": "pending",
+      "slots_and_scores_decision": "pending",
+      "source_decision": "pending",
+      "transition_decision": "pending"
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:G7",
+      "candidate_node_id": "G7",
+      "expression_decision": "pending",
+      "notes": "",
+      "semantics_decision": "pending",
+      "slots_and_scores_decision": "pending",
+      "source_decision": "pending",
+      "transition_decision": "pending"
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:G.PILOT.OBSESSION_SUMMARY",
+      "candidate_node_id": "G.PILOT.OBSESSION_SUMMARY",
+      "expression_decision": "pending",
+      "notes": "",
+      "semantics_decision": "pending",
+      "slots_and_scores_decision": "pending",
+      "source_decision": "pending",
+      "transition_decision": "pending"
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:G.PILOT.OBSESSION_RETURN",
+      "candidate_node_id": "G.PILOT.OBSESSION_RETURN",
+      "expression_decision": "pending",
+      "notes": "",
+      "semantics_decision": "pending",
+      "slots_and_scores_decision": "pending",
+      "source_decision": "pending",
+      "transition_decision": "pending"
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:S12",
+      "candidate_node_id": "S12",
+      "expression_decision": "pending",
+      "notes": "",
+      "semantics_decision": "pending",
+      "slots_and_scores_decision": "pending",
+      "source_decision": "pending",
+      "transition_decision": "pending"
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:G11",
+      "candidate_node_id": "G11",
+      "expression_decision": "pending",
+      "notes": "",
+      "semantics_decision": "pending",
+      "slots_and_scores_decision": "pending",
+      "source_decision": "pending",
+      "transition_decision": "pending"
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:G.PILOT.COMPULSION_SUMMARY",
+      "candidate_node_id": "G.PILOT.COMPULSION_SUMMARY",
+      "expression_decision": "pending",
+      "notes": "",
+      "semantics_decision": "pending",
+      "slots_and_scores_decision": "pending",
+      "source_decision": "pending",
+      "transition_decision": "pending"
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:G.PILOT.COMPULSION_RETURN",
+      "candidate_node_id": "G.PILOT.COMPULSION_RETURN",
+      "expression_decision": "pending",
+      "notes": "",
+      "semantics_decision": "pending",
+      "slots_and_scores_decision": "pending",
+      "source_decision": "pending",
+      "transition_decision": "pending"
+    }
+  ],
+  "decision_values": [
+    "pending",
+    "approve",
+    "approve_with_changes",
+    "reject",
+    "needs_adjudication"
+  ],
+  "global_review_items": [
+    "Confirm the Stage 3 audit record and attach detailed review evidence when it becomes available.",
+    "Confirm that no candidate is published or used by Runtime before later gates are satisfied."
+  ],
+  "overall_decision": "pending",
+  "review_id": "scid5-zh-g-pilot-candidate-review-v1",
+  "status": "pending_candidate_review"
+}

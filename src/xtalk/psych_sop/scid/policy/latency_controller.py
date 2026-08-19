@@ -45,7 +45,7 @@ class LatencyPlan:
 
 
 class ClinicalLatencyController:
-    """Allow one optimistic scan step while keeping gates conservative."""
+    """Gate a permitted one-step scan advance with conservative checks."""
 
     def __init__(self, *, observer_confidence_threshold: float = 0.9) -> None:
         self.observer_confidence_threshold = observer_confidence_threshold
@@ -55,7 +55,7 @@ class ClinicalLatencyController:
         *,
         field: SCIDField | None,
         interpretation: TurnInterpretation,
-        optimistic_scan_enabled: bool,
+        allow_one_step_speculation: bool,
         speculative_depth: int,
         repair_pending: bool,
     ) -> LatencyPlan:
@@ -67,8 +67,8 @@ class ClinicalLatencyController:
             Active SCID field, or ``None`` when no field is active.
         interpretation : TurnInterpretation
             Provisional observer interpretation for the current turn.
-        optimistic_scan_enabled : bool
-            Whether optimistic advancement is enabled for scan fields.
+        allow_one_step_speculation : bool
+            Whether one-step speculative advancement is permitted at all.
         speculative_depth : int
             Number of currently active speculative advances.
         repair_pending : bool
@@ -81,8 +81,8 @@ class ClinicalLatencyController:
             plan that holds for the assessor.
         """
 
-        if not optimistic_scan_enabled:
-            return self._hold("optimistic scan is disabled")
+        if not allow_one_step_speculation:
+            return self._hold("one-step speculation is disabled")
         if field is None:
             return self._hold("there is no active field")
         if field.latency_mode != "optimistic_scan" or field.kind != "scan":

@@ -185,3 +185,4 @@ examples/sample_server/node_modules/
 /logs/
 server_configs/
 /data/
+.DS_Store

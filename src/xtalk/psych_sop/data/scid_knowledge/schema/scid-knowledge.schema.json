@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xtalk.local/schema/scid-knowledge/1.0.0",
+  "title": "SCID knowledge-module source",
+  "description": "Static shape contract for source-traceable SCID knowledge nodes. Runtime uses additional deterministic graph validation.",
+  "type": "object",
+  "required": ["module", "nodes"],
+  "additionalProperties": false,
+  "properties": {
+    "module": {
+      "type": "object",
+      "required": ["module_id", "title", "status"],
+      "additionalProperties": true,
+      "properties": {
+        "module_id": {"type": "string", "minLength": 1},
+        "title": {"type": "string", "minLength": 1},
+        "status": {"type": "string", "minLength": 1}
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/node"}
+    }
+  },
+  "$defs": {
+    "sourceRef": {
+      "type": "object",
+      "required": ["source_id", "kind", "locator"],
+      "additionalProperties": true,
+      "properties": {
+        "source_id": {"type": "string", "minLength": 1},
+        "kind": {"type": "string", "minLength": 1},
+        "locator": {"type": "string", "minLength": 1},
+        "pdf_page": {"type": "integer", "minimum": 1},
+        "printed_page": {"type": "integer", "minimum": 1}
+      }
+    },
+    "slot": {
+      "type": "object",
+      "required": ["slot_id", "value_type", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "slot_id": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9._-]*$"},
+        "value_type": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1},
+        "required_for_scores": {
+          "type": "array",
+          "items": {"enum": ["?", "1", "2", "3"]}
+        }
+      }
+    },
+    "transition": {
+      "type": "object",
+      "required": ["transition_id", "when", "target_node_id"],
+      "additionalProperties": false,
+      "properties": {
+        "transition_id": {"type": "string", "minLength": 1},
+        "when": {"type": "object", "minProperties": 1},
+        "target_node_id": {"type": "string", "minLength": 1},
+        "effects": {"type": "array", "items": {"type": "object"}}
+      }
+    },
+    "dialogueContract": {
+      "type": "object",
+      "required": [
+        "core_concept",
+        "time_window",
+        "severity_threshold",
+        "key_exclusions",
+        "required_information",
+        "neutral_examples",
+        "allowed_paraphrases",
+        "clarification_ladder"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "core_concept": {"type": "string", "minLength": 1},
+        "time_window": {"type": "string", "minLength": 1},
+        "severity_threshold": {"type": "string", "minLength": 1},
+        "key_exclusions": {"type": "array", "items": {"type": "string"}},
+        "required_information": {"type": "array", "items": {"type": "string"}},
+        "neutral_examples": {"type": "array", "items": {"type": "string"}},
+        "allowed_paraphrases": {"type": "array", "items": {"type": "string"}},
+        "clarification_ladder": {"type": "array", "items": {"type": "object"}}
+      }
+    },
+    "node": {
+      "type": "object",
+      "required": [
+        "node_id",
+        "module_id",
+        "node_type",
+        "clinical_intent",
+        "time_window",
+        "source_refs",
+        "evidence_slots",
+        "score_requirements",
+        "dialogue_contract",
+        "transitions",
+        "review_status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "node_id": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9._-]*$"},
+        "module_id": {"type": "string", "minLength": 1},
+        "node_type": {"enum": ["screening_question", "criterion_question", "evidence_probe", "module_gate", "module_summary", "return"]},
+        "clinical_intent": {"type": "string", "minLength": 1},
+        "time_window": {"type": "string", "minLength": 1},
+        "canonical_prompt": {"type": "string"},
+        "source_refs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/sourceRef"}},
+        "evidence_slots": {"type": "array", "items": {"$ref": "#/$defs/slot"}},
+        "score_requirements": {"type": "array", "items": {"type": "object"}},
+        "dialogue_contract": {"$ref": "#/$defs/dialogueContract"},
+        "transitions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/transition"}},
+        "review_status": {"type": "string", "minLength": 1},
+        "safety_sensitive": {"type": "boolean"},
+        "metadata": {"type": "object"}
+      }
+    }
+  }
+}

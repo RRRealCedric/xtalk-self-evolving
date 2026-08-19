@@ -1,0 +1,46 @@
+{
+  "layout_version": "1.0.0",
+  "coordinate_system": "normalized_0_to_10000_relative_to_rendered_page",
+  "source_crops": [
+    {
+      "asset_id": "scan-s9",
+      "pdf_page": 4,
+      "printed_page": 33,
+      "normalized_box": [350, 1650, 9750, 3500],
+      "node_ids": ["S9", "S9.PROBE.OCCURRENCE"],
+      "caption": "SCID 扫描页：S9 及其通向 G3 的表单锚点"
+    },
+    {
+      "asset_id": "scan-s12",
+      "pdf_page": 4,
+      "printed_page": 33,
+      "normalized_box": [350, 4650, 9750, 6350],
+      "node_ids": ["S12"],
+      "caption": "SCID 扫描页：S12 及其通向 G11 的表单锚点"
+    },
+    {
+      "asset_id": "g2-g3",
+      "pdf_page": 232,
+      "printed_page": 254,
+      "normalized_box": [350, 750, 9750, 3400],
+      "node_ids": ["G3"],
+      "caption": "G.2 强迫症：G3 原题与相邻评分区域"
+    },
+    {
+      "asset_id": "g2-g6-g7",
+      "pdf_page": 232,
+      "printed_page": 254,
+      "normalized_box": [350, 5550, 8700, 9350],
+      "node_ids": ["G6", "G7"],
+      "caption": "G.2 强迫症：G6、G7 原题与 criterion 说明"
+    },
+    {
+      "asset_id": "g3-g11",
+      "pdf_page": 233,
+      "printed_page": 255,
+      "normalized_box": [350, 2200, 9750, 6700],
+      "node_ids": ["G11"],
+      "caption": "G.3 强迫行为：S12 与 G11 gate 的来源区域"
+    }
+  ]
+}

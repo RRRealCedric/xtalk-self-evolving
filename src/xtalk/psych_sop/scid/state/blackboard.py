@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
@@ -45,6 +46,7 @@ class PartialObserverPlan:
     partial_text: str
     interpretation: TurnInterpretation
     ready_at: float
+    ready_monotonic: float | None = None
     candidate_texts: dict[str, str] = field(default_factory=dict)
     status: str = "ready"
     promoted_at: float | None = None
@@ -82,9 +84,18 @@ class ClinicalBlackboard:
     latest_partial_plan: PartialObserverPlan | None = None
     partial_plan_history: list[dict[str, Any]] = field(default_factory=list)
     pending_foreground_probe: dict[str, Any] | None = None
+    selected_action: dict[str, Any] | None = None
     spoken_action: dict[str, Any] | None = None
     speculative_advance: SpeculativeAdvance | None = None
     repair_pending: dict[str, Any] | None = None
+    observer_update_limit: int = 64
+    partial_plan_history_limit: int = 32
+    candidate_evidence_limit: int = 128
+    contextual_memory_limit: int = 128
+    archived_observer_update_count: int = 0
+    archived_partial_plan_count: int = 0
+    archived_candidate_evidence_count: int = 0
+    archived_contextual_memory_count: int = 0
 
     def sync_committed_state(
         self,
@@ -116,7 +127,9 @@ class ClinicalBlackboard:
             User text associated with the interaction.
         """
 
-        self.latest_interaction_seq = max(self.latest_interaction_seq, interaction_seq)
+        if interaction_seq < self.latest_interaction_seq:
+            return
+        self.latest_interaction_seq = interaction_seq
         self.latest_user_text = user_text
 
     def next_observer_version(self) -> int:
@@ -137,20 +150,46 @@ class ClinicalBlackboard:
         is_current = (
             interpretation.observer_version == self.observer_version
             and interpretation.based_on_state_version == self.committed_state_version
+            and interpretation.interaction_seq == self.latest_interaction_seq
+            and interpretation.field_id == self.current_field_id
         )
         interpretation.stale = not is_current
-        snapshot = interpretation.snapshot()
+        if is_current:
+            snapshot = interpretation.snapshot()
+        else:
+            # Stale Observer output is retained only as provenance/status.  It
+            # must not keep candidate quotes, contextual memory, or raw model
+            # payloads that can no longer affect the active interaction.
+            snapshot = {
+                "interaction_seq": interpretation.interaction_seq,
+                "observer_version": interpretation.observer_version,
+                "based_on_state_version": interpretation.based_on_state_version,
+                "field_id": interpretation.field_id,
+                "input_kind": interpretation.input_kind,
+                "stale": True,
+                "status": "discarded_stale",
+            }
         self.observer_updates.append(snapshot)
-        self.observer_updates = self.observer_updates[-100:]
-        # Contextual history remains useful even when an action prediction is
-        # stale. It stays explicitly context-only and never enters the ledger.
-        self.contextual_memories.extend(interpretation.contextual_memories)
-        self.contextual_memories = self.contextual_memories[-100:]
+        self.observer_updates, archived = _bounded_tail(
+            self.observer_updates,
+            self.observer_update_limit,
+        )
+        self.archived_observer_update_count += archived
         if not is_current:
             return False
 
-        self.candidate_evidence.extend(interpretation.evidence_candidates)
-        self.candidate_evidence = self.candidate_evidence[-100:]
+        self.contextual_memories, archived = _merge_deduplicated(
+            self.contextual_memories,
+            interpretation.contextual_memories,
+            self.contextual_memory_limit,
+        )
+        self.archived_contextual_memory_count += archived
+        self.candidate_evidence, archived = _merge_deduplicated(
+            self.candidate_evidence,
+            interpretation.evidence_candidates,
+            self.candidate_evidence_limit,
+        )
+        self.archived_candidate_evidence_count += archived
         return True
 
     def set_partial_plan(self, plan: PartialObserverPlan) -> None:
@@ -163,7 +202,7 @@ class ClinicalBlackboard:
             self.partial_plan_history.append(previous.snapshot())
         self.latest_partial_plan = plan
         self.partial_plan_history.append(plan.snapshot())
-        self.partial_plan_history = self.partial_plan_history[-100:]
+        self._bound_partial_plan_history()
 
     def promote_partial_plan(self, *, promoted_at: float) -> PartialObserverPlan | None:
         """Promote the latest partial plan for reuse by a final transcript.
@@ -186,7 +225,7 @@ class ClinicalBlackboard:
         plan.promoted_at = promoted_at
         plan.rejection_reason = ""
         self.partial_plan_history.append(plan.snapshot())
-        self.partial_plan_history = self.partial_plan_history[-100:]
+        self._bound_partial_plan_history()
         return plan
 
     def reject_partial_plan(self, reason: str) -> None:
@@ -204,13 +243,18 @@ class ClinicalBlackboard:
         plan.status = "rejected"
         plan.rejection_reason = reason
         self.partial_plan_history.append(plan.snapshot())
-        self.partial_plan_history = self.partial_plan_history[-100:]
+        self._bound_partial_plan_history()
         self.latest_partial_plan = None
 
     def clear_partial_plan(self) -> None:
         """Clear the latest partial observer plan without changing history."""
 
         self.latest_partial_plan = None
+
+    def mark_selected_action(self, payload: dict[str, Any]) -> None:
+        """Record an action selected for delivery but not yet spoken."""
+
+        self.selected_action = dict(payload)
 
     def mark_spoken_action(self, payload: dict[str, Any]) -> None:
         """Record metadata for the most recently spoken foreground action.
@@ -311,10 +355,11 @@ class ClinicalBlackboard:
         state = self.speculative_advance
         if state is None:
             raise RuntimeError("No speculative SCID field is active")
-        if state.deferred_user_text and user_text not in state.deferred_user_text:
-            state.deferred_user_text = f"{state.deferred_user_text}{user_text}"
-        else:
-            state.deferred_user_text = user_text
+        text = user_text.strip()
+        if not state.deferred_user_text:
+            state.deferred_user_text = text
+        elif text and text != state.deferred_user_text:
+            state.deferred_user_text = f"{state.deferred_user_text}\n{text}"
         state.deferred_interaction_seq = interaction_seq
 
     def confirm_speculation(self) -> None:
@@ -354,6 +399,13 @@ class ClinicalBlackboard:
         self.repair_pending = None
         self.speculative_advance = None
 
+    def _bound_partial_plan_history(self) -> None:
+        self.partial_plan_history, archived = _bounded_tail(
+            self.partial_plan_history,
+            self.partial_plan_history_limit,
+        )
+        self.archived_partial_plan_count += archived
+
     def snapshot(self) -> dict[str, Any]:
         """Return a serializable snapshot of provisional blackboard state.
 
@@ -382,6 +434,7 @@ class ClinicalBlackboard:
             ),
             "partial_plan_history": list(self.partial_plan_history),
             "pending_foreground_probe": self.pending_foreground_probe,
+            "selected_action": self.selected_action,
             "spoken_action": self.spoken_action,
             "speculative_depth": self.speculative_depth,
             "speculative_advance": (
@@ -390,4 +443,51 @@ class ClinicalBlackboard:
                 else None
             ),
             "repair_pending": self.repair_pending,
+            "retention": {
+                "observer_update_limit": self.observer_update_limit,
+                "partial_plan_history_limit": self.partial_plan_history_limit,
+                "candidate_evidence_limit": self.candidate_evidence_limit,
+                "contextual_memory_limit": self.contextual_memory_limit,
+            },
+            "archived_counts": {
+                "observer_updates": self.archived_observer_update_count,
+                "partial_plans": self.archived_partial_plan_count,
+                "candidate_evidence": self.archived_candidate_evidence_count,
+                "contextual_memories": self.archived_contextual_memory_count,
+            },
         }
+
+
+def _bounded_tail(
+    values: list[dict[str, Any]],
+    limit: int,
+) -> tuple[list[dict[str, Any]], int]:
+    if len(values) <= limit:
+        return values, 0
+    archived = len(values) - limit
+    return values[-limit:], archived
+
+
+def _merge_deduplicated(
+    existing: list[dict[str, Any]],
+    incoming: list[dict[str, Any]],
+    limit: int,
+) -> tuple[list[dict[str, Any]], int]:
+    merged: dict[str, dict[str, Any]] = {}
+    order: list[str] = []
+    for item in [*existing, *incoming]:
+        fingerprint = json.dumps(
+            item,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            default=str,
+        )
+        if fingerprint in merged:
+            merged[fingerprint] = dict(item)
+            continue
+        merged[fingerprint] = dict(item)
+        order.append(fingerprint)
+    archived = max(0, len(order) - limit)
+    selected = order[-limit:]
+    return [merged[key] for key in selected], archived

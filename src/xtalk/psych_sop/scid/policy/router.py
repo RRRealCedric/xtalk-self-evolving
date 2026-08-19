@@ -18,6 +18,12 @@ from ..core.schema import (
     SCIDRouteDecision,
     VALID_INTERACTION_ROUTES,
 )
+from ..core.validation import (
+    strict_bool,
+    strict_finite_float,
+    strict_json_loads,
+    strict_string,
+)
 
 
 class RouteParseError(ValueError):
@@ -41,8 +47,8 @@ def parse_route_decision(text: str) -> SCIDRouteDecision:
     """Parse model text into a ``SCIDRouteDecision``."""
 
     try:
-        payload = json.loads(extract_json_object_text(text))
-    except (json.JSONDecodeError, DecisionParseError) as exc:
+        payload = strict_json_loads(extract_json_object_text(text))
+    except (ValueError, DecisionParseError) as exc:
         raise RouteParseError(str(exc)) from exc
     if not isinstance(payload, dict):
         raise RouteParseError("Route payload must be a JSON object")
@@ -52,6 +58,21 @@ def parse_route_decision(text: str) -> SCIDRouteDecision:
 def route_decision_from_payload(payload: dict[str, Any]) -> SCIDRouteDecision:
     """Build a typed route decision from a JSON-like dict."""
 
+    if not isinstance(payload, dict):
+        raise RouteParseError("Route payload must be a JSON object")
+    if any(not isinstance(key, str) for key in payload):
+        raise RouteParseError("Route payload keys must be strings")
+    allowed = {
+        "route",
+        "confidence",
+        "should_score",
+        "normalized_user_text",
+        "safe_frontend_content",
+        "reasoning_summary",
+    }
+    unknown = sorted(set(payload) - allowed)
+    if unknown:
+        raise RouteParseError(f"Route payload contains unknown keys: {unknown}")
     missing = [
         key
         for key in (
@@ -67,21 +88,61 @@ def route_decision_from_payload(payload: dict[str, Any]) -> SCIDRouteDecision:
     if missing:
         raise RouteParseError(f"Route payload missing keys: {missing}")
 
-    route = str(payload.get("route") or "").strip()
+    try:
+        route = strict_string(
+            payload["route"],
+            field_name="route",
+            maximum_length=64,
+        )
+    except ValueError as exc:
+        raise RouteParseError(str(exc)) from exc
     if route not in VALID_INTERACTION_ROUTES:
         raise RouteParseError(f"Invalid route: {route!r}")
 
-    confidence = float(payload.get("confidence") or 0.0)
-    confidence = max(0.0, min(1.0, confidence))
-    should_score = route == "scid_answer"
+    try:
+        confidence = strict_finite_float(
+            payload["confidence"],
+            field_name="confidence",
+            minimum=0.0,
+            maximum=1.0,
+        )
+        should_score = strict_bool(
+            payload["should_score"],
+            field_name="should_score",
+        )
+        normalized_user_text = strict_string(
+            payload["normalized_user_text"],
+            field_name="normalized_user_text",
+            maximum_length=8192,
+            allow_empty=True,
+        )
+        safe_frontend_content = strict_string(
+            payload["safe_frontend_content"],
+            field_name="safe_frontend_content",
+            maximum_length=8192,
+            allow_empty=True,
+        )
+        reasoning_summary = strict_string(
+            payload["reasoning_summary"],
+            field_name="reasoning_summary",
+            maximum_length=8192,
+            allow_empty=True,
+        )
+    except ValueError as exc:
+        raise RouteParseError(str(exc)) from exc
+    expected_should_score = route == "scid_answer"
+    if should_score is not expected_should_score:
+        raise RouteParseError(
+            "should_score must be true exactly when route is scid_answer"
+        )
 
     return SCIDRouteDecision(
         route=route,  # type: ignore[arg-type]
         confidence=confidence,
         should_score=should_score,
-        normalized_user_text=str(payload.get("normalized_user_text") or "").strip(),
-        safe_frontend_content=str(payload.get("safe_frontend_content") or "").strip(),
-        reasoning_summary=str(payload.get("reasoning_summary") or "").strip(),
+        normalized_user_text=normalized_user_text,
+        safe_frontend_content=safe_frontend_content,
+        reasoning_summary=reasoning_summary,
         raw_payload=dict(payload),
     )
 
@@ -166,6 +227,15 @@ class RuleBasedSCIDInteractionRouter(SCIDInteractionRouter):
                 confidence=0.82,
             )
 
+        if mode == "paused":
+            return _route(
+                "off_sop_chat",
+                text,
+                "用户处于暂停状态；只有明确继续才能恢复评估。",
+                safe="",
+                confidence=0.9,
+            )
+
         if _looks_incomplete(text):
             return _route(
                 "scid_partial",
@@ -173,15 +243,6 @@ class RuleBasedSCIDInteractionRouter(SCIDInteractionRouter):
                 "用户话语未完成，暂不进入判分。",
                 safe="嗯，我在听，你可以继续说。",
                 confidence=0.78,
-            )
-
-        if mode in {"paused"} and not _looks_like_scid_answer(text):
-            return _route(
-                "off_sop_chat",
-                text,
-                "用户在暂停状态下继续普通对话，暂不恢复评估。",
-                safe="",
-                confidence=0.72,
             )
 
         return _route(
@@ -337,9 +398,9 @@ def _route(
 def _combine_pending(pending: str, text: str) -> str:
     if not pending:
         return text
-    if text.startswith(pending) or pending in text:
-        return text
-    return f"{pending}{text}"
+    if text == pending:
+        return pending
+    return f"{pending}\n{text}"
 
 
 def _contains_any(text: str, needles: tuple[str, ...]) -> bool:
@@ -384,6 +445,8 @@ def _requests_resume(text: str) -> bool:
         text,
         (
             "继续吧",
+            "那你继续",
+            "你继续",
             "继续问",
             "可以继续",
             "我们继续",
@@ -395,35 +458,39 @@ def _requests_resume(text: str) -> bool:
 
 
 def _is_meta_question(text: str) -> bool:
-    return _asks_why_interview_did_not_continue(text) or _contains_any(
-        text,
-        (
-            "多少个问题",
-            "多少题",
-            "还要问多久",
-            "问多久",
-            "为什么问",
-            "为什么每次",
-            "为什么总是",
-            "为什么不继续",
-            "为什么没继续",
-            "为什么没有继续",
-            "怎么不继续",
-            "为什么不问",
-            "为什么没问",
-            "为什么没有问",
-            "为什么继续问",
-            "每次都",
-            "总是说",
-            "老是说",
-            "好的我记下了",
-            "好的，我记下了",
-            "你要问什么",
-            "流程",
-            "量表",
-            "问卷",
-            "可以不回答",
-        ),
+    return (
+        _asks_why_interview_did_not_continue(text)
+        or _reports_repeated_question(text)
+        or _contains_any(
+            text,
+            (
+                "多少个问题",
+                "多少题",
+                "还要问多久",
+                "问多久",
+                "为什么问",
+                "为什么每次",
+                "为什么总是",
+                "为什么不继续",
+                "为什么没继续",
+                "为什么没有继续",
+                "怎么不继续",
+                "为什么不问",
+                "为什么没问",
+                "为什么没有问",
+                "为什么继续问",
+                "每次都",
+                "总是说",
+                "老是说",
+                "好的我记下了",
+                "好的，我记下了",
+                "你要问什么",
+                "流程",
+                "量表",
+                "问卷",
+                "可以不回答",
+            ),
+        )
     )
 
 
@@ -437,6 +504,17 @@ def _asks_why_interview_did_not_continue(text: str) -> bool:
             r"(?:继续|接着|往下|问|提问|说话)",
             compact,
         )
+    )
+
+
+def _reports_repeated_question(text: str) -> bool:
+    compact = re.sub(r"[\s，,。！？!?、]", "", text)
+    return bool(
+        re.search(
+            r"(?:这道题|这个问题|刚才|之前).{0,10}" r"(?:问过|说过|重复|又问|再问)",
+            compact,
+        )
+        or re.search(r"(?:问|问题).{0,8}(?:重复了|重复的)", compact)
     )
 
 
@@ -477,6 +555,11 @@ def _looks_like_scid_answer(text: str) -> bool:
 
 def _meta_answer(context: dict[str, Any]) -> str:
     text = str(context.get("user_text") or "")
+    if _reports_repeated_question(text):
+        return (
+            "你说得对，这个问题刚才已经问过了。"
+            "我会保留你之前的回答，不把这句话当成新的症状答案。"
+        )
     if _asks_why_interview_did_not_continue(text) or _contains_any(
         text,
         (

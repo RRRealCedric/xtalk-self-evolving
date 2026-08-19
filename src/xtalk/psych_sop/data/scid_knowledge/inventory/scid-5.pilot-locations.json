@@ -1,0 +1,302 @@
+{
+  "limitations": [
+    "An exact AcroForm match identifies a form field, not the semantic extent of a printed question.",
+    "related_field_match is an explicit structural relation and must not be upgraded to an exact source-field claim.",
+    "not_applicable nodes are engineering-only nodes without a PDF source anchor."
+  ],
+  "location_version": "1.0.0",
+  "locations": [
+    {
+      "node_id": "S9",
+      "review_layout_assets": [
+        {
+          "asset_id": "scan-s9",
+          "normalized_box": [
+            350,
+            1650,
+            9750,
+            3500
+          ],
+          "pdf_page": 4,
+          "printed_page": 33
+        }
+      ],
+      "source_refs": [
+        {
+          "declared_page_present": null,
+          "declared_pdf_page": null,
+          "matched_field_id": "S9-G3",
+          "matched_page_numbers": [
+            4,
+            232
+          ],
+          "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+          "node_id": "S9",
+          "relation_note": null,
+          "requested_field_id": "S9-G3",
+          "source_kind": "structured_scan_json",
+          "status": "exact_field_match"
+        },
+        {
+          "declared_page_present": true,
+          "declared_pdf_page": 4,
+          "matched_field_id": "S9-G3",
+          "matched_page_numbers": [
+            4,
+            232
+          ],
+          "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+          "node_id": "S9",
+          "relation_note": null,
+          "requested_field_id": "S9-G3",
+          "source_kind": "pdf_form_anchor",
+          "status": "exact_field_match"
+        }
+      ],
+      "status": "resolved"
+    },
+    {
+      "node_id": "S9.PROBE.OCCURRENCE",
+      "review_layout_assets": [
+        {
+          "asset_id": "scan-s9",
+          "normalized_box": [
+            350,
+            1650,
+            9750,
+            3500
+          ],
+          "pdf_page": 4,
+          "printed_page": 33
+        }
+      ],
+      "source_refs": [
+        {
+          "declared_page_present": null,
+          "declared_pdf_page": null,
+          "matched_field_id": "S9-G3",
+          "matched_page_numbers": [
+            4,
+            232
+          ],
+          "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+          "node_id": "S9.PROBE.OCCURRENCE",
+          "relation_note": null,
+          "requested_field_id": "S9-G3",
+          "source_kind": "derived_clarification",
+          "status": "exact_field_match"
+        }
+      ],
+      "status": "resolved"
+    },
+    {
+      "node_id": "G3",
+      "review_layout_assets": [
+        {
+          "asset_id": "g2-g3",
+          "normalized_box": [
+            350,
+            750,
+            9750,
+            3400
+          ],
+          "pdf_page": 232,
+          "printed_page": 254
+        }
+      ],
+      "source_refs": [
+        {
+          "declared_page_present": true,
+          "declared_pdf_page": 232,
+          "matched_field_id": "S9-G3",
+          "matched_page_numbers": [
+            4,
+            232
+          ],
+          "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+          "node_id": "G3",
+          "relation_note": "Static source anchor G3 has no exact AcroForm field; using explicit related scan-to-module anchor S9-G3.",
+          "requested_field_id": "G3",
+          "source_kind": "pdf_region",
+          "status": "related_field_match"
+        }
+      ],
+      "status": "resolved"
+    },
+    {
+      "node_id": "G6",
+      "review_layout_assets": [
+        {
+          "asset_id": "g2-g6-g7",
+          "normalized_box": [
+            350,
+            5550,
+            8700,
+            9350
+          ],
+          "pdf_page": 232,
+          "printed_page": 254
+        }
+      ],
+      "source_refs": [
+        {
+          "declared_page_present": true,
+          "declared_pdf_page": 232,
+          "matched_field_id": "G6",
+          "matched_page_numbers": [
+            232
+          ],
+          "matched_stable_id": "scid5-zh-local-source-01:acroform:780d558be6960a54",
+          "node_id": "G6",
+          "relation_note": null,
+          "requested_field_id": "G6",
+          "source_kind": "pdf_region",
+          "status": "exact_field_match"
+        }
+      ],
+      "status": "resolved"
+    },
+    {
+      "node_id": "G7",
+      "review_layout_assets": [
+        {
+          "asset_id": "g2-g6-g7",
+          "normalized_box": [
+            350,
+            5550,
+            8700,
+            9350
+          ],
+          "pdf_page": 232,
+          "printed_page": 254
+        }
+      ],
+      "source_refs": [
+        {
+          "declared_page_present": true,
+          "declared_pdf_page": 232,
+          "matched_field_id": "G7",
+          "matched_page_numbers": [
+            232
+          ],
+          "matched_stable_id": "scid5-zh-local-source-01:acroform:3a5357e2b9676180",
+          "node_id": "G7",
+          "relation_note": null,
+          "requested_field_id": "G7",
+          "source_kind": "pdf_region",
+          "status": "exact_field_match"
+        }
+      ],
+      "status": "resolved"
+    },
+    {
+      "node_id": "G.PILOT.OBSESSION_SUMMARY",
+      "review_layout_assets": [],
+      "source_refs": [],
+      "status": "not_applicable"
+    },
+    {
+      "node_id": "G.PILOT.OBSESSION_RETURN",
+      "review_layout_assets": [],
+      "source_refs": [],
+      "status": "not_applicable"
+    },
+    {
+      "node_id": "S12",
+      "review_layout_assets": [
+        {
+          "asset_id": "scan-s12",
+          "normalized_box": [
+            350,
+            4650,
+            9750,
+            6350
+          ],
+          "pdf_page": 4,
+          "printed_page": 33
+        }
+      ],
+      "source_refs": [
+        {
+          "declared_page_present": null,
+          "declared_pdf_page": null,
+          "matched_field_id": "S12-G11",
+          "matched_page_numbers": [
+            4,
+            233
+          ],
+          "matched_stable_id": "scid5-zh-local-source-01:acroform:a55ec5c06e7139b1",
+          "node_id": "S12",
+          "relation_note": null,
+          "requested_field_id": "S12-G11",
+          "source_kind": "structured_scan_json",
+          "status": "exact_field_match"
+        },
+        {
+          "declared_page_present": true,
+          "declared_pdf_page": 4,
+          "matched_field_id": "S12-G11",
+          "matched_page_numbers": [
+            4,
+            233
+          ],
+          "matched_stable_id": "scid5-zh-local-source-01:acroform:a55ec5c06e7139b1",
+          "node_id": "S12",
+          "relation_note": null,
+          "requested_field_id": "S12-G11",
+          "source_kind": "pdf_form_anchor",
+          "status": "exact_field_match"
+        }
+      ],
+      "status": "resolved"
+    },
+    {
+      "node_id": "G11",
+      "review_layout_assets": [
+        {
+          "asset_id": "g3-g11",
+          "normalized_box": [
+            350,
+            2200,
+            9750,
+            6700
+          ],
+          "pdf_page": 233,
+          "printed_page": 255
+        }
+      ],
+      "source_refs": [
+        {
+          "declared_page_present": true,
+          "declared_pdf_page": 233,
+          "matched_field_id": "S12-G11",
+          "matched_page_numbers": [
+            4,
+            233
+          ],
+          "matched_stable_id": "scid5-zh-local-source-01:acroform:a55ec5c06e7139b1",
+          "node_id": "G11",
+          "relation_note": "Static source anchor G11 has no exact AcroForm field; using explicit related scan-to-module anchor S12-G11.",
+          "requested_field_id": "G11",
+          "source_kind": "pdf_region",
+          "status": "related_field_match"
+        }
+      ],
+      "status": "resolved"
+    },
+    {
+      "node_id": "G.PILOT.COMPULSION_SUMMARY",
+      "review_layout_assets": [],
+      "source_refs": [],
+      "status": "not_applicable"
+    },
+    {
+      "node_id": "G.PILOT.COMPULSION_RETURN",
+      "review_layout_assets": [],
+      "source_refs": [],
+      "status": "not_applicable"
+    }
+  ],
+  "pilot_path": "xtalk/src/xtalk/psych_sop/data/scid_knowledge/modules/G/pilot.json",
+  "source_inventory_sha256": "681d666c27eec13923e06b8f12317c2c27736c96ef0f0651d45bb65dc5cf799e"
+}

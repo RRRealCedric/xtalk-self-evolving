@@ -1,0 +1,54 @@
+{
+  "fixture_set_id": "scid5-zh-g-pilot-trajectories",
+  "schema_version": "1.0.0",
+  "data_class": "synthetic_only",
+  "cases": [
+    {
+      "case_id": "synthetic-s9-clear-negative",
+      "data_class": "synthetic",
+      "steps": [
+        {"node_id": "S9", "score": "1", "transition_id": "S9.NEGATIVE_OR_SUBTHRESHOLD"},
+        {"node_id": "G.PILOT.OBSESSION_RETURN", "score": null, "transition_id": "G.PILOT.OBSESSION_RETURN.TERMINAL"}
+      ]
+    },
+    {
+      "case_id": "synthetic-s9-uncertain-then-negative",
+      "data_class": "synthetic",
+      "steps": [
+        {"node_id": "S9", "score": "?", "transition_id": "S9.UNKNOWN_TO_PROBE"},
+        {"node_id": "S9.PROBE.OCCURRENCE", "score": "1", "transition_id": "S9.PROBE.NEGATIVE_OR_SUBTHRESHOLD"},
+        {"node_id": "G.PILOT.OBSESSION_RETURN", "score": null, "transition_id": "G.PILOT.OBSESSION_RETURN.TERMINAL"}
+      ]
+    },
+    {
+      "case_id": "synthetic-obsession-pilot-path",
+      "data_class": "synthetic",
+      "steps": [
+        {"node_id": "S9", "score": "3", "transition_id": "S9.POSITIVE_TO_G3"},
+        {"node_id": "G3", "score": "3", "transition_id": "G3.POSITIVE_TO_G6"},
+        {"node_id": "G6", "score": "3", "transition_id": "G6.CONTINUE_TO_G7"},
+        {"node_id": "G7", "score": "3", "transition_id": "G7.TO_OBSESSION_SUMMARY"},
+        {"node_id": "G.PILOT.OBSESSION_SUMMARY", "score": null, "transition_id": "G.PILOT.OBSESSION_SUMMARY.RETURN"},
+        {"node_id": "G.PILOT.OBSESSION_RETURN", "score": null, "transition_id": "G.PILOT.OBSESSION_RETURN.TERMINAL"}
+      ]
+    },
+    {
+      "case_id": "synthetic-s12-clear-negative",
+      "data_class": "synthetic",
+      "steps": [
+        {"node_id": "S12", "score": "1", "transition_id": "S12.NEGATIVE_OR_SUBTHRESHOLD"},
+        {"node_id": "G.PILOT.COMPULSION_RETURN", "score": null, "transition_id": "G.PILOT.COMPULSION_RETURN.TERMINAL"}
+      ]
+    },
+    {
+      "case_id": "synthetic-compulsion-gate-path",
+      "data_class": "synthetic",
+      "steps": [
+        {"node_id": "S12", "score": "3", "transition_id": "S12.POSITIVE_TO_G11"},
+        {"node_id": "G11", "score": "3", "transition_id": "G11.TO_COMPULSION_SUMMARY"},
+        {"node_id": "G.PILOT.COMPULSION_SUMMARY", "score": null, "transition_id": "G.PILOT.COMPULSION_SUMMARY.RETURN"},
+        {"node_id": "G.PILOT.COMPULSION_RETURN", "score": null, "transition_id": "G.PILOT.COMPULSION_RETURN.TERMINAL"}
+      ]
+    }
+  ]
+}

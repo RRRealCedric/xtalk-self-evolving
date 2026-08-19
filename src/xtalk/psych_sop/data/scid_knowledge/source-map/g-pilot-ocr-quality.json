@@ -1,0 +1,861 @@
+{
+  "critical_token_review_queue": [
+    {
+      "bbox_image_px": [
+        1763,
+        325,
+        1805,
+        419
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 75.646156,
+      "page_number": 4,
+      "text": "1",
+      "word_id": "scid5:p004:ocr-word:00027"
+    },
+    {
+      "bbox_image_px": [
+        1942,
+        366,
+        1962,
+        398
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 81.861496,
+      "page_number": 4,
+      "text": "3",
+      "word_id": "scid5:p004:ocr-word:00028"
+    },
+    {
+      "bbox_image_px": [
+        1204,
+        392,
+        1228,
+        485
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 74.048714,
+      "page_number": 4,
+      "text": "?",
+      "word_id": "scid5:p004:ocr-word:00047"
+    },
+    {
+      "bbox_image_px": [
+        1754,
+        661,
+        1772,
+        692
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 75.387573,
+      "page_number": 4,
+      "text": "1",
+      "word_id": "scid5:p004:ocr-word:00088"
+    },
+    {
+      "bbox_image_px": [
+        2180,
+        818,
+        2223,
+        858
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 59.73838,
+      "page_number": 4,
+      "text": "«3",
+      "word_id": "scid5:p004:ocr-word:00123"
+    },
+    {
+      "bbox_image_px": [
+        174,
+        1017,
+        228,
+        1048
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 78.753006,
+      "page_number": 4,
+      "text": "10.",
+      "word_id": "scid5:p004:ocr-word:00128"
+    },
+    {
+      "bbox_image_px": [
+        1755,
+        1011,
+        1774,
+        1042
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 80.583206,
+      "page_number": 4,
+      "text": "1",
+      "word_id": "scid5:p004:ocr-word:00153"
+    },
+    {
+      "bbox_image_px": [
+        1945,
+        1011,
+        1965,
+        1042
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 79.693481,
+      "page_number": 4,
+      "text": "3",
+      "word_id": "scid5:p004:ocr-word:00154"
+    },
+    {
+      "bbox_image_px": [
+        175,
+        1299,
+        228,
+        1330
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 63.6366,
+      "page_number": 4,
+      "text": "11.",
+      "word_id": "scid5:p004:ocr-word:00188"
+    },
+    {
+      "bbox_image_px": [
+        1757,
+        1294,
+        1776,
+        1325
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 82.304787,
+      "page_number": 4,
+      "text": "1",
+      "word_id": "scid5:p004:ocr-word:00214"
+    },
+    {
+      "bbox_image_px": [
+        1946,
+        1293,
+        1966,
+        1324
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 78.670158,
+      "page_number": 4,
+      "text": "3",
+      "word_id": "scid5:p004:ocr-word:00215"
+    },
+    {
+      "bbox_image_px": [
+        1765,
+        1446,
+        1814,
+        1474
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 67.576553,
+      "page_number": 4,
+      "text": "“1”",
+      "word_id": "scid5:p004:ocr-word:00244"
+    },
+    {
+      "bbox_image_px": [
+        177,
+        1638,
+        230,
+        1669
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 79.349686,
+      "page_number": 4,
+      "text": "12",
+      "word_id": "scid5:p004:ocr-word:00251"
+    },
+    {
+      "bbox_image_px": [
+        1758,
+        1633,
+        1777,
+        1664
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 78.590675,
+      "page_number": 4,
+      "text": "1",
+      "word_id": "scid5:p004:ocr-word:00278"
+    },
+    {
+      "bbox_image_px": [
+        1948,
+        1632,
+        1968,
+        1663
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 66.816856,
+      "page_number": 4,
+      "text": "3",
+      "word_id": "scid5:p004:ocr-word:00279"
+    },
+    {
+      "bbox_image_px": [
+        177,
+        1976,
+        231,
+        2008
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 58.226166,
+      "page_number": 4,
+      "text": "13.[",
+      "word_id": "scid5:p004:ocr-word:00327"
+    },
+    {
+      "bbox_image_px": [
+        1066,
+        1962,
+        1119,
+        2007
+      ],
+      "categories": [
+        "negation"
+      ],
+      "confidence": 83.328026,
+      "page_number": 4,
+      "text": "否",
+      "word_id": "scid5:p004:ocr-word:00343"
+    },
+    {
+      "bbox_image_px": [
+        1759,
+        1971,
+        1779,
+        2002
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 81.683708,
+      "page_number": 4,
+      "text": "1",
+      "word_id": "scid5:p004:ocr-word:00355"
+    },
+    {
+      "bbox_image_px": [
+        1949,
+        1970,
+        1970,
+        2002
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 82.038094,
+      "page_number": 4,
+      "text": "3",
+      "word_id": "scid5:p004:ocr-word:00356"
+    },
+    {
+      "bbox_image_px": [
+        1964,
+        2117,
+        2013,
+        2145
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 65.831299,
+      "page_number": 4,
+      "text": "“3",
+      "word_id": "scid5:p004:ocr-word:00367"
+    },
+    {
+      "bbox_image_px": [
+        1951,
+        2265,
+        1971,
+        2296
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 70.695747,
+      "page_number": 4,
+      "text": "3",
+      "word_id": "scid5:p004:ocr-word:00396"
+    },
+    {
+      "bbox_image_px": [
+        179,
+        2543,
+        233,
+        2575
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 70.434212,
+      "page_number": 4,
+      "text": "15.[",
+      "word_id": "scid5:p004:ocr-word:00422"
+    },
+    {
+      "bbox_image_px": [
+        1952,
+        2538,
+        1972,
+        2569
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 49.577667,
+      "page_number": 4,
+      "text": "3",
+      "word_id": "scid5:p004:ocr-word:00450"
+    },
+    {
+      "bbox_image_px": [
+        1970,
+        2682,
+        2018,
+        2710
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 30.303139,
+      "page_number": 4,
+      "text": "“3”",
+      "word_id": "scid5:p004:ocr-word:00468"
+    },
+    {
+      "bbox_image_px": [
+        933,
+        3206,
+        975,
+        3237
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 53.500881,
+      "page_number": 4,
+      "text": "1=",
+      "word_id": "scid5:p004:ocr-word:00476"
+    },
+    {
+      "bbox_image_px": [
+        1312,
+        3205,
+        1367,
+        3243
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 55.298748,
+      "page_number": 4,
+      "text": "2=",
+      "word_id": "scid5:p004:ocr-word:00480"
+    },
+    {
+      "bbox_image_px": [
+        1646,
+        3203,
+        1690,
+        3235
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 48.197258,
+      "page_number": 4,
+      "text": "3-",
+      "word_id": "scid5:p004:ocr-word:00483"
+    },
+    {
+      "bbox_image_px": [
+        528,
+        384,
+        585,
+        428
+      ],
+      "categories": [
+        "negation"
+      ],
+      "confidence": 81.923409,
+      "page_number": 232,
+      "text": "否",
+      "word_id": "scid5:p232:ocr-word:00012"
+    },
+    {
+      "bbox_image_px": [
+        725,
+        385,
+        806,
+        419
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 13.366957,
+      "page_number": 232,
+      "text": "“3”?",
+      "word_id": "scid5:p232:ocr-word:00015"
+    },
+    {
+      "bbox_image_px": [
+        2470,
+        339,
+        2477,
+        342
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 31.338959,
+      "page_number": 232,
+      "text": "1",
+      "word_id": "scid5:p232:ocr-word:00018"
+    },
+    {
+      "bbox_image_px": [
+        408,
+        1043,
+        476,
+        1075
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 75.95665,
+      "page_number": 232,
+      "text": "S10",
+      "word_id": "scid5:p232:ocr-word:00090"
+    },
+    {
+      "bbox_image_px": [
+        754,
+        1038,
+        835,
+        1072
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 12.729149,
+      "page_number": 232,
+      "text": "“3”?",
+      "word_id": "scid5:p232:ocr-word:00095"
+    },
+    {
+      "bbox_image_px": [
+        757,
+        1559,
+        838,
+        1592
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 37.237167,
+      "page_number": 232,
+      "text": "“3”?",
+      "word_id": "scid5:p232:ocr-word:00155"
+    },
+    {
+      "bbox_image_px": [
+        309,
+        1647,
+        418,
+        1691
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 0.0,
+      "page_number": 232,
+      "text": "2:",
+      "word_id": "scid5:p232:ocr-word:00160"
+    },
+    {
+      "bbox_image_px": [
+        1971,
+        1710,
+        2023,
+        1763
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 33.149788,
+      "page_number": 232,
+      "text": "1\"",
+      "word_id": "scid5:p232:ocr-word:00182"
+    },
+    {
+      "bbox_image_px": [
+        1978,
+        2676,
+        1997,
+        2707
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 72.825592,
+      "page_number": 232,
+      "text": "2",
+      "word_id": "scid5:p232:ocr-word:00346"
+    },
+    {
+      "bbox_image_px": [
+        628,
+        2798,
+        736,
+        2850
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 36.902992,
+      "page_number": 232,
+      "text": "什么?)",
+      "word_id": "scid5:p232:ocr-word:00383"
+    },
+    {
+      "bbox_image_px": [
+        1791,
+        2940,
+        1842,
+        2974
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 37.260128,
+      "page_number": 232,
+      "text": "“3\"，",
+      "word_id": "scid5:p232:ocr-word:00407"
+    },
+    {
+      "bbox_image_px": [
+        1686,
+        3199,
+        1789,
+        3257
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 0.0,
+      "page_number": 232,
+      "text": "3=—)",
+      "word_id": "scid5:p232:ocr-word:00433"
+    },
+    {
+      "bbox_image_px": [
+        2029,
+        508,
+        2048,
+        539
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 81.074295,
+      "page_number": 233,
+      "text": "3",
+      "word_id": "scid5:p233:ocr-word:00024"
+    },
+    {
+      "bbox_image_px": [
+        1943,
+        585,
+        2125,
+        646
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 83.658951,
+      "page_number": 233,
+      "text": "G11,",
+      "word_id": "scid5:p233:ocr-word:00033"
+    },
+    {
+      "bbox_image_px": [
+        780,
+        1184,
+        862,
+        1217
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 63.496582,
+      "page_number": 233,
+      "text": "“3”?",
+      "word_id": "scid5:p233:ocr-word:00119"
+    },
+    {
+      "bbox_image_px": [
+        2176,
+        1197,
+        2225,
+        1217
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 67.42804,
+      "page_number": 233,
+      "text": "G11",
+      "word_id": "scid5:p233:ocr-word:00121"
+    },
+    {
+      "bbox_image_px": [
+        1434,
+        1814,
+        1487,
+        1890
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 84.531723,
+      "page_number": 233,
+      "text": "(1)",
+      "word_id": "scid5:p233:ocr-word:00188"
+    },
+    {
+      "bbox_image_px": [
+        1899,
+        1941,
+        1917,
+        1972
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 68.275032,
+      "page_number": 233,
+      "text": "1",
+      "word_id": "scid5:p233:ocr-word:00216"
+    },
+    {
+      "bbox_image_px": [
+        1994,
+        1941,
+        2013,
+        1972
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 79.309784,
+      "page_number": 233,
+      "text": "2",
+      "word_id": "scid5:p233:ocr-word:00217"
+    },
+    {
+      "bbox_image_px": [
+        1994,
+        2444,
+        2013,
+        2476
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 81.460922,
+      "page_number": 233,
+      "text": "2",
+      "word_id": "scid5:p233:ocr-word:00290"
+    },
+    {
+      "bbox_image_px": [
+        2090,
+        2444,
+        2109,
+        2476
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 81.460922,
+      "page_number": 233,
+      "text": "3",
+      "word_id": "scid5:p233:ocr-word:00291"
+    },
+    {
+      "bbox_image_px": [
+        397,
+        2542,
+        427,
+        2618
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 62.738384,
+      "page_number": 233,
+      "text": ")?",
+      "word_id": "scid5:p233:ocr-word:00312"
+    },
+    {
+      "bbox_image_px": [
+        1677,
+        2757,
+        1717,
+        2853
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 16.444912,
+      "page_number": 233,
+      "text": "2",
+      "word_id": "scid5:p233:ocr-word:00368"
+    },
+    {
+      "bbox_image_px": [
+        1375,
+        3214,
+        1463,
+        3271
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 19.774494,
+      "page_number": 233,
+      "text": "2=—]",
+      "word_id": "scid5:p233:ocr-word:00405"
+    },
+    {
+      "bbox_image_px": [
+        1708,
+        3220,
+        1797,
+        3262
+      ],
+      "categories": [
+        "score_or_number"
+      ],
+      "confidence": 0.0,
+      "page_number": 233,
+      "text": "3=)",
+      "word_id": "scid5:p233:ocr-word:00407"
+    }
+  ],
+  "limitations": [
+    "Confidence is a Tesseract signal, not a clinical confidence score.",
+    "The queue identifies items for source review; it does not adjudicate OCR correctness."
+  ],
+  "pages": [
+    {
+      "critical_token_observed_counts": {
+        "negation": 17,
+        "score_or_number": 41,
+        "time_window": 9
+      },
+      "layout_role_candidate_counts": {
+        "footer_or_score_legend_candidate": 2,
+        "header_candidate": 2,
+        "question_or_prompt_candidate": 25,
+        "score_or_navigation_candidate": 5
+      },
+      "line_count": 34,
+      "low_confidence_word_count": 76,
+      "ocr_block_count": 1,
+      "page_number": 4,
+      "word_count": 490
+    },
+    {
+      "critical_token_observed_counts": {
+        "negation": 15,
+        "score_or_number": 35,
+        "time_window": 1
+      },
+      "layout_role_candidate_counts": {
+        "criterion_or_interviewer_instruction_candidate": 18,
+        "footer_or_score_legend_candidate": 1,
+        "header_candidate": 2,
+        "navigation_instruction_candidate": 1,
+        "question_or_prompt_candidate": 16,
+        "score_or_navigation_candidate": 2
+      },
+      "line_count": 40,
+      "low_confidence_word_count": 38,
+      "ocr_block_count": 1,
+      "page_number": 232,
+      "word_count": 434
+    },
+    {
+      "critical_token_observed_counts": {
+        "negation": 13,
+        "score_or_number": 33,
+        "time_window": 1
+      },
+      "layout_role_candidate_counts": {
+        "criterion_or_interviewer_instruction_candidate": 22,
+        "footer_or_score_legend_candidate": 2,
+        "header_candidate": 2,
+        "navigation_instruction_candidate": 1,
+        "question_or_prompt_candidate": 12
+      },
+      "line_count": 39,
+      "low_confidence_word_count": 44,
+      "ocr_block_count": 1,
+      "page_number": 233,
+      "word_count": 410
+    }
+  ],
+  "quality_report_version": "1.0.0",
+  "source_document_sha256": "681d666c27eec13923e06b8f12317c2c27736c96ef0f0651d45bb65dc5cf799e",
+  "summary": {
+    "critical_review_queue_count": 52,
+    "line_count": 113,
+    "low_confidence_word_count": 158,
+    "page_count": 3,
+    "review_queue_status": "queued_for_human_review",
+    "word_count": 1334
+  },
+  "thresholds": {
+    "critical_token_review": 85.0,
+    "low_confidence": 60.0
+  }
+}

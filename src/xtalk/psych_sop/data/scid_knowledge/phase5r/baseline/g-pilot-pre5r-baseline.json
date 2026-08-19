@@ -1,0 +1,41 @@
+{
+  "baseline_version": "0.1.0",
+  "representation": "pre_5r_representation_baseline",
+  "publication_status": "candidate_only_not_published",
+  "source_document_sha256": "681d666c27eec13923e06b8f12317c2c27736c96ef0f0651d45bb65dc5cf799e",
+  "artifact_hashes": {
+    "legacy_module": {
+      "path": "xtalk/src/xtalk/psych_sop/data/scid_knowledge/modules/G/pilot.json",
+      "sha256": "e6e8187780dbf28a1af43d0f9545c7fc5fb8ad16c22101b0ce98ec1586ea08fd"
+    },
+    "legacy_candidate_bundle": {
+      "path": "xtalk/src/xtalk/psych_sop/data/scid_knowledge/candidates/g-pilot-candidates.json",
+      "sha256": "322fadf623f9f2f2a7f38c12d5a6515be463c00855da4695e861eb82a3440123"
+    },
+    "legacy_review_overlay": {
+      "path": "xtalk/src/xtalk/psych_sop/data/scid_knowledge/candidates/g-pilot-candidate-review-v2.json",
+      "sha256": "c8721de1baddcec94d0a26236d5f2ffff58251b93b464f8dd9030f54511bf650"
+    },
+    "legacy_fixtures": {
+      "path": "xtalk/src/xtalk/psych_sop/data/scid_knowledge/fixtures/g_pilot_trajectories.json",
+      "sha256": "19b7837aaf670f422f7beb177bd7b5b8d1bbbd4944a5344e707e83c764b3a8f7"
+    }
+  },
+  "counts": {
+    "legacy_node_count": 11,
+    "legacy_transition_count": 25,
+    "legacy_candidate_count": 11,
+    "legacy_review_item_count": 40
+  },
+  "migration_exclusions": {
+    "dynamic_clarification_node_ids": [
+      "S9.PROBE.OCCURRENCE"
+    ],
+    "internal_control_node_ids": [
+      "G.PILOT.OBSESSION_SUMMARY",
+      "G.PILOT.OBSESSION_RETURN",
+      "G.PILOT.COMPULSION_SUMMARY",
+      "G.PILOT.COMPULSION_RETURN"
+    ]
+  }
+}

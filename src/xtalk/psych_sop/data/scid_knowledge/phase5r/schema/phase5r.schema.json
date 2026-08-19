@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SCID Phase 5R semantic/strategy separation",
+  "type": "object",
+  "$defs": {
+    "SourceClinicalNode": {
+      "type": "object",
+      "required": [
+        "node_id",
+        "node_type",
+        "source_relation_ids",
+        "evidence_slots",
+        "score_requirements",
+        "formal_transitions"
+      ],
+      "properties": {
+        "node_type": {
+          "enum": [
+            "criterion_question",
+            "criterion_rule",
+            "differential",
+            "exclusion",
+            "module_entry",
+            "safety_gate",
+            "screening_question",
+            "terminal"
+          ]
+        }
+      }
+    },
+    "ProvenanceRelation": {
+      "type": "object",
+      "required": [
+        "relation_id",
+        "node_id",
+        "relation_type",
+        "evidence"
+      ],
+      "properties": {
+        "relation_type": {
+          "enum": [
+            "exact_field",
+            "ocr_anchor",
+            "ocr_region",
+            "related_field",
+            "source_region",
+            "source_text"
+          ]
+        }
+      }
+    },
+    "ConversationPlan": {
+      "type": "object",
+      "required": [
+        "utterance_goal",
+        "conversation_focus",
+        "semantic_anchor"
+      ],
+      "properties": {
+        "proposed_effects": {
+          "type": "array"
+        }
+      }
+    },
+    "CandidateEvidence": {
+      "type": "object",
+      "required": [
+        "semantic_anchor",
+        "source_turn_ids",
+        "interpretation"
+      ]
+    },
+    "ProposedEffect": {
+      "type": "object",
+      "required": [
+        "type",
+        "semantic_anchor"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "commit_score",
+            "module_push",
+            "module_pop",
+            "pause",
+            "stop",
+            "safety_takeover"
+          ]
+        }
+      }
+    }
+  }
+}

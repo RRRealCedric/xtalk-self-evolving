@@ -1,0 +1,27 @@
+{
+  "bundle_id": "scid5-zh-g-pilot",
+  "schema_version": "1.0.0",
+  "content_version": "0.1.0-engineering-pilot",
+  "language": "zh-CN",
+  "source_document": {
+    "document_id": "scid5-zh-local-source-01",
+    "source_manifest": "psydata/realdata/PsychologySOP-Template/scid-source-manifest.json",
+    "sha256": "681d666c27eec13923e06b8f12317c2c27736c96ef0f0651d45bb65dc5cf799e"
+  },
+  "deployment_scope": "D0_local_synthetic_or_developer_known_data_only",
+  "content_review_status": "engineering_schema_pilot_pending_clinical_review",
+  "entry_node_ids": ["S9", "S12"],
+  "modules": [
+    {
+      "module_id": "G",
+      "path": "modules/G/pilot.json",
+      "status": "engineering_schema_pilot"
+    }
+  ],
+  "metadata": {
+    "purpose": "Validate the knowledge schema, source provenance, graph validation, clarification ladder, and synthetic trajectory format. This is not a complete SCID module and must not be used to diagnose or interview real users.",
+    "approved_pilot_scope": "S9/S12 to G3/G11",
+    "raw_patient_data_included": false,
+    "clinical_review_required_before_runtime_use": true
+  }
+}

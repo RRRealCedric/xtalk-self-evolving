@@ -1,0 +1,1114 @@
+{
+  "candidate_bundle_id": "scid5-zh-g-pilot-candidates",
+  "candidate_bundle_sha256": "8f75a26df4be47d4f3a9d3f9cf63a0fbbce6888ae692887eec7b3297225819e7",
+  "candidate_status_required": "candidate_only_not_published",
+  "global_review_items": [
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": null,
+      "candidate_node_id": null,
+      "dimension": "source_audit_traceability",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "source_mapper"
+        }
+      ],
+      "review_item_id": "GLOBAL.phase3_source_audit_traceability",
+      "review_question": "阶段三已由项目负责人报告完成，但逐项 reviewer overlay、身份和更正记录尚未存档；是否已补充或明确保留这一审计证据缺口？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": null,
+      "candidate_node_id": null,
+      "dimension": "publication_boundary",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "engineering_reviewer"
+        }
+      ],
+      "review_item_id": "GLOBAL.runtime_publication_boundary",
+      "review_question": "是否确认所有 G Pilot 制品仍为 candidate_only_not_published，且未被复制到 released bundle、Runtime 或真实用户访谈流程？",
+      "reviewer_decisions": [],
+      "risk_tier": "engineering"
+    }
+  ],
+  "record_status": "in_review",
+  "recording_requirements": {
+    "approval_rule": "An approval is valid only when the exact candidate hash matches and the reviewer supplies a decision date and evidence note.",
+    "change_rule": "approve_with_changes, reject, or needs_adjudication blocks release. Correct source/module content first, regenerate candidates, then begin a new hash-bound review record.",
+    "independence_rule": "Where two approvals are required, they must be from distinct reviewer_id values.",
+    "reviewer_id_rule": "Use a stable controlled reviewer identifier; store credential evidence outside this source repository."
+  },
+  "release_boundary": "This record authorizes neither publication nor Runtime use. A later compiler, static validation, governance, and deployment gate remains required.",
+  "review_id": "scid5-zh-g-pilot-phase5-review-v1",
+  "review_item_schema": {
+    "adjudication": {
+      "adjudicator_id": "required only when resolved",
+      "decided_on": "YYYY-MM-DD required only when resolved",
+      "decision": [
+        "approve",
+        "approve_with_changes",
+        "reject"
+      ],
+      "rationale": "required only when resolved",
+      "status": [
+        "not_required",
+        "pending",
+        "resolved"
+      ]
+    },
+    "reviewer_decision": {
+      "decision": [
+        "approve",
+        "approve_with_changes",
+        "needs_adjudication",
+        "reject"
+      ],
+      "evidence_note": "required concise rationale with source locator or review-packet reference",
+      "proposed_change": "optional; required for approve_with_changes or reject",
+      "reviewed_on": "YYYY-MM-DD",
+      "reviewer_id": "required stable controlled identifier",
+      "reviewer_role": [
+        "clinical_reviewer",
+        "engineering_reviewer",
+        "source_mapper"
+      ]
+    }
+  },
+  "review_items": [
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:S9",
+      "candidate_node_id": "S9",
+      "dimension": "source_fidelity",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "S9.source_fidelity",
+      "review_question": "原题、页码/字段锚点和候选来源关系是否被如实呈现；是否明确区分 exact field、related field 和派生内容？",
+      "reviewer_decisions": [],
+      "risk_tier": "routine"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:S9",
+      "candidate_node_id": "S9",
+      "dimension": "clinical_semantics",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "S9.clinical_semantics",
+      "review_question": "临床概念、时间范围和排除边界是否忠实于来源，且没有加入来源未支持的 criterion 或诊断结论？",
+      "reviewer_decisions": [],
+      "risk_tier": "routine"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:S9",
+      "candidate_node_id": "S9",
+      "dimension": "slots_and_scores",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 2,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "S9.slots_and_scores",
+      "review_question": "证据槽及各 score 的最低资料要求是否准确，并且仅作为资料充分性而非自主诊断规则？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:S9",
+      "candidate_node_id": "S9",
+      "dimension": "transitions",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        },
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "engineering_reviewer"
+        }
+      ],
+      "review_item_id": "S9.transitions",
+      "review_question": "每条跳转的条件、目标和 effect 是否与限定 Pilot 的非诊断流程一致，且不存在因默认分支绕过必要澄清或安全边界？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:S9",
+      "candidate_node_id": "S9",
+      "dimension": "expression",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "S9.expression",
+      "review_question": "用户可见问法是否保留核心概念、时间范围和排除边界，且不把普通体验病理化？",
+      "reviewer_decisions": [],
+      "risk_tier": "routine"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:S9.PROBE.OCCURRENCE",
+      "candidate_node_id": "S9.PROBE.OCCURRENCE",
+      "dimension": "source_fidelity",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 2,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "S9.PROBE.OCCURRENCE.source_fidelity",
+      "review_question": "原题、页码/字段锚点和候选来源关系是否被如实呈现；是否明确区分 exact field、related field 和派生内容？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:S9.PROBE.OCCURRENCE",
+      "candidate_node_id": "S9.PROBE.OCCURRENCE",
+      "dimension": "clinical_semantics",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "S9.PROBE.OCCURRENCE.clinical_semantics",
+      "review_question": "临床概念、时间范围和排除边界是否忠实于来源，且没有加入来源未支持的 criterion 或诊断结论？",
+      "reviewer_decisions": [],
+      "risk_tier": "routine"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:S9.PROBE.OCCURRENCE",
+      "candidate_node_id": "S9.PROBE.OCCURRENCE",
+      "dimension": "slots_and_scores",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 2,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "S9.PROBE.OCCURRENCE.slots_and_scores",
+      "review_question": "证据槽及各 score 的最低资料要求是否准确，并且仅作为资料充分性而非自主诊断规则？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:S9.PROBE.OCCURRENCE",
+      "candidate_node_id": "S9.PROBE.OCCURRENCE",
+      "dimension": "transitions",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        },
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "engineering_reviewer"
+        }
+      ],
+      "review_item_id": "S9.PROBE.OCCURRENCE.transitions",
+      "review_question": "每条跳转的条件、目标和 effect 是否与限定 Pilot 的非诊断流程一致，且不存在因默认分支绕过必要澄清或安全边界？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:S9.PROBE.OCCURRENCE",
+      "candidate_node_id": "S9.PROBE.OCCURRENCE",
+      "dimension": "expression",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 2,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "S9.PROBE.OCCURRENCE.expression",
+      "review_question": "派生澄清是否非诱导、保留既定时间范围，并在不确定时允许记录 unknown 而不是重复原题？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G3",
+      "candidate_node_id": "G3",
+      "dimension": "source_fidelity",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 2,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G3.source_fidelity",
+      "review_question": "原题、页码/字段锚点和候选来源关系是否被如实呈现；是否明确区分 exact field、related field 和派生内容？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G3",
+      "candidate_node_id": "G3",
+      "dimension": "clinical_semantics",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G3.clinical_semantics",
+      "review_question": "临床概念、时间范围和排除边界是否忠实于来源，且没有加入来源未支持的 criterion 或诊断结论？",
+      "reviewer_decisions": [],
+      "risk_tier": "routine"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G3",
+      "candidate_node_id": "G3",
+      "dimension": "slots_and_scores",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 2,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G3.slots_and_scores",
+      "review_question": "证据槽及各 score 的最低资料要求是否准确，并且仅作为资料充分性而非自主诊断规则？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G3",
+      "candidate_node_id": "G3",
+      "dimension": "transitions",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        },
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "engineering_reviewer"
+        }
+      ],
+      "review_item_id": "G3.transitions",
+      "review_question": "每条跳转的条件、目标和 effect 是否与限定 Pilot 的非诊断流程一致，且不存在因默认分支绕过必要澄清或安全边界？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G3",
+      "candidate_node_id": "G3",
+      "dimension": "expression",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G3.expression",
+      "review_question": "用户可见问法是否保留核心概念、时间范围和排除边界，且不把普通体验病理化？",
+      "reviewer_decisions": [],
+      "risk_tier": "routine"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G6",
+      "candidate_node_id": "G6",
+      "dimension": "source_fidelity",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G6.source_fidelity",
+      "review_question": "原题、页码/字段锚点和候选来源关系是否被如实呈现；是否明确区分 exact field、related field 和派生内容？",
+      "reviewer_decisions": [],
+      "risk_tier": "routine"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G6",
+      "candidate_node_id": "G6",
+      "dimension": "clinical_semantics",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G6.clinical_semantics",
+      "review_question": "临床概念、时间范围和排除边界是否忠实于来源，且没有加入来源未支持的 criterion 或诊断结论？",
+      "reviewer_decisions": [],
+      "risk_tier": "routine"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G6",
+      "candidate_node_id": "G6",
+      "dimension": "slots_and_scores",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 2,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G6.slots_and_scores",
+      "review_question": "证据槽及各 score 的最低资料要求是否准确，并且仅作为资料充分性而非自主诊断规则？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G6",
+      "candidate_node_id": "G6",
+      "dimension": "transitions",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        },
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "engineering_reviewer"
+        }
+      ],
+      "review_item_id": "G6.transitions",
+      "review_question": "每条跳转的条件、目标和 effect 是否与限定 Pilot 的非诊断流程一致，且不存在因默认分支绕过必要澄清或安全边界？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G6",
+      "candidate_node_id": "G6",
+      "dimension": "expression",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G6.expression",
+      "review_question": "用户可见问法是否保留核心概念、时间范围和排除边界，且不把普通体验病理化？",
+      "reviewer_decisions": [],
+      "risk_tier": "routine"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G7",
+      "candidate_node_id": "G7",
+      "dimension": "source_fidelity",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G7.source_fidelity",
+      "review_question": "原题、页码/字段锚点和候选来源关系是否被如实呈现；是否明确区分 exact field、related field 和派生内容？",
+      "reviewer_decisions": [],
+      "risk_tier": "routine"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G7",
+      "candidate_node_id": "G7",
+      "dimension": "clinical_semantics",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G7.clinical_semantics",
+      "review_question": "临床概念、时间范围和排除边界是否忠实于来源，且没有加入来源未支持的 criterion 或诊断结论？",
+      "reviewer_decisions": [],
+      "risk_tier": "routine"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G7",
+      "candidate_node_id": "G7",
+      "dimension": "slots_and_scores",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 2,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G7.slots_and_scores",
+      "review_question": "证据槽及各 score 的最低资料要求是否准确，并且仅作为资料充分性而非自主诊断规则？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G7",
+      "candidate_node_id": "G7",
+      "dimension": "transitions",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        },
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "engineering_reviewer"
+        }
+      ],
+      "review_item_id": "G7.transitions",
+      "review_question": "每条跳转的条件、目标和 effect 是否与限定 Pilot 的非诊断流程一致，且不存在因默认分支绕过必要澄清或安全边界？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G7",
+      "candidate_node_id": "G7",
+      "dimension": "expression",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G7.expression",
+      "review_question": "用户可见问法是否保留核心概念、时间范围和排除边界，且不把普通体验病理化？",
+      "reviewer_decisions": [],
+      "risk_tier": "routine"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G.PILOT.OBSESSION_SUMMARY",
+      "candidate_node_id": "G.PILOT.OBSESSION_SUMMARY",
+      "dimension": "engineering_control",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "engineering_reviewer"
+        },
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G.PILOT.OBSESSION_SUMMARY.engineering_control",
+      "review_question": "该工程控制节点是否仍然是非诊断、无用户可见原题的流程支架，并且只执行所列出的返回/汇总作用？",
+      "reviewer_decisions": [],
+      "risk_tier": "engineering"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G.PILOT.OBSESSION_RETURN",
+      "candidate_node_id": "G.PILOT.OBSESSION_RETURN",
+      "dimension": "engineering_control",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "engineering_reviewer"
+        },
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G.PILOT.OBSESSION_RETURN.engineering_control",
+      "review_question": "该工程控制节点是否仍然是非诊断、无用户可见原题的流程支架，并且只执行所列出的返回/汇总作用？",
+      "reviewer_decisions": [],
+      "risk_tier": "engineering"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:S12",
+      "candidate_node_id": "S12",
+      "dimension": "source_fidelity",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "S12.source_fidelity",
+      "review_question": "原题、页码/字段锚点和候选来源关系是否被如实呈现；是否明确区分 exact field、related field 和派生内容？",
+      "reviewer_decisions": [],
+      "risk_tier": "routine"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:S12",
+      "candidate_node_id": "S12",
+      "dimension": "clinical_semantics",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "S12.clinical_semantics",
+      "review_question": "临床概念、时间范围和排除边界是否忠实于来源，且没有加入来源未支持的 criterion 或诊断结论？",
+      "reviewer_decisions": [],
+      "risk_tier": "routine"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:S12",
+      "candidate_node_id": "S12",
+      "dimension": "slots_and_scores",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 2,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "S12.slots_and_scores",
+      "review_question": "证据槽及各 score 的最低资料要求是否准确，并且仅作为资料充分性而非自主诊断规则？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:S12",
+      "candidate_node_id": "S12",
+      "dimension": "transitions",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        },
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "engineering_reviewer"
+        }
+      ],
+      "review_item_id": "S12.transitions",
+      "review_question": "每条跳转的条件、目标和 effect 是否与限定 Pilot 的非诊断流程一致，且不存在因默认分支绕过必要澄清或安全边界？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:S12",
+      "candidate_node_id": "S12",
+      "dimension": "expression",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "S12.expression",
+      "review_question": "用户可见问法是否保留核心概念、时间范围和排除边界，且不把普通体验病理化？",
+      "reviewer_decisions": [],
+      "risk_tier": "routine"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G11",
+      "candidate_node_id": "G11",
+      "dimension": "source_fidelity",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 2,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G11.source_fidelity",
+      "review_question": "原题、页码/字段锚点和候选来源关系是否被如实呈现；是否明确区分 exact field、related field 和派生内容？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G11",
+      "candidate_node_id": "G11",
+      "dimension": "clinical_semantics",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G11.clinical_semantics",
+      "review_question": "临床概念、时间范围和排除边界是否忠实于来源，且没有加入来源未支持的 criterion 或诊断结论？",
+      "reviewer_decisions": [],
+      "risk_tier": "routine"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G11",
+      "candidate_node_id": "G11",
+      "dimension": "slots_and_scores",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 2,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G11.slots_and_scores",
+      "review_question": "证据槽及各 score 的最低资料要求是否准确，并且仅作为资料充分性而非自主诊断规则？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G11",
+      "candidate_node_id": "G11",
+      "dimension": "transitions",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        },
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "engineering_reviewer"
+        }
+      ],
+      "review_item_id": "G11.transitions",
+      "review_question": "每条跳转的条件、目标和 effect 是否与限定 Pilot 的非诊断流程一致，且不存在因默认分支绕过必要澄清或安全边界？",
+      "reviewer_decisions": [],
+      "risk_tier": "high"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G.PILOT.COMPULSION_SUMMARY",
+      "candidate_node_id": "G.PILOT.COMPULSION_SUMMARY",
+      "dimension": "engineering_control",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "engineering_reviewer"
+        },
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G.PILOT.COMPULSION_SUMMARY.engineering_control",
+      "review_question": "该工程控制节点是否仍然是非诊断、无用户可见原题的流程支架，并且只执行所列出的返回/汇总作用？",
+      "reviewer_decisions": [],
+      "risk_tier": "engineering"
+    },
+    {
+      "adjudication": {
+        "adjudicator_id": null,
+        "decided_on": null,
+        "decision": null,
+        "rationale": "",
+        "status": "not_required"
+      },
+      "candidate_id": "scid5-zh-g-pilot-candidate:G.PILOT.COMPULSION_RETURN",
+      "candidate_node_id": "G.PILOT.COMPULSION_RETURN",
+      "dimension": "engineering_control",
+      "item_status": "pending",
+      "release_blocking": true,
+      "required_approvals": [
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "engineering_reviewer"
+        },
+        {
+          "minimum_independent_approvals": 1,
+          "reviewer_role": "clinical_reviewer"
+        }
+      ],
+      "review_item_id": "G.PILOT.COMPULSION_RETURN.engineering_control",
+      "review_question": "该工程控制节点是否仍然是非诊断、无用户可见原题的流程支架，并且只执行所列出的返回/汇总作用？",
+      "reviewer_decisions": [],
+      "risk_tier": "engineering"
+    }
+  ],
+  "review_record_version": "1.0.0",
+  "review_summary": {
+    "candidate_stays_non_published": true,
+    "item_status_counts": {
+      "pending": 40
+    },
+    "ready_for_compiler": false,
+    "release_blocking_open_item_ids": [
+      "GLOBAL.phase3_source_audit_traceability",
+      "GLOBAL.runtime_publication_boundary",
+      "S9.source_fidelity",
+      "S9.clinical_semantics",
+      "S9.slots_and_scores",
+      "S9.transitions",
+      "S9.expression",
+      "S9.PROBE.OCCURRENCE.source_fidelity",
+      "S9.PROBE.OCCURRENCE.clinical_semantics",
+      "S9.PROBE.OCCURRENCE.slots_and_scores",
+      "S9.PROBE.OCCURRENCE.transitions",
+      "S9.PROBE.OCCURRENCE.expression",
+      "G3.source_fidelity",
+      "G3.clinical_semantics",
+      "G3.slots_and_scores",
+      "G3.transitions",
+      "G3.expression",
+      "G6.source_fidelity",
+      "G6.clinical_semantics",
+      "G6.slots_and_scores",
+      "G6.transitions",
+      "G6.expression",
+      "G7.source_fidelity",
+      "G7.clinical_semantics",
+      "G7.slots_and_scores",
+      "G7.transitions",
+      "G7.expression",
+      "G.PILOT.OBSESSION_SUMMARY.engineering_control",
+      "G.PILOT.OBSESSION_RETURN.engineering_control",
+      "S12.source_fidelity",
+      "S12.clinical_semantics",
+      "S12.slots_and_scores",
+      "S12.transitions",
+      "S12.expression",
+      "G11.source_fidelity",
+      "G11.clinical_semantics",
+      "G11.slots_and_scores",
+      "G11.transitions",
+      "G.PILOT.COMPULSION_SUMMARY.engineering_control",
+      "G.PILOT.COMPULSION_RETURN.engineering_control"
+    ],
+    "total_items": 40
+  },
+  "reviewer_decision_values": [
+    "approve",
+    "approve_with_changes",
+    "needs_adjudication",
+    "reject"
+  ],
+  "scope": "G Pilot only: S9/S12 to G3/G6/G7/G11; not a complete SCID module."
+}

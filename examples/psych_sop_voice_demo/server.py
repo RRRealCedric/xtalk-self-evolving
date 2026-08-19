@@ -6,10 +6,17 @@ import argparse
 import json
 import mimetypes
 import os
+import sys
 from pathlib import Path
 
 os.environ.setdefault("NO_PROXY", "127.0.0.1,localhost")
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SRC_ROOT = REPO_ROOT / "src"
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+import xtalk as xtalk_package  # noqa: E402
 from fastapi import FastAPI, Request  # noqa: E402
 from fastapi.responses import HTMLResponse, JSONResponse  # noqa: E402
 from fastapi.staticfiles import StaticFiles  # noqa: E402
@@ -61,12 +68,6 @@ def parse_args() -> argparse.Namespace:
         help="Optional faster model for the asynchronous SCID observer.",
     )
     parser.add_argument(
-        "--scid-runtime-mode",
-        choices=("sequential", "parallel", "realtime"),
-        default=None,
-        help="SCID runtime response mode. Overrides the config value when provided.",
-    )
-    parser.add_argument(
         "--scid-observer-mode",
         choices=("off", "shadow", "active"),
         default=None,
@@ -76,30 +77,27 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
-        "--scid-candidate-pregeneration",
+        "--scid-one-step-speculation",
         action=argparse.BooleanOptionalAction,
         default=None,
-        help="Pre-generate safe action-conditioned foreground utterances.",
-    )
-    parser.add_argument(
-        "--scid-optimistic-scan",
-        action=argparse.BooleanOptionalAction,
-        default=None,
-        help="Allow one active observer-guided speculative scan step.",
+        help=(
+            "Allow at most one safety-gated speculative SCID scan step. "
+            "Disabled by default."
+        ),
     )
     parser.add_argument(
         "--scid-observer-confidence-threshold",
         type=float,
         default=None,
-        help="Minimum observer confidence for optimistic scan advance.",
+        help="Minimum observer confidence for one-step speculative scan advance.",
     )
     parser.add_argument(
-        "--scid-frontend-initial-timeout",
-        type=float,
+        "--scid-persist-raw-transcript",
+        action=argparse.BooleanOptionalAction,
         default=None,
         help=(
-            "Seconds to wait for the foreground LM to render the first "
-            "non-committal SCID response before using a local fallback."
+            "Persist sensitive raw SCID transcript text in episode artifacts. "
+            "Disabled by default."
         ),
     )
     parser.add_argument("--reset-memory", action="store_true")
@@ -107,6 +105,7 @@ def parse_args() -> argparse.Namespace:
 
 
 args = parse_args()
+print(f"Using xtalk package from: {Path(xtalk_package.__file__).resolve()}")
 config = Xtalk._get_config_dict(args.config)
 pipeline = Xtalk.create_pipeline_from_config(
     pipeline_cls=DefaultPipeline,
@@ -124,23 +123,16 @@ if args.backend_model:
     service_config["scid_backend_model"] = args.backend_model
 if args.scid_observer_model:
     service_config["scid_observer_model"] = args.scid_observer_model
-if args.scid_runtime_mode is not None:
-    service_config["scid_runtime_mode"] = args.scid_runtime_mode
 if args.scid_observer_mode is not None:
     service_config["scid_observer_mode"] = args.scid_observer_mode
-if args.scid_candidate_pregeneration is not None:
-    service_config["scid_candidate_pregeneration"] = args.scid_candidate_pregeneration
-if args.scid_optimistic_scan is not None:
-    service_config["scid_optimistic_scan"] = args.scid_optimistic_scan
+if args.scid_one_step_speculation is not None:
+    service_config["scid_allow_one_step_speculation"] = args.scid_one_step_speculation
 if args.scid_observer_confidence_threshold is not None:
     service_config["scid_observer_confidence_threshold"] = (
         args.scid_observer_confidence_threshold
     )
-if args.scid_frontend_initial_timeout is not None:
-    service_config["scid_frontend_initial_timeout_seconds"] = (
-        args.scid_frontend_initial_timeout
-    )
-
+if args.scid_persist_raw_transcript is not None:
+    service_config["scid_persist_raw_transcript"] = args.scid_persist_raw_transcript
 service = DefaultService(pipeline=pipeline, service_config=service_config)
 if args.mode == "scid":
     service.register_manager(SCIDDualLMManager)

@@ -1,10 +1,14 @@
-"""Background diagnostic-LM adapters for SCID decisions."""
+"""Background structured-assessment adapters for SCID-informed decisions."""
 
 from __future__ import annotations
 
 import os
 import json
+import math
 from abc import ABC, abstractmethod
+from collections.abc import Mapping
+from dataclasses import dataclass
+from types import MappingProxyType
 from typing import Any
 
 from langchain.chat_models.base import BaseChatModel
@@ -17,21 +21,68 @@ from .decision import (
     fallback_reask_decision,
     parse_assessment_decision,
 )
-from ..state.ledger import AssessmentLedger
 from ..core.schema import AssessmentDecision, normalize_score
 
 
+@dataclass(frozen=True, slots=True)
+class AssessmentRequest:
+    """Immutable input snapshot for one background assessment."""
+
+    interaction_seq: int
+    turn_id: int
+    field_id: str
+    state_version: int
+    owner_token: str
+    user_text: str
+    assessor_context: Mapping[str, Any]
+    observer_context: Mapping[str, Any]
+
+    def __post_init__(self) -> None:
+        """Validate identity fields and recursively freeze both contexts."""
+
+        for name, value in (
+            ("interaction_seq", self.interaction_seq),
+            ("turn_id", self.turn_id),
+        ):
+            if type(value) is not int or value < 1:
+                raise ValueError(f"{name} must be a positive integer")
+        if type(self.state_version) is not int or self.state_version < 0:
+            raise ValueError("state_version must be a non-negative integer")
+        for name, value in (
+            ("field_id", self.field_id),
+            ("owner_token", self.owner_token),
+            ("user_text", self.user_text),
+        ):
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{name} must be a non-empty string")
+        if len(self.user_text) > 8192:
+            raise ValueError("user_text exceeds 8192 characters")
+        if len(self.field_id) > 256 or len(self.owner_token) > 256:
+            raise ValueError("assessment identity string exceeds 256 characters")
+        if not isinstance(self.assessor_context, Mapping) or not isinstance(
+            self.observer_context, Mapping
+        ):
+            raise ValueError("assessment contexts must be mappings")
+        object.__setattr__(
+            self,
+            "assessor_context",
+            _freeze_context(self.assessor_context),
+        )
+        object.__setattr__(
+            self,
+            "observer_context",
+            _freeze_context(self.observer_context),
+        )
+
+
 class BackgroundAssessor(ABC):
-    """Interface for the background diagnostic decision maker."""
+    """Interface for the background structured field-decision maker."""
 
     @abstractmethod
     async def assess(
         self,
         *,
-        ledger: AssessmentLedger,
-        user_text: str,
-        turn_id: int,
-        observer_context: dict[str, Any] | None = None,
+        request: AssessmentRequest,
     ) -> AssessmentDecision:
         """Return one SCID decision for the current turn."""
 
@@ -42,10 +93,7 @@ class RuleBasedAssessor(BackgroundAssessor):
     async def assess(
         self,
         *,
-        ledger: AssessmentLedger,
-        user_text: str,
-        turn_id: int,
-        observer_context: dict[str, Any] | None = None,
+        request: AssessmentRequest,
     ) -> AssessmentDecision:
         """Assess a reply with deterministic offline heuristics.
 
@@ -68,8 +116,8 @@ class RuleBasedAssessor(BackgroundAssessor):
             Deterministic decision derived from the reply text.
         """
 
-        del turn_id, observer_context
-        field_id = ledger.current_field_id or ""
+        field_id = request.field_id
+        user_text = request.user_text
         text = user_text.strip().lower()
         if any(word in text for word in ("自杀", "不想活", "伤害自己", "杀了别人")):
             return AssessmentDecision(
@@ -120,6 +168,19 @@ class RuleBasedAssessor(BackgroundAssessor):
         else:
             score = "?"
             confidence = 0.45
+
+        if score == "?":
+            return AssessmentDecision(
+                field_id=field_id,
+                score=None,
+                confidence=confidence,
+                evidence=[],
+                next_action="clarify",
+                clarification_question=(
+                    "你能再具体说说这种情况有没有发生过，或者举一个例子吗？"
+                ),
+                reasoning_summary="当前回答不足以安全推进。",
+            )
 
         return AssessmentDecision(
             field_id=field_id,
@@ -194,10 +255,7 @@ observer_context 中的 contextual_memories 和 candidate_evidence 都是未提�
     async def assess(
         self,
         *,
-        ledger: AssessmentLedger,
-        user_text: str,
-        turn_id: int,
-        observer_context: dict[str, Any] | None = None,
+        request: AssessmentRequest,
     ) -> AssessmentDecision:
         """Assess a turn with the configured DeepSeek-compatible model.
 
@@ -219,18 +277,17 @@ observer_context 中的 contextual_memories 和 candidate_evidence 都是未提�
             and repair both fail.
         """
 
-        field_id = ledger.current_field_id or ""
+        field_id = request.field_id
+        turn_id = request.turn_id
         logger.info(
             "SCID backend assess start - model: %s, field: %s, turn: %s",
             self.model_name,
             field_id,
             turn_id,
         )
-        payload = ledger.build_assessor_context(
-            ledger._turn_by_id(turn_id)  # noqa: SLF001 - shared runtime object.
-        )
-        if observer_context:
-            payload["observer_context"] = observer_context
+        payload = _thaw_context(request.assessor_context)
+        if request.observer_context:
+            payload["observer_context"] = _thaw_context(request.observer_context)
         prompt = (
             "请根据以下 JSON 上下文输出本轮 SCID decision。"
             "注意：只输出 JSON 对象。\n\n"
@@ -305,6 +362,36 @@ observer_context 中的 contextual_memories 和 candidate_evidence 都是未提�
             ]
         )
         return str(response.content or "")
+
+
+def _freeze_context(value: Any) -> Any:
+    """Return a recursively immutable copy of JSON-like context data."""
+
+    if isinstance(value, Mapping):
+        if any(not isinstance(key, str) for key in value):
+            raise ValueError("assessment context keys must be strings")
+        return MappingProxyType(
+            {key: _freeze_context(item) for key, item in value.items()}
+        )
+    if isinstance(value, (list, tuple)):
+        return tuple(_freeze_context(item) for item in value)
+    if isinstance(value, float) and not math.isfinite(value):
+        raise ValueError("assessment context numbers must be finite")
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    raise ValueError(
+        f"assessment context contains unsupported value: {type(value).__name__}"
+    )
+
+
+def _thaw_context(value: Any) -> Any:
+    """Convert frozen context into ordinary JSON-serializable containers."""
+
+    if isinstance(value, Mapping):
+        return {str(key): _thaw_context(item) for key, item in value.items()}
+    if isinstance(value, tuple):
+        return [_thaw_context(item) for item in value]
+    return value
 
 
 def create_background_assessor(

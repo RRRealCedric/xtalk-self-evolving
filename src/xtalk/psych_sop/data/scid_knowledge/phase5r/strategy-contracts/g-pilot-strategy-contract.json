@@ -1,0 +1,118 @@
+{
+  "strategy_contract_version": "0.1.0",
+  "scope": "Open ConversationPlan only; formal clinical effects require compiled preflight and Ledger commit.",
+  "semantic_invariants": [
+    "Do not alter a source node time window, criterion, severity threshold, or exclusion.",
+    "Do not treat ordinary worry, preference, or background context as a clinical positive without source-supported evidence.",
+    "Do not present model inference as a user statement or committed score.",
+    "Unknown, contradiction, refusal, pause, stop, and safety takeover may retain the clinical cursor."
+  ],
+  "bindings": [
+    {
+      "semantic_anchor": "S9",
+      "missing_slots": [
+        "occurrence",
+        "answer_certainty"
+      ],
+      "allowed_plan_fields": [
+        "utterance_goal",
+        "conversation_focus",
+        "candidate_evidence",
+        "proposed_effects"
+      ],
+      "prohibited_effects": [
+        "advance_clinical_cursor_without_committed_score",
+        "declare_diagnosis",
+        "write_ledger_directly"
+      ]
+    },
+    {
+      "semantic_anchor": "S12",
+      "missing_slots": [
+        "occurrence",
+        "answer_certainty"
+      ],
+      "allowed_plan_fields": [
+        "utterance_goal",
+        "conversation_focus",
+        "candidate_evidence",
+        "proposed_effects"
+      ],
+      "prohibited_effects": [
+        "advance_clinical_cursor_without_committed_score",
+        "declare_diagnosis",
+        "write_ledger_directly"
+      ]
+    },
+    {
+      "semantic_anchor": "G3",
+      "missing_slots": [
+        "occurrence",
+        "content_description",
+        "recurrent_or_intrusive_quality"
+      ],
+      "allowed_plan_fields": [
+        "utterance_goal",
+        "conversation_focus",
+        "candidate_evidence",
+        "proposed_effects"
+      ],
+      "prohibited_effects": [
+        "advance_clinical_cursor_without_committed_score",
+        "declare_diagnosis",
+        "write_ledger_directly"
+      ]
+    },
+    {
+      "semantic_anchor": "G6",
+      "missing_slots": [
+        "distress_or_anxiety"
+      ],
+      "allowed_plan_fields": [
+        "utterance_goal",
+        "conversation_focus",
+        "candidate_evidence",
+        "proposed_effects"
+      ],
+      "prohibited_effects": [
+        "advance_clinical_cursor_without_committed_score",
+        "declare_diagnosis",
+        "write_ledger_directly"
+      ]
+    },
+    {
+      "semantic_anchor": "G7",
+      "missing_slots": [
+        "resistance_or_neutralization"
+      ],
+      "allowed_plan_fields": [
+        "utterance_goal",
+        "conversation_focus",
+        "candidate_evidence",
+        "proposed_effects"
+      ],
+      "prohibited_effects": [
+        "advance_clinical_cursor_without_committed_score",
+        "declare_diagnosis",
+        "write_ledger_directly"
+      ]
+    },
+    {
+      "semantic_anchor": "G11",
+      "missing_slots": [
+        "screen_positive"
+      ],
+      "allowed_plan_fields": [
+        "utterance_goal",
+        "conversation_focus",
+        "candidate_evidence",
+        "proposed_effects"
+      ],
+      "prohibited_effects": [
+        "advance_clinical_cursor_without_committed_score",
+        "declare_diagnosis",
+        "write_ledger_directly"
+      ]
+    }
+  ]
+}

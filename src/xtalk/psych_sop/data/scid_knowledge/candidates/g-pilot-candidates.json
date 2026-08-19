@@ -1,0 +1,2425 @@
+{
+  "candidate_bundle_id": "scid5-zh-g-pilot-candidates",
+  "candidate_bundle_version": "1.0.0",
+  "candidate_status": "candidate_only_not_published",
+  "candidates": [
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:S9",
+      "candidate_node_id": "S9",
+      "candidate_status": "candidate_only_not_published",
+      "proposal": {
+        "clinical_intent_candidate": "筛查终生是否存在不希望出现且反复出现的想法，以决定是否需要进入强迫思维路径。",
+        "dialogue_contract_candidate": {
+          "allowed_paraphrases": [
+            "必须保留终生时间范围、反复性、不希望出现的性质，以及与普通担心的区别。"
+          ],
+          "clarification_ladder": [
+            {
+              "level": 1,
+              "prompt_intent": "在不假定其发生过的前提下，请当事人回忆一个终生中的具体例子。",
+              "strategy": "concrete_episode",
+              "when_missing": [
+                "occurrence"
+              ]
+            },
+            {
+              "level": 2,
+              "prompt_intent": "区分一过性的普通担心与反复侵入的想法。",
+              "strategy": "contrast_normal_worry",
+              "when_missing": [
+                "answer_certainty"
+              ]
+            },
+            {
+              "level": 3,
+              "prompt_intent": "提供中性、相互排斥的回答类别，而不是重读完整题目。",
+              "strategy": "bounded_categories",
+              "when_missing": [
+                "occurrence"
+              ]
+            },
+            {
+              "level": 4,
+              "prompt_intent": "允许资料不足，不施压要求当事人给出结论。",
+              "strategy": "record_unknown",
+              "when_missing": [
+                "occurrence",
+                "answer_certainty"
+              ]
+            }
+          ],
+          "core_concept": "反复出现、并非主动希望去想的想法；与普通一过性担心相区分。",
+          "key_exclusions": [
+            "普通情境性担心",
+            "当事人主动希望继续思考的内容"
+          ],
+          "neutral_examples": [
+            "必要时只使用来源中已批准的类别性例子。"
+          ],
+          "required_information": [
+            "occurrence",
+            "answer_certainty"
+          ],
+          "severity_threshold": "不得把普通担心或个人偏好等同于具有临床相关性的体验。",
+          "time_window": "lifetime"
+        },
+        "evidence_slot_candidates": [
+          {
+            "description": "所描述的体验是否在终生时间范围内发生过。",
+            "required_for_scores": [
+              "1",
+              "2",
+              "3"
+            ],
+            "slot_id": "occurrence",
+            "value_type": "boolean_or_uncertain"
+          },
+          {
+            "description": "当事人对该扫描回答的确定程度。",
+            "required_for_scores": [],
+            "slot_id": "answer_certainty",
+            "value_type": "ordinal"
+          }
+        ],
+        "module_id": "S",
+        "natural_language_expression_candidates": [
+          {
+            "expression_id": "S9.CANONICAL",
+            "kind": "canonical_prompt_candidate",
+            "requires_candidate_review": false,
+            "source_basis": "phase_1_canonical_prompt",
+            "text": "在你一生的任何时候，你是否被一些想法困扰，即使你不愿去想，但它们还是不断出现，例如，反复想到暴露于细菌或尘土，或需要所有的东西以特定的方式排列起来？"
+          }
+        ],
+        "node_id": "S9",
+        "node_type": "screening_question",
+        "score_requirement_candidates": [
+          {
+            "required_slots": [
+              "occurrence"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "1",
+            "summary": "只有在用户回答能够支持“未发生”时，才可提出明确否定。"
+          },
+          {
+            "required_slots": [
+              "occurrence"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "2",
+            "summary": "可能存在阈下解释；本 Pilot 不定义诊断结论。"
+          },
+          {
+            "required_slots": [
+              "occurrence"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "3",
+            "summary": "阳性扫描可进入限定的 G Pilot；这不是诊断。"
+          }
+        ],
+        "time_window_candidate": "lifetime",
+        "transition_candidates": [
+          {
+            "effects": [
+              {
+                "target": "G",
+                "type": "queue_module"
+              }
+            ],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G3",
+            "transition_id": "S9.POSITIVE_TO_G3",
+            "when": {
+              "score_in": [
+                "3"
+              ]
+            }
+          },
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G.PILOT.OBSESSION_RETURN",
+            "transition_id": "S9.NEGATIVE_OR_SUBTHRESHOLD",
+            "when": {
+              "score_in": [
+                "1",
+                "2"
+              ]
+            }
+          },
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "S9.PROBE.OCCURRENCE",
+            "transition_id": "S9.UNKNOWN_TO_PROBE",
+            "when": {
+              "score_in": [
+                "?"
+              ]
+            }
+          },
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G.PILOT.OBSESSION_RETURN",
+            "transition_id": "S9.DEFAULT_SAFE_RETURN",
+            "when": {
+              "always": true
+            }
+          }
+        ]
+      },
+      "review_items": [
+        {
+          "kind": "candidate_content_review",
+          "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+          "severity": "required"
+        }
+      ],
+      "source_confidence": "high",
+      "source_evidence": {
+        "knowledge_source_refs": [
+          {
+            "description": "Approved local scan-item source.",
+            "field_id": "S9-G3",
+            "kind": "structured_scan_json",
+            "locator": "xtalk/src/xtalk/psych_sop/data/pysc/SCID-5-S.json#qid=S9",
+            "pdf_page": null,
+            "printed_page": null,
+            "source_id": "scid5-zh-local-source-01"
+          },
+          {
+            "description": "Scan-to-module form anchor.",
+            "field_id": "S9-G3",
+            "kind": "pdf_form_anchor",
+            "locator": "pdf:page=4;field=S9-G3",
+            "pdf_page": 4,
+            "printed_page": null,
+            "source_id": "scid5-zh-local-source-01"
+          }
+        ],
+        "phase_2_location": {
+          "node_id": "S9",
+          "review_layout_assets": [
+            {
+              "asset_id": "scan-s9",
+              "normalized_box": [
+                350,
+                1650,
+                9750,
+                3500
+              ],
+              "pdf_page": 4,
+              "printed_page": 33
+            }
+          ],
+          "source_refs": [
+            {
+              "declared_page_present": null,
+              "declared_pdf_page": null,
+              "matched_field_id": "S9-G3",
+              "matched_page_numbers": [
+                4,
+                232
+              ],
+              "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+              "node_id": "S9",
+              "relation_note": null,
+              "requested_field_id": "S9-G3",
+              "source_kind": "structured_scan_json",
+              "status": "exact_field_match"
+            },
+            {
+              "declared_page_present": true,
+              "declared_pdf_page": 4,
+              "matched_field_id": "S9-G3",
+              "matched_page_numbers": [
+                4,
+                232
+              ],
+              "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+              "node_id": "S9",
+              "relation_note": null,
+              "requested_field_id": "S9-G3",
+              "source_kind": "pdf_form_anchor",
+              "status": "exact_field_match"
+            }
+          ],
+          "status": "resolved"
+        },
+        "phase_3_form_field_anchors": [
+          {
+            "image_rect_px": [
+              1978,
+              645,
+              2037,
+              704
+            ],
+            "match_status": "exact_field_match",
+            "matched_field_id": "S9-G3",
+            "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+            "nearest_ocr_line_ids": [
+              "scid5:p004:ocr-line:001-001-004",
+              "scid5:p004:ocr-line:001-001-003",
+              "scid5:p004:ocr-line:001-001-015",
+              "scid5:p004:ocr-line:001-001-008",
+              "scid5:p004:ocr-line:001-001-006"
+            ],
+            "node_id": "S9",
+            "page_number": 4,
+            "pdf_rect_points": [
+              154.8,
+              474.474,
+              168.973,
+              488.647
+            ],
+            "relation_note": null,
+            "requested_field_id": "S9-G3",
+            "source_kind": "structured_scan_json",
+            "widget_object_ref": "21431 0 R"
+          },
+          {
+            "image_rect_px": [
+              1788,
+              645,
+              1847,
+              704
+            ],
+            "match_status": "exact_field_match",
+            "matched_field_id": "S9-G3",
+            "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+            "nearest_ocr_line_ids": [
+              "scid5:p004:ocr-line:001-001-004",
+              "scid5:p004:ocr-line:001-001-003",
+              "scid5:p004:ocr-line:001-001-008",
+              "scid5:p004:ocr-line:001-001-006",
+              "scid5:p004:ocr-line:001-001-011"
+            ],
+            "node_id": "S9",
+            "page_number": 4,
+            "pdf_rect_points": [
+              154.8,
+              428.954,
+              168.973,
+              443.127
+            ],
+            "relation_note": null,
+            "requested_field_id": "S9-G3",
+            "source_kind": "structured_scan_json",
+            "widget_object_ref": "21459 0 R"
+          }
+        ],
+        "phase_3_ocr_regions": [
+          {
+            "asset_id": "scan-s9",
+            "ocr_line_ids": [
+              "scid5:p004:ocr-line:001-001-005",
+              "scid5:p004:ocr-line:001-001-006",
+              "scid5:p004:ocr-line:001-001-007",
+              "scid5:p004:ocr-line:001-001-008",
+              "scid5:p004:ocr-line:001-001-009",
+              "scid5:p004:ocr-line:001-001-010",
+              "scid5:p004:ocr-line:001-001-011",
+              "scid5:p004:ocr-line:001-001-012"
+            ],
+            "pdf_page": 4
+          }
+        ]
+      }
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:S9.PROBE.OCCURRENCE",
+      "candidate_node_id": "S9.PROBE.OCCURRENCE",
+      "candidate_status": "candidate_only_not_published",
+      "proposal": {
+        "clinical_intent_candidate": "在不重复完整 S9 原题的情况下，澄清“是否发生过”这一证据槽。",
+        "dialogue_contract_candidate": {
+          "allowed_paraphrases": [
+            "只询问一个简短、具体的是否发生过的问题。"
+          ],
+          "clarification_ladder": [
+            {
+              "level": 1,
+              "prompt_intent": "当当事人仍无法判断时，允许 unknown 结果。",
+              "strategy": "record_unknown",
+              "when_missing": [
+                "occurrence",
+                "answer_certainty"
+              ]
+            }
+          ],
+          "core_concept": "对反复且不希望出现的想法是否发生过进行具体、非诱导性的澄清。",
+          "key_exclusions": [
+            "普通一过性担心"
+          ],
+          "neutral_examples": [],
+          "required_information": [
+            "occurrence",
+            "answer_certainty"
+          ],
+          "severity_threshold": "不得诱导肯定，也不得自动把普通担心重新分类。",
+          "time_window": "lifetime"
+        },
+        "evidence_slot_candidates": [
+          {
+            "description": "是否发生过符合当前问题定义的体验。",
+            "required_for_scores": [
+              "1",
+              "2",
+              "3"
+            ],
+            "slot_id": "occurrence",
+            "value_type": "boolean_or_uncertain"
+          },
+          {
+            "description": "经过更具体澄清后的回答确定程度。",
+            "required_for_scores": [],
+            "slot_id": "answer_certainty",
+            "value_type": "ordinal"
+          }
+        ],
+        "module_id": "S",
+        "natural_language_expression_candidates": [
+          {
+            "expression_id": "S9.PROBE.OCCURRENCE.CANONICAL",
+            "kind": "canonical_prompt_candidate",
+            "requires_candidate_review": true,
+            "source_basis": "phase_1_canonical_prompt",
+            "text": "我换一种更具体的问法：在你一生中，有没有过你不想去想、却会反复冒出来并让你困扰的念头？"
+          }
+        ],
+        "node_id": "S9.PROBE.OCCURRENCE",
+        "node_type": "evidence_probe",
+        "score_requirement_candidates": [
+          {
+            "required_slots": [
+              "occurrence"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "1",
+            "summary": "澄清后的否定仍只是待评估提议。"
+          },
+          {
+            "required_slots": [
+              "occurrence"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "2",
+            "summary": "阈下解释需要后续审核。"
+          },
+          {
+            "required_slots": [
+              "occurrence"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "3",
+            "summary": "澄清后的阳性可进入 G Pilot，不构成诊断。"
+          }
+        ],
+        "time_window_candidate": "lifetime",
+        "transition_candidates": [
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G3",
+            "transition_id": "S9.PROBE.POSITIVE_TO_G3",
+            "when": {
+              "score_in": [
+                "3"
+              ]
+            }
+          },
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G.PILOT.OBSESSION_RETURN",
+            "transition_id": "S9.PROBE.NEGATIVE_OR_SUBTHRESHOLD",
+            "when": {
+              "score_in": [
+                "1",
+                "2"
+              ]
+            }
+          },
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G.PILOT.OBSESSION_RETURN",
+            "transition_id": "S9.PROBE.UNKNOWN_RETURN",
+            "when": {
+              "score_in": [
+                "?"
+              ]
+            }
+          },
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G.PILOT.OBSESSION_RETURN",
+            "transition_id": "S9.PROBE.DEFAULT_SAFE_RETURN",
+            "when": {
+              "always": true
+            }
+          }
+        ]
+      },
+      "review_items": [
+        {
+          "kind": "candidate_content_review",
+          "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+          "severity": "required"
+        },
+        {
+          "kind": "derived_clarification",
+          "message": "The clarification prompt is derived content and must retain non-leading, time-window-faithful wording.",
+          "severity": "required"
+        }
+      ],
+      "source_confidence": "medium",
+      "source_evidence": {
+        "knowledge_source_refs": [
+          {
+            "description": "Engineering-pilot paraphrase derived from the S9 semantic contract; requires clinical review.",
+            "field_id": "S9-G3",
+            "kind": "derived_clarification",
+            "locator": "derived-from:S9",
+            "pdf_page": null,
+            "printed_page": null,
+            "source_id": "scid5-zh-local-source-01"
+          }
+        ],
+        "phase_2_location": {
+          "node_id": "S9.PROBE.OCCURRENCE",
+          "review_layout_assets": [
+            {
+              "asset_id": "scan-s9",
+              "normalized_box": [
+                350,
+                1650,
+                9750,
+                3500
+              ],
+              "pdf_page": 4,
+              "printed_page": 33
+            }
+          ],
+          "source_refs": [
+            {
+              "declared_page_present": null,
+              "declared_pdf_page": null,
+              "matched_field_id": "S9-G3",
+              "matched_page_numbers": [
+                4,
+                232
+              ],
+              "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+              "node_id": "S9.PROBE.OCCURRENCE",
+              "relation_note": null,
+              "requested_field_id": "S9-G3",
+              "source_kind": "derived_clarification",
+              "status": "exact_field_match"
+            }
+          ],
+          "status": "resolved"
+        },
+        "phase_3_form_field_anchors": [
+          {
+            "image_rect_px": [
+              1978,
+              645,
+              2037,
+              704
+            ],
+            "match_status": "exact_field_match",
+            "matched_field_id": "S9-G3",
+            "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+            "nearest_ocr_line_ids": [
+              "scid5:p004:ocr-line:001-001-004",
+              "scid5:p004:ocr-line:001-001-003",
+              "scid5:p004:ocr-line:001-001-015",
+              "scid5:p004:ocr-line:001-001-008",
+              "scid5:p004:ocr-line:001-001-006"
+            ],
+            "node_id": "S9.PROBE.OCCURRENCE",
+            "page_number": 4,
+            "pdf_rect_points": [
+              154.8,
+              474.474,
+              168.973,
+              488.647
+            ],
+            "relation_note": null,
+            "requested_field_id": "S9-G3",
+            "source_kind": "derived_clarification",
+            "widget_object_ref": "21431 0 R"
+          },
+          {
+            "image_rect_px": [
+              1788,
+              645,
+              1847,
+              704
+            ],
+            "match_status": "exact_field_match",
+            "matched_field_id": "S9-G3",
+            "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+            "nearest_ocr_line_ids": [
+              "scid5:p004:ocr-line:001-001-004",
+              "scid5:p004:ocr-line:001-001-003",
+              "scid5:p004:ocr-line:001-001-008",
+              "scid5:p004:ocr-line:001-001-006",
+              "scid5:p004:ocr-line:001-001-011"
+            ],
+            "node_id": "S9.PROBE.OCCURRENCE",
+            "page_number": 4,
+            "pdf_rect_points": [
+              154.8,
+              428.954,
+              168.973,
+              443.127
+            ],
+            "relation_note": null,
+            "requested_field_id": "S9-G3",
+            "source_kind": "derived_clarification",
+            "widget_object_ref": "21459 0 R"
+          }
+        ],
+        "phase_3_ocr_regions": [
+          {
+            "asset_id": "scan-s9",
+            "ocr_line_ids": [
+              "scid5:p004:ocr-line:001-001-005",
+              "scid5:p004:ocr-line:001-001-006",
+              "scid5:p004:ocr-line:001-001-007",
+              "scid5:p004:ocr-line:001-001-008",
+              "scid5:p004:ocr-line:001-001-009",
+              "scid5:p004:ocr-line:001-001-010",
+              "scid5:p004:ocr-line:001-001-011",
+              "scid5:p004:ocr-line:001-001-012"
+            ],
+            "pdf_page": 4
+          }
+        ]
+      }
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:G3",
+      "candidate_node_id": "G3",
+      "candidate_status": "candidate_only_not_published",
+      "proposal": {
+        "clinical_intent_candidate": "了解 S9 阳性想法的具体内容，以及其反复出现和不希望出现的性质。",
+        "dialogue_contract_candidate": {
+          "allowed_paraphrases": [
+            "先询问内容，再询问解释或临床含义。"
+          ],
+          "clarification_ladder": [
+            {
+              "level": 1,
+              "prompt_intent": "邀请当事人用自己的话描述。",
+              "strategy": "open_description",
+              "when_missing": [
+                "content_description"
+              ]
+            },
+            {
+              "level": 2,
+              "prompt_intent": "在不诱导的情况下澄清不希望出现的反复性。",
+              "strategy": "contrast_voluntary_and_intrusive",
+              "when_missing": [
+                "recurrent_or_intrusive_quality"
+              ]
+            },
+            {
+              "level": 3,
+              "prompt_intent": "允许资料不足。",
+              "strategy": "record_unknown",
+              "when_missing": [
+                "occurrence"
+              ]
+            }
+          ],
+          "core_concept": "用当事人自己的话描述反复、不希望出现的想法、表象或冲动内容。",
+          "key_exclusions": [
+            "自愿希望保留的想法",
+            "没有侵入性反复出现的普通关切"
+          ],
+          "neutral_examples": [
+            "只在有助于澄清类别时使用来源已批准的例子。"
+          ],
+          "required_information": [
+            "occurrence",
+            "content_description",
+            "recurrent_or_intrusive_quality"
+          ],
+          "severity_threshold": "不得从自愿偏好或普通关切推断强迫思维。",
+          "time_window": "继承 S9 已建立的终生时间范围。"
+        },
+        "evidence_slot_candidates": [
+          {
+            "description": "在模块语境中是否确认该扫描体验存在。",
+            "required_for_scores": [
+              "1",
+              "3"
+            ],
+            "slot_id": "occurrence",
+            "value_type": "boolean"
+          },
+          {
+            "description": "当事人对想法、表象或冲动内容的自主描述。",
+            "required_for_scores": [
+              "3"
+            ],
+            "slot_id": "content_description",
+            "value_type": "free_text_reference"
+          },
+          {
+            "description": "描述是否支持反复出现或不希望/侵入性的性质。",
+            "required_for_scores": [
+              "3"
+            ],
+            "slot_id": "recurrent_or_intrusive_quality",
+            "value_type": "boolean_or_uncertain"
+          }
+        ],
+        "module_id": "G",
+        "natural_language_expression_candidates": [
+          {
+            "expression_id": "G3.CANONICAL",
+            "kind": "canonical_prompt_candidate",
+            "requires_candidate_review": false,
+            "source_basis": "phase_1_canonical_prompt",
+            "text": "你说过你曾被一些反复出现的想法所困扰，即使你不愿去想，但它们还是不断出现，例如，反复想到暴露于细菌或污物，或者需要所有的东西以特定的方式排列起来。它们是什么？"
+          }
+        ],
+        "node_id": "G3",
+        "node_type": "criterion_question",
+        "score_requirement_candidates": [
+          {
+            "required_slots": [
+              "occurrence"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "1",
+            "summary": "模块内的否定发现提议；不构成诊断结论。"
+          },
+          {
+            "required_slots": [
+              "occurrence",
+              "content_description",
+              "recurrent_or_intrusive_quality"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "3",
+            "summary": "阳性 Pilot 推进提议；需要受训临床人员审核。"
+          }
+        ],
+        "time_window_candidate": "lifetime_context_from_S9",
+        "transition_candidates": [
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G6",
+            "transition_id": "G3.POSITIVE_TO_G6",
+            "when": {
+              "score_in": [
+                "3"
+              ]
+            }
+          },
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G.PILOT.OBSESSION_SUMMARY",
+            "transition_id": "G3.NEGATIVE_TO_SUMMARY",
+            "when": {
+              "score_in": [
+                "1"
+              ]
+            }
+          },
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G.PILOT.OBSESSION_SUMMARY",
+            "transition_id": "G3.DEFAULT_SAFE_SUMMARY",
+            "when": {
+              "always": true
+            }
+          }
+        ]
+      },
+      "review_items": [
+        {
+          "kind": "candidate_content_review",
+          "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+          "severity": "required"
+        },
+        {
+          "kind": "related_form_anchor",
+          "message": "The source region is linked through a related form anchor, not an exact AcroForm field; preserve this distinction.",
+          "severity": "required"
+        }
+      ],
+      "source_confidence": "medium",
+      "source_evidence": {
+        "knowledge_source_refs": [
+          {
+            "description": "G.2 obsessive-compulsive disorder page, G3 prompt.",
+            "field_id": "G3",
+            "kind": "pdf_region",
+            "locator": "pdf:page=232;printed_page=254;node=G3",
+            "pdf_page": 232,
+            "printed_page": 254,
+            "source_id": "scid5-zh-local-source-01"
+          }
+        ],
+        "phase_2_location": {
+          "node_id": "G3",
+          "review_layout_assets": [
+            {
+              "asset_id": "g2-g3",
+              "normalized_box": [
+                350,
+                750,
+                9750,
+                3400
+              ],
+              "pdf_page": 232,
+              "printed_page": 254
+            }
+          ],
+          "source_refs": [
+            {
+              "declared_page_present": true,
+              "declared_pdf_page": 232,
+              "matched_field_id": "S9-G3",
+              "matched_page_numbers": [
+                4,
+                232
+              ],
+              "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+              "node_id": "G3",
+              "relation_note": "Static source anchor G3 has no exact AcroForm field; using explicit related scan-to-module anchor S9-G3.",
+              "requested_field_id": "G3",
+              "source_kind": "pdf_region",
+              "status": "related_field_match"
+            }
+          ],
+          "status": "resolved"
+        },
+        "phase_3_form_field_anchors": [
+          {
+            "image_rect_px": [
+              1870,
+              361,
+              1929,
+              420
+            ],
+            "match_status": "related_field_match",
+            "matched_field_id": "S9-G3",
+            "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+            "nearest_ocr_line_ids": [
+              "scid5:p232:ocr-line:001-001-002",
+              "scid5:p232:ocr-line:001-001-008",
+              "scid5:p232:ocr-line:001-001-011",
+              "scid5:p232:ocr-line:001-001-001",
+              "scid5:p232:ocr-line:001-001-004"
+            ],
+            "node_id": "G3",
+            "page_number": 232,
+            "pdf_rect_points": [
+              86.7143,
+              448.638,
+              100.888,
+              462.811
+            ],
+            "relation_note": "Static source anchor G3 has no exact AcroForm field; using explicit related scan-to-module anchor S9-G3.",
+            "requested_field_id": "G3",
+            "source_kind": "pdf_region",
+            "widget_object_ref": "25360 0 R"
+          },
+          {
+            "image_rect_px": [
+              2033,
+              361,
+              2092,
+              420
+            ],
+            "match_status": "related_field_match",
+            "matched_field_id": "S9-G3",
+            "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+            "nearest_ocr_line_ids": [
+              "scid5:p232:ocr-line:001-001-002",
+              "scid5:p232:ocr-line:001-001-008",
+              "scid5:p232:ocr-line:001-001-011",
+              "scid5:p232:ocr-line:001-001-001",
+              "scid5:p232:ocr-line:001-001-018"
+            ],
+            "node_id": "G3",
+            "page_number": 232,
+            "pdf_rect_points": [
+              86.7143,
+              487.656,
+              100.888,
+              501.829
+            ],
+            "relation_note": "Static source anchor G3 has no exact AcroForm field; using explicit related scan-to-module anchor S9-G3.",
+            "requested_field_id": "G3",
+            "source_kind": "pdf_region",
+            "widget_object_ref": "25362 0 R"
+          }
+        ],
+        "phase_3_ocr_regions": [
+          {
+            "asset_id": "g2-g3",
+            "ocr_line_ids": [
+              "scid5:p232:ocr-line:001-001-002",
+              "scid5:p232:ocr-line:001-001-003",
+              "scid5:p232:ocr-line:001-001-004",
+              "scid5:p232:ocr-line:001-001-005",
+              "scid5:p232:ocr-line:001-001-006",
+              "scid5:p232:ocr-line:001-001-007",
+              "scid5:p232:ocr-line:001-001-008",
+              "scid5:p232:ocr-line:001-001-009",
+              "scid5:p232:ocr-line:001-001-010",
+              "scid5:p232:ocr-line:001-001-011",
+              "scid5:p232:ocr-line:001-001-012",
+              "scid5:p232:ocr-line:001-001-013"
+            ],
+            "pdf_page": 232
+          }
+        ]
+      }
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:G6",
+      "candidate_node_id": "G6",
+      "candidate_status": "candidate_only_not_published",
+      "proposal": {
+        "clinical_intent_candidate": "评估已描述的想法、表象或冲动是否伴随显著焦虑或痛苦。",
+        "dialogue_contract_candidate": {
+          "allowed_paraphrases": [
+            "询问已描述体验的情绪影响。"
+          ],
+          "clarification_ladder": [
+            {
+              "level": 1,
+              "prompt_intent": "澄清感受是没有、轻微，还是明确造成痛苦。",
+              "strategy": "impact_scale_without_leading",
+              "when_missing": [
+                "distress_or_anxiety"
+              ]
+            },
+            {
+              "level": 2,
+              "prompt_intent": "允许资料不足。",
+              "strategy": "record_unknown",
+              "when_missing": [
+                "distress_or_anxiety"
+              ]
+            }
+          ],
+          "core_concept": "此前描述体验的情绪影响。",
+          "key_exclusions": [
+            "没有实质痛苦的轻微普通不喜欢"
+          ],
+          "neutral_examples": [],
+          "required_information": [
+            "distress_or_anxiety"
+          ],
+          "severity_threshold": "区分显著焦虑或痛苦与轻微、一过性的不喜欢。",
+          "time_window": "与 G3 描述相同的发作或语境。"
+        },
+        "evidence_slot_candidates": [
+          {
+            "description": "该体验是否伴随显著焦虑或痛苦。",
+            "required_for_scores": [
+              "1",
+              "2",
+              "3"
+            ],
+            "slot_id": "distress_or_anxiety",
+            "value_type": "severity_or_uncertain"
+          }
+        ],
+        "module_id": "G",
+        "natural_language_expression_candidates": [
+          {
+            "expression_id": "G6.CANONICAL",
+            "kind": "canonical_prompt_candidate",
+            "requires_candidate_review": false,
+            "source_basis": "phase_1_canonical_prompt",
+            "text": "这些（想法/表象/冲动）是否令你非常焦虑或不安？"
+          }
+        ],
+        "node_id": "G6",
+        "node_type": "criterion_question",
+        "score_requirement_candidates": [
+          {
+            "required_slots": [
+              "distress_or_anxiety"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "1",
+            "summary": "痛苦/焦虑阴性发现提议。"
+          },
+          {
+            "required_slots": [
+              "distress_or_anxiety"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "2",
+            "summary": "痛苦/焦虑阈下提议。"
+          },
+          {
+            "required_slots": [
+              "distress_or_anxiety"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "3",
+            "summary": "痛苦/焦虑阳性发现提议；需要受训人员审核。"
+          }
+        ],
+        "time_window_candidate": "same_episode_or_context_as_G3",
+        "transition_candidates": [
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G7",
+            "transition_id": "G6.CONTINUE_TO_G7",
+            "when": {
+              "score_in": [
+                "1",
+                "2",
+                "3"
+              ]
+            }
+          },
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G.PILOT.OBSESSION_SUMMARY",
+            "transition_id": "G6.DEFAULT_SAFE_SUMMARY",
+            "when": {
+              "always": true
+            }
+          }
+        ]
+      },
+      "review_items": [
+        {
+          "kind": "candidate_content_review",
+          "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+          "severity": "required"
+        }
+      ],
+      "source_confidence": "high",
+      "source_evidence": {
+        "knowledge_source_refs": [
+          {
+            "description": "G.2 page, G6 prompt.",
+            "field_id": "G6",
+            "kind": "pdf_region",
+            "locator": "pdf:page=232;printed_page=254;node=G6",
+            "pdf_page": 232,
+            "printed_page": 254,
+            "source_id": "scid5-zh-local-source-01"
+          }
+        ],
+        "phase_2_location": {
+          "node_id": "G6",
+          "review_layout_assets": [
+            {
+              "asset_id": "g2-g6-g7",
+              "normalized_box": [
+                350,
+                5550,
+                8700,
+                9350
+              ],
+              "pdf_page": 232,
+              "printed_page": 254
+            }
+          ],
+          "source_refs": [
+            {
+              "declared_page_present": true,
+              "declared_pdf_page": 232,
+              "matched_field_id": "G6",
+              "matched_page_numbers": [
+                232
+              ],
+              "matched_stable_id": "scid5-zh-local-source-01:acroform:780d558be6960a54",
+              "node_id": "G6",
+              "relation_note": null,
+              "requested_field_id": "G6",
+              "source_kind": "pdf_region",
+              "status": "exact_field_match"
+            }
+          ],
+          "status": "resolved"
+        },
+        "phase_3_form_field_anchors": [
+          {
+            "image_rect_px": [
+              1759,
+              2223,
+              1818,
+              2282
+            ],
+            "match_status": "exact_field_match",
+            "matched_field_id": "G6",
+            "matched_stable_id": "scid5-zh-local-source-01:acroform:780d558be6960a54",
+            "nearest_ocr_line_ids": [
+              "scid5:p232:ocr-line:001-001-031",
+              "scid5:p232:ocr-line:001-001-030",
+              "scid5:p232:ocr-line:001-001-027",
+              "scid5:p232:ocr-line:001-001-025",
+              "scid5:p232:ocr-line:001-001-028"
+            ],
+            "node_id": "G6",
+            "page_number": 232,
+            "pdf_rect_points": [
+              533.433,
+              422.016,
+              547.606,
+              436.189
+            ],
+            "relation_note": null,
+            "requested_field_id": "G6",
+            "source_kind": "pdf_region",
+            "widget_object_ref": "25367 0 R"
+          },
+          {
+            "image_rect_px": [
+              1851,
+              2223,
+              1910,
+              2282
+            ],
+            "match_status": "exact_field_match",
+            "matched_field_id": "G6",
+            "matched_stable_id": "scid5-zh-local-source-01:acroform:780d558be6960a54",
+            "nearest_ocr_line_ids": [
+              "scid5:p232:ocr-line:001-001-031",
+              "scid5:p232:ocr-line:001-001-030",
+              "scid5:p232:ocr-line:001-001-027",
+              "scid5:p232:ocr-line:001-001-025",
+              "scid5:p232:ocr-line:001-001-028"
+            ],
+            "node_id": "G6",
+            "page_number": 232,
+            "pdf_rect_points": [
+              533.433,
+              444.089,
+              547.606,
+              458.262
+            ],
+            "relation_note": null,
+            "requested_field_id": "G6",
+            "source_kind": "pdf_region",
+            "widget_object_ref": "25368 0 R"
+          },
+          {
+            "image_rect_px": [
+              1948,
+              2223,
+              2007,
+              2282
+            ],
+            "match_status": "exact_field_match",
+            "matched_field_id": "G6",
+            "matched_stable_id": "scid5-zh-local-source-01:acroform:780d558be6960a54",
+            "nearest_ocr_line_ids": [
+              "scid5:p232:ocr-line:001-001-031",
+              "scid5:p232:ocr-line:001-001-030",
+              "scid5:p232:ocr-line:001-001-025",
+              "scid5:p232:ocr-line:001-001-027",
+              "scid5:p232:ocr-line:001-001-037"
+            ],
+            "node_id": "G6",
+            "page_number": 232,
+            "pdf_rect_points": [
+              533.433,
+              467.213,
+              547.606,
+              481.386
+            ],
+            "relation_note": null,
+            "requested_field_id": "G6",
+            "source_kind": "pdf_region",
+            "widget_object_ref": "25369 0 R"
+          },
+          {
+            "image_rect_px": [
+              2042,
+              2223,
+              2101,
+              2282
+            ],
+            "match_status": "exact_field_match",
+            "matched_field_id": "G6",
+            "matched_stable_id": "scid5-zh-local-source-01:acroform:780d558be6960a54",
+            "nearest_ocr_line_ids": [
+              "scid5:p232:ocr-line:001-001-031",
+              "scid5:p232:ocr-line:001-001-030",
+              "scid5:p232:ocr-line:001-001-025",
+              "scid5:p232:ocr-line:001-001-027",
+              "scid5:p232:ocr-line:001-001-038"
+            ],
+            "node_id": "G6",
+            "page_number": 232,
+            "pdf_rect_points": [
+              533.433,
+              489.812,
+              547.606,
+              503.985
+            ],
+            "relation_note": null,
+            "requested_field_id": "G6",
+            "source_kind": "pdf_region",
+            "widget_object_ref": "25370 0 R"
+          }
+        ],
+        "phase_3_ocr_regions": [
+          {
+            "asset_id": "g2-g6-g7",
+            "ocr_line_ids": [
+              "scid5:p232:ocr-line:001-001-023",
+              "scid5:p232:ocr-line:001-001-024",
+              "scid5:p232:ocr-line:001-001-025",
+              "scid5:p232:ocr-line:001-001-026",
+              "scid5:p232:ocr-line:001-001-027",
+              "scid5:p232:ocr-line:001-001-028",
+              "scid5:p232:ocr-line:001-001-029",
+              "scid5:p232:ocr-line:001-001-030",
+              "scid5:p232:ocr-line:001-001-031",
+              "scid5:p232:ocr-line:001-001-032",
+              "scid5:p232:ocr-line:001-001-033",
+              "scid5:p232:ocr-line:001-001-034",
+              "scid5:p232:ocr-line:001-001-035",
+              "scid5:p232:ocr-line:001-001-036",
+              "scid5:p232:ocr-line:001-001-037",
+              "scid5:p232:ocr-line:001-001-038",
+              "scid5:p232:ocr-line:001-001-040"
+            ],
+            "pdf_page": 232
+          }
+        ]
+      }
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:G7",
+      "candidate_node_id": "G7",
+      "candidate_status": "candidate_only_not_published",
+      "proposal": {
+        "clinical_intent_candidate": "评估当事人是否尝试忽略、压制、中和或抵制此前描述的体验。",
+        "dialogue_contract_candidate": {
+          "allowed_paraphrases": [
+            "询问当事人尝试做过什么，不预设其一定做过任何事。"
+          ],
+          "clarification_ladder": [
+            {
+              "level": 1,
+              "prompt_intent": "如有，请询问一个具体应对行为。",
+              "strategy": "behavioral_example",
+              "when_missing": [
+                "resistance_or_neutralization"
+              ]
+            },
+            {
+              "level": 2,
+              "prompt_intent": "允许资料不足。",
+              "strategy": "record_unknown",
+              "when_missing": [
+                "resistance_or_neutralization"
+              ]
+            }
+          ],
+          "core_concept": "当事人对此前描述体验所做的反应。",
+          "key_exclusions": [
+            "与所描述体验无关的普通应对"
+          ],
+          "neutral_examples": [],
+          "required_information": [
+            "resistance_or_neutralization"
+          ],
+          "severity_threshold": "不得把任何应对行动都假定为强迫行为或具有临床意义的抵制。",
+          "time_window": "与 G3 描述相同的发作或语境。"
+        },
+        "evidence_slot_candidates": [
+          {
+            "description": "当事人是否尝试忽略、压制、中和或抵制该体验。",
+            "required_for_scores": [
+              "1",
+              "2",
+              "3"
+            ],
+            "slot_id": "resistance_or_neutralization",
+            "value_type": "boolean_or_uncertain"
+          }
+        ],
+        "module_id": "G",
+        "natural_language_expression_candidates": [
+          {
+            "expression_id": "G7.CANONICAL",
+            "kind": "canonical_prompt_candidate",
+            "requires_candidate_review": false,
+            "source_basis": "phase_1_canonical_prompt",
+            "text": "当你出现这些（想法/表象/冲动）时，你是否努力地从你的大脑里去除它们？（你尝试做过些什么？）"
+          }
+        ],
+        "node_id": "G7",
+        "node_type": "criterion_question",
+        "score_requirement_candidates": [
+          {
+            "required_slots": [
+              "resistance_or_neutralization"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "1",
+            "summary": "抵制/中和阴性发现提议。"
+          },
+          {
+            "required_slots": [
+              "resistance_or_neutralization"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "2",
+            "summary": "阈下提议。"
+          },
+          {
+            "required_slots": [
+              "resistance_or_neutralization"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "3",
+            "summary": "阳性提议；需要受训人员审核。"
+          }
+        ],
+        "time_window_candidate": "same_episode_or_context_as_G3",
+        "transition_candidates": [
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G.PILOT.OBSESSION_SUMMARY",
+            "transition_id": "G7.TO_OBSESSION_SUMMARY",
+            "when": {
+              "score_in": [
+                "1",
+                "2",
+                "3",
+                "?"
+              ]
+            }
+          },
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G.PILOT.OBSESSION_SUMMARY",
+            "transition_id": "G7.DEFAULT_SAFE_SUMMARY",
+            "when": {
+              "always": true
+            }
+          }
+        ]
+      },
+      "review_items": [
+        {
+          "kind": "candidate_content_review",
+          "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+          "severity": "required"
+        }
+      ],
+      "source_confidence": "high",
+      "source_evidence": {
+        "knowledge_source_refs": [
+          {
+            "description": "G.2 page, G7 prompt.",
+            "field_id": "G7",
+            "kind": "pdf_region",
+            "locator": "pdf:page=232;printed_page=254;node=G7",
+            "pdf_page": 232,
+            "printed_page": 254,
+            "source_id": "scid5-zh-local-source-01"
+          }
+        ],
+        "phase_2_location": {
+          "node_id": "G7",
+          "review_layout_assets": [
+            {
+              "asset_id": "g2-g6-g7",
+              "normalized_box": [
+                350,
+                5550,
+                8700,
+                9350
+              ],
+              "pdf_page": 232,
+              "printed_page": 254
+            }
+          ],
+          "source_refs": [
+            {
+              "declared_page_present": true,
+              "declared_pdf_page": 232,
+              "matched_field_id": "G7",
+              "matched_page_numbers": [
+                232
+              ],
+              "matched_stable_id": "scid5-zh-local-source-01:acroform:3a5357e2b9676180",
+              "node_id": "G7",
+              "relation_note": null,
+              "requested_field_id": "G7",
+              "source_kind": "pdf_region",
+              "status": "exact_field_match"
+            }
+          ],
+          "status": "resolved"
+        },
+        "phase_3_form_field_anchors": [
+          {
+            "image_rect_px": [
+              1762,
+              2592,
+              1821,
+              2651
+            ],
+            "match_status": "exact_field_match",
+            "matched_field_id": "G7",
+            "matched_stable_id": "scid5-zh-local-source-01:acroform:3a5357e2b9676180",
+            "nearest_ocr_line_ids": [
+              "scid5:p232:ocr-line:001-001-031",
+              "scid5:p232:ocr-line:001-001-037",
+              "scid5:p232:ocr-line:001-001-038",
+              "scid5:p232:ocr-line:001-001-030",
+              "scid5:p232:ocr-line:001-001-036"
+            ],
+            "node_id": "G7",
+            "page_number": 232,
+            "pdf_rect_points": [
+              621.973,
+              422.687,
+              636.146,
+              436.86
+            ],
+            "relation_note": null,
+            "requested_field_id": "G7",
+            "source_kind": "pdf_region",
+            "widget_object_ref": "25359 0 R"
+          },
+          {
+            "image_rect_px": [
+              1854,
+              2592,
+              1913,
+              2651
+            ],
+            "match_status": "exact_field_match",
+            "matched_field_id": "G7",
+            "matched_stable_id": "scid5-zh-local-source-01:acroform:3a5357e2b9676180",
+            "nearest_ocr_line_ids": [
+              "scid5:p232:ocr-line:001-001-037",
+              "scid5:p232:ocr-line:001-001-031",
+              "scid5:p232:ocr-line:001-001-038",
+              "scid5:p232:ocr-line:001-001-030",
+              "scid5:p232:ocr-line:001-001-036"
+            ],
+            "node_id": "G7",
+            "page_number": 232,
+            "pdf_rect_points": [
+              621.973,
+              444.76,
+              636.146,
+              458.933
+            ],
+            "relation_note": null,
+            "requested_field_id": "G7",
+            "source_kind": "pdf_region",
+            "widget_object_ref": "25371 0 R"
+          },
+          {
+            "image_rect_px": [
+              1950,
+              2592,
+              2009,
+              2651
+            ],
+            "match_status": "exact_field_match",
+            "matched_field_id": "G7",
+            "matched_stable_id": "scid5-zh-local-source-01:acroform:3a5357e2b9676180",
+            "nearest_ocr_line_ids": [
+              "scid5:p232:ocr-line:001-001-038",
+              "scid5:p232:ocr-line:001-001-037",
+              "scid5:p232:ocr-line:001-001-031",
+              "scid5:p232:ocr-line:001-001-030",
+              "scid5:p232:ocr-line:001-001-036"
+            ],
+            "node_id": "G7",
+            "page_number": 232,
+            "pdf_rect_points": [
+              621.973,
+              467.885,
+              636.146,
+              482.058
+            ],
+            "relation_note": null,
+            "requested_field_id": "G7",
+            "source_kind": "pdf_region",
+            "widget_object_ref": "25372 0 R"
+          },
+          {
+            "image_rect_px": [
+              2045,
+              2592,
+              2104,
+              2651
+            ],
+            "match_status": "exact_field_match",
+            "matched_field_id": "G7",
+            "matched_stable_id": "scid5-zh-local-source-01:acroform:3a5357e2b9676180",
+            "nearest_ocr_line_ids": [
+              "scid5:p232:ocr-line:001-001-038",
+              "scid5:p232:ocr-line:001-001-037",
+              "scid5:p232:ocr-line:001-001-031",
+              "scid5:p232:ocr-line:001-001-039",
+              "scid5:p232:ocr-line:001-001-030"
+            ],
+            "node_id": "G7",
+            "page_number": 232,
+            "pdf_rect_points": [
+              621.973,
+              490.484,
+              636.146,
+              504.657
+            ],
+            "relation_note": null,
+            "requested_field_id": "G7",
+            "source_kind": "pdf_region",
+            "widget_object_ref": "25373 0 R"
+          }
+        ],
+        "phase_3_ocr_regions": [
+          {
+            "asset_id": "g2-g6-g7",
+            "ocr_line_ids": [
+              "scid5:p232:ocr-line:001-001-023",
+              "scid5:p232:ocr-line:001-001-024",
+              "scid5:p232:ocr-line:001-001-025",
+              "scid5:p232:ocr-line:001-001-026",
+              "scid5:p232:ocr-line:001-001-027",
+              "scid5:p232:ocr-line:001-001-028",
+              "scid5:p232:ocr-line:001-001-029",
+              "scid5:p232:ocr-line:001-001-030",
+              "scid5:p232:ocr-line:001-001-031",
+              "scid5:p232:ocr-line:001-001-032",
+              "scid5:p232:ocr-line:001-001-033",
+              "scid5:p232:ocr-line:001-001-034",
+              "scid5:p232:ocr-line:001-001-035",
+              "scid5:p232:ocr-line:001-001-036",
+              "scid5:p232:ocr-line:001-001-037",
+              "scid5:p232:ocr-line:001-001-038",
+              "scid5:p232:ocr-line:001-001-040"
+            ],
+            "pdf_page": 232
+          }
+        ]
+      }
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:G.PILOT.OBSESSION_SUMMARY",
+      "candidate_node_id": "G.PILOT.OBSESSION_SUMMARY",
+      "candidate_status": "candidate_only_not_published",
+      "proposal": {
+        "clinical_intent_candidate": "在返回前，对已审核的强迫思维 Pilot 证据槽生成非诊断性的工程摘要。",
+        "dialogue_contract_candidate": {
+          "allowed_paraphrases": [
+            "仅供内部状态转移。"
+          ],
+          "clarification_ladder": [],
+          "core_concept": "非诊断性的模块摘要。",
+          "key_exclusions": [
+            "诊断性陈述"
+          ],
+          "neutral_examples": [],
+          "required_information": [],
+          "severity_threshold": "不得将此摘要呈现为诊断。",
+          "time_window": "pilot_session"
+        },
+        "evidence_slot_candidates": [],
+        "module_id": "G",
+        "natural_language_expression_candidates": [],
+        "node_id": "G.PILOT.OBSESSION_SUMMARY",
+        "node_type": "module_summary",
+        "score_requirement_candidates": [],
+        "time_window_candidate": "pilot_session",
+        "transition_candidates": [
+          {
+            "effects": [
+              {
+                "type": "record_pilot_outcome"
+              }
+            ],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G.PILOT.OBSESSION_RETURN",
+            "transition_id": "G.PILOT.OBSESSION_SUMMARY.RETURN",
+            "when": {
+              "always": true
+            }
+          }
+        ]
+      },
+      "review_items": [
+        {
+          "kind": "candidate_content_review",
+          "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+          "severity": "required"
+        },
+        {
+          "kind": "engineering_scaffold",
+          "message": "This is an engineering control node, not source clinical content; verify it remains non-diagnostic and non-user-visible where required.",
+          "severity": "required"
+        }
+      ],
+      "source_confidence": "engineering_only",
+      "source_evidence": {
+        "knowledge_source_refs": [
+          {
+            "description": "Required to test module summary and return semantics; not source clinical content.",
+            "field_id": null,
+            "kind": "engineering_scaffold",
+            "locator": "g-pilot.json#G.PILOT.OBSESSION_SUMMARY",
+            "pdf_page": null,
+            "printed_page": null,
+            "source_id": "phase-1-engineering"
+          }
+        ],
+        "phase_2_location": {
+          "node_id": "G.PILOT.OBSESSION_SUMMARY",
+          "review_layout_assets": [],
+          "source_refs": [],
+          "status": "not_applicable"
+        },
+        "phase_3_form_field_anchors": [],
+        "phase_3_ocr_regions": []
+      }
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:G.PILOT.OBSESSION_RETURN",
+      "candidate_node_id": "G.PILOT.OBSESSION_RETURN",
+      "candidate_status": "candidate_only_not_published",
+      "proposal": {
+        "clinical_intent_candidate": "在不推断诊断的前提下，从限定的强迫思维 Pilot 返回调用方。",
+        "dialogue_contract_candidate": {
+          "allowed_paraphrases": [],
+          "clarification_ladder": [],
+          "core_concept": "将控制权返回调用方。",
+          "key_exclusions": [
+            "诊断性陈述"
+          ],
+          "neutral_examples": [],
+          "required_information": [],
+          "severity_threshold": "不允许产生面向用户的临床解释。",
+          "time_window": "pilot_session"
+        },
+        "evidence_slot_candidates": [],
+        "module_id": "G",
+        "natural_language_expression_candidates": [],
+        "node_id": "G.PILOT.OBSESSION_RETURN",
+        "node_type": "return",
+        "score_requirement_candidates": [],
+        "time_window_candidate": "pilot_session",
+        "transition_candidates": [
+          {
+            "effects": [
+              {
+                "type": "return_to_caller"
+              }
+            ],
+            "status": "candidate_only_not_published",
+            "target_node_id": "$terminal",
+            "transition_id": "G.PILOT.OBSESSION_RETURN.TERMINAL",
+            "when": {
+              "always": true
+            }
+          }
+        ]
+      },
+      "review_items": [
+        {
+          "kind": "candidate_content_review",
+          "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+          "severity": "required"
+        },
+        {
+          "kind": "engineering_scaffold",
+          "message": "This is an engineering control node, not source clinical content; verify it remains non-diagnostic and non-user-visible where required.",
+          "severity": "required"
+        }
+      ],
+      "source_confidence": "engineering_only",
+      "source_evidence": {
+        "knowledge_source_refs": [
+          {
+            "description": "Required to test module-return semantics; not source clinical content.",
+            "field_id": null,
+            "kind": "engineering_scaffold",
+            "locator": "g-pilot.json#G.PILOT.OBSESSION_RETURN",
+            "pdf_page": null,
+            "printed_page": null,
+            "source_id": "phase-1-engineering"
+          }
+        ],
+        "phase_2_location": {
+          "node_id": "G.PILOT.OBSESSION_RETURN",
+          "review_layout_assets": [],
+          "source_refs": [],
+          "status": "not_applicable"
+        },
+        "phase_3_form_field_anchors": [],
+        "phase_3_ocr_regions": []
+      }
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:S12",
+      "candidate_node_id": "S12",
+      "candidate_status": "candidate_only_not_published",
+      "proposal": {
+        "clinical_intent_candidate": "筛查终生是否存在难以控制的反复行为，以决定是否需要进入强迫行为模块 gate。",
+        "dialogue_contract_candidate": {
+          "allowed_paraphrases": [
+            "必须保留反复性、难以控制和终生时间范围。"
+          ],
+          "clarification_ladder": [
+            {
+              "level": 1,
+              "prompt_intent": "询问是否有过明知难以停止、仍反复去做的行为。",
+              "strategy": "concrete_behavior",
+              "when_missing": [
+                "occurrence"
+              ]
+            },
+            {
+              "level": 2,
+              "prompt_intent": "区分普通日常程序与感觉难以控制的行为。",
+              "strategy": "contrast_routine_and_loss_of_control",
+              "when_missing": [
+                "answer_certainty"
+              ]
+            },
+            {
+              "level": 3,
+              "prompt_intent": "允许资料不足。",
+              "strategy": "record_unknown",
+              "when_missing": [
+                "occurrence",
+                "answer_certainty"
+              ]
+            }
+          ],
+          "core_concept": "感觉难以控制的反复行为；与普通日常习惯相区分。",
+          "key_exclusions": [
+            "普通日常程序",
+            "不存在失控感的自主偏好"
+          ],
+          "neutral_examples": [
+            "必要时只使用来源已批准的例子。"
+          ],
+          "required_information": [
+            "occurrence",
+            "answer_certainty"
+          ],
+          "severity_threshold": "不得把正常偏好、习惯或可自主控制的日常程序归为具有临床相关性的反复行为。",
+          "time_window": "lifetime"
+        },
+        "evidence_slot_candidates": [
+          {
+            "description": "所描述的反复行为是否在终生时间范围内发生过。",
+            "required_for_scores": [
+              "1",
+              "2",
+              "3"
+            ],
+            "slot_id": "occurrence",
+            "value_type": "boolean_or_uncertain"
+          },
+          {
+            "description": "当事人对该扫描回答的确定程度。",
+            "required_for_scores": [],
+            "slot_id": "answer_certainty",
+            "value_type": "ordinal"
+          }
+        ],
+        "module_id": "S",
+        "natural_language_expression_candidates": [
+          {
+            "expression_id": "S12.CANONICAL",
+            "kind": "canonical_prompt_candidate",
+            "requires_candidate_review": false,
+            "source_basis": "phase_1_canonical_prompt",
+            "text": "在你一生的任何时候，你是否控制不住地反反复复去做某件事情，例如，反复洗手、一遍遍重复地做某件事直到“感觉对了”、计数到某个具体数目或反复检查某件事直到确保自己做对了？"
+          }
+        ],
+        "node_id": "S12",
+        "node_type": "screening_question",
+        "score_requirement_candidates": [
+          {
+            "required_slots": [
+              "occurrence"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "1",
+            "summary": "明确否定的扫描提议。"
+          },
+          {
+            "required_slots": [
+              "occurrence"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "2",
+            "summary": "阈下提议；本文件不定义诊断。"
+          },
+          {
+            "required_slots": [
+              "occurrence"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "3",
+            "summary": "阳性扫描提议可进入限定的 G11 gate。"
+          }
+        ],
+        "time_window_candidate": "lifetime",
+        "transition_candidates": [
+          {
+            "effects": [
+              {
+                "target": "G",
+                "type": "queue_module"
+              }
+            ],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G11",
+            "transition_id": "S12.POSITIVE_TO_G11",
+            "when": {
+              "score_in": [
+                "3"
+              ]
+            }
+          },
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G.PILOT.COMPULSION_RETURN",
+            "transition_id": "S12.NEGATIVE_OR_SUBTHRESHOLD",
+            "when": {
+              "score_in": [
+                "1",
+                "2"
+              ]
+            }
+          },
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G.PILOT.COMPULSION_RETURN",
+            "transition_id": "S12.UNKNOWN_SAFE_RETURN",
+            "when": {
+              "score_in": [
+                "?"
+              ]
+            }
+          },
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G.PILOT.COMPULSION_RETURN",
+            "transition_id": "S12.DEFAULT_SAFE_RETURN",
+            "when": {
+              "always": true
+            }
+          }
+        ]
+      },
+      "review_items": [
+        {
+          "kind": "candidate_content_review",
+          "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+          "severity": "required"
+        }
+      ],
+      "source_confidence": "high",
+      "source_evidence": {
+        "knowledge_source_refs": [
+          {
+            "description": "Approved local scan-item source.",
+            "field_id": "S12-G11",
+            "kind": "structured_scan_json",
+            "locator": "xtalk/src/xtalk/psych_sop/data/pysc/SCID-5-S.json#qid=S12",
+            "pdf_page": null,
+            "printed_page": null,
+            "source_id": "scid5-zh-local-source-01"
+          },
+          {
+            "description": "Scan-to-module form anchor.",
+            "field_id": "S12-G11",
+            "kind": "pdf_form_anchor",
+            "locator": "pdf:page=4;field=S12-G11",
+            "pdf_page": 4,
+            "printed_page": null,
+            "source_id": "scid5-zh-local-source-01"
+          }
+        ],
+        "phase_2_location": {
+          "node_id": "S12",
+          "review_layout_assets": [
+            {
+              "asset_id": "scan-s12",
+              "normalized_box": [
+                350,
+                4650,
+                9750,
+                6350
+              ],
+              "pdf_page": 4,
+              "printed_page": 33
+            }
+          ],
+          "source_refs": [
+            {
+              "declared_page_present": null,
+              "declared_pdf_page": null,
+              "matched_field_id": "S12-G11",
+              "matched_page_numbers": [
+                4,
+                233
+              ],
+              "matched_stable_id": "scid5-zh-local-source-01:acroform:a55ec5c06e7139b1",
+              "node_id": "S12",
+              "relation_note": null,
+              "requested_field_id": "S12-G11",
+              "source_kind": "structured_scan_json",
+              "status": "exact_field_match"
+            },
+            {
+              "declared_page_present": true,
+              "declared_pdf_page": 4,
+              "matched_field_id": "S12-G11",
+              "matched_page_numbers": [
+                4,
+                233
+              ],
+              "matched_stable_id": "scid5-zh-local-source-01:acroform:a55ec5c06e7139b1",
+              "node_id": "S12",
+              "relation_note": null,
+              "requested_field_id": "S12-G11",
+              "source_kind": "pdf_form_anchor",
+              "status": "exact_field_match"
+            }
+          ],
+          "status": "resolved"
+        },
+        "phase_3_form_field_anchors": [
+          {
+            "image_rect_px": [
+              1978,
+              1616,
+              2037,
+              1675
+            ],
+            "match_status": "exact_field_match",
+            "matched_field_id": "S12-G11",
+            "matched_stable_id": "scid5-zh-local-source-01:acroform:a55ec5c06e7139b1",
+            "nearest_ocr_line_ids": [
+              "scid5:p004:ocr-line:001-001-015",
+              "scid5:p004:ocr-line:001-001-023",
+              "scid5:p004:ocr-line:001-001-021",
+              "scid5:p004:ocr-line:001-001-019",
+              "scid5:p004:ocr-line:001-001-017"
+            ],
+            "node_id": "S12",
+            "page_number": 4,
+            "pdf_rect_points": [
+              387.762,
+              474.474,
+              401.935,
+              488.647
+            ],
+            "relation_note": null,
+            "requested_field_id": "S12-G11",
+            "source_kind": "structured_scan_json",
+            "widget_object_ref": "21456 0 R"
+          },
+          {
+            "image_rect_px": [
+              1788,
+              1616,
+              1847,
+              1675
+            ],
+            "match_status": "exact_field_match",
+            "matched_field_id": "S12-G11",
+            "matched_stable_id": "scid5-zh-local-source-01:acroform:a55ec5c06e7139b1",
+            "nearest_ocr_line_ids": [
+              "scid5:p004:ocr-line:001-001-015",
+              "scid5:p004:ocr-line:001-001-019",
+              "scid5:p004:ocr-line:001-001-023",
+              "scid5:p004:ocr-line:001-001-017",
+              "scid5:p004:ocr-line:001-001-021"
+            ],
+            "node_id": "S12",
+            "page_number": 4,
+            "pdf_rect_points": [
+              387.762,
+              428.954,
+              401.935,
+              443.127
+            ],
+            "relation_note": null,
+            "requested_field_id": "S12-G11",
+            "source_kind": "structured_scan_json",
+            "widget_object_ref": "21458 0 R"
+          }
+        ],
+        "phase_3_ocr_regions": [
+          {
+            "asset_id": "scan-s12",
+            "ocr_line_ids": [
+              "scid5:p004:ocr-line:001-001-017",
+              "scid5:p004:ocr-line:001-001-018",
+              "scid5:p004:ocr-line:001-001-019",
+              "scid5:p004:ocr-line:001-001-020",
+              "scid5:p004:ocr-line:001-001-022",
+              "scid5:p004:ocr-line:001-001-024",
+              "scid5:p004:ocr-line:001-001-023"
+            ],
+            "pdf_page": 4
+          }
+        ]
+      }
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:G11",
+      "candidate_node_id": "G11",
+      "candidate_status": "candidate_only_not_published",
+      "proposal": {
+        "clinical_intent_candidate": "表示由 S12 阳性扫描进入的 G11 强迫行为模块 gate。",
+        "dialogue_contract_candidate": {
+          "allowed_paraphrases": [],
+          "clarification_ladder": [],
+          "core_concept": "承接 S12 扫描结果的非用户可见 gate。",
+          "key_exclusions": [
+            "作为独立诊断使用"
+          ],
+          "neutral_examples": [],
+          "required_information": [
+            "screen_positive"
+          ],
+          "severity_threshold": "此 gate 不能独立确立强迫行为 criterion 或诊断。",
+          "time_window": "继承 S12 已建立的终生时间范围。"
+        },
+        "evidence_slot_candidates": [
+          {
+            "description": "上游 S12 是否支持进入强迫行为 gate。",
+            "required_for_scores": [
+              "1",
+              "3"
+            ],
+            "slot_id": "screen_positive",
+            "value_type": "boolean_or_uncertain"
+          }
+        ],
+        "module_id": "G",
+        "natural_language_expression_candidates": [],
+        "node_id": "G11",
+        "node_type": "module_gate",
+        "score_requirement_candidates": [
+          {
+            "required_slots": [
+              "screen_positive"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "1",
+            "summary": "Gate 阴性提议。"
+          },
+          {
+            "required_slots": [
+              "screen_positive"
+            ],
+            "requires_assessor_judgment": true,
+            "score": "3",
+            "summary": "Gate 阳性提议。本 Pilot 在尚未实现的后续 criterion 序列前停止。"
+          }
+        ],
+        "time_window_candidate": "lifetime_context_from_S12",
+        "transition_candidates": [
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G.PILOT.COMPULSION_SUMMARY",
+            "transition_id": "G11.TO_COMPULSION_SUMMARY",
+            "when": {
+              "score_in": [
+                "1",
+                "3"
+              ]
+            }
+          },
+          {
+            "effects": [],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G.PILOT.COMPULSION_SUMMARY",
+            "transition_id": "G11.DEFAULT_SAFE_SUMMARY",
+            "when": {
+              "always": true
+            }
+          }
+        ]
+      },
+      "review_items": [
+        {
+          "kind": "candidate_content_review",
+          "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+          "severity": "required"
+        },
+        {
+          "kind": "related_form_anchor",
+          "message": "The source region is linked through a related form anchor, not an exact AcroForm field; preserve this distinction.",
+          "severity": "required"
+        }
+      ],
+      "source_confidence": "medium",
+      "source_evidence": {
+        "knowledge_source_refs": [
+          {
+            "description": "G.3 compulsive behavior page, G11 gate following positive S12 screen.",
+            "field_id": "G11",
+            "kind": "pdf_region",
+            "locator": "pdf:page=233;printed_page=255;node=G11",
+            "pdf_page": 233,
+            "printed_page": 255,
+            "source_id": "scid5-zh-local-source-01"
+          }
+        ],
+        "phase_2_location": {
+          "node_id": "G11",
+          "review_layout_assets": [
+            {
+              "asset_id": "g3-g11",
+              "normalized_box": [
+                350,
+                2200,
+                9750,
+                6700
+              ],
+              "pdf_page": 233,
+              "printed_page": 255
+            }
+          ],
+          "source_refs": [
+            {
+              "declared_page_present": true,
+              "declared_pdf_page": 233,
+              "matched_field_id": "S12-G11",
+              "matched_page_numbers": [
+                4,
+                233
+              ],
+              "matched_stable_id": "scid5-zh-local-source-01:acroform:a55ec5c06e7139b1",
+              "node_id": "G11",
+              "relation_note": "Static source anchor G11 has no exact AcroForm field; using explicit related scan-to-module anchor S12-G11.",
+              "requested_field_id": "G11",
+              "source_kind": "pdf_region",
+              "status": "related_field_match"
+            }
+          ],
+          "status": "resolved"
+        },
+        "phase_3_form_field_anchors": [
+          {
+            "image_rect_px": [
+              1900,
+              1167,
+              1959,
+              1226
+            ],
+            "match_status": "related_field_match",
+            "matched_field_id": "S12-G11",
+            "matched_stable_id": "scid5-zh-local-source-01:acroform:a55ec5c06e7139b1",
+            "nearest_ocr_line_ids": [
+              "scid5:p233:ocr-line:001-001-005",
+              "scid5:p233:ocr-line:001-001-006",
+              "scid5:p233:ocr-line:001-001-004",
+              "scid5:p233:ocr-line:001-001-022",
+              "scid5:p233:ocr-line:001-001-013"
+            ],
+            "node_id": "G11",
+            "page_number": 233,
+            "pdf_rect_points": [
+              280.023,
+              455.756,
+              294.196,
+              469.929
+            ],
+            "relation_note": "Static source anchor G11 has no exact AcroForm field; using explicit related scan-to-module anchor S12-G11.",
+            "requested_field_id": "G11",
+            "source_kind": "pdf_region",
+            "widget_object_ref": "25387 0 R"
+          },
+          {
+            "image_rect_px": [
+              2062,
+              1167,
+              2121,
+              1226
+            ],
+            "match_status": "related_field_match",
+            "matched_field_id": "S12-G11",
+            "matched_stable_id": "scid5-zh-local-source-01:acroform:a55ec5c06e7139b1",
+            "nearest_ocr_line_ids": [
+              "scid5:p233:ocr-line:001-001-005",
+              "scid5:p233:ocr-line:001-001-006",
+              "scid5:p233:ocr-line:001-001-022",
+              "scid5:p233:ocr-line:001-001-004",
+              "scid5:p233:ocr-line:001-001-013"
+            ],
+            "node_id": "G11",
+            "page_number": 233,
+            "pdf_rect_points": [
+              280.023,
+              494.773,
+              294.196,
+              508.946
+            ],
+            "relation_note": "Static source anchor G11 has no exact AcroForm field; using explicit related scan-to-module anchor S12-G11.",
+            "requested_field_id": "G11",
+            "source_kind": "pdf_region",
+            "widget_object_ref": "25388 0 R"
+          }
+        ],
+        "phase_3_ocr_regions": [
+          {
+            "asset_id": "g3-g11",
+            "ocr_line_ids": [
+              "scid5:p233:ocr-line:001-001-007",
+              "scid5:p233:ocr-line:001-001-008",
+              "scid5:p233:ocr-line:001-001-009",
+              "scid5:p233:ocr-line:001-001-010",
+              "scid5:p233:ocr-line:001-001-011",
+              "scid5:p233:ocr-line:001-001-012",
+              "scid5:p233:ocr-line:001-001-013",
+              "scid5:p233:ocr-line:001-001-014",
+              "scid5:p233:ocr-line:001-001-015",
+              "scid5:p233:ocr-line:001-001-016",
+              "scid5:p233:ocr-line:001-001-017",
+              "scid5:p233:ocr-line:001-001-018",
+              "scid5:p233:ocr-line:001-001-019",
+              "scid5:p233:ocr-line:001-001-020",
+              "scid5:p233:ocr-line:001-001-021",
+              "scid5:p233:ocr-line:001-001-022",
+              "scid5:p233:ocr-line:001-001-023",
+              "scid5:p233:ocr-line:001-001-024",
+              "scid5:p233:ocr-line:001-001-025",
+              "scid5:p233:ocr-line:001-001-026",
+              "scid5:p233:ocr-line:001-001-027",
+              "scid5:p233:ocr-line:001-001-028",
+              "scid5:p233:ocr-line:001-001-029"
+            ],
+            "pdf_page": 233
+          }
+        ]
+      }
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:G.PILOT.COMPULSION_SUMMARY",
+      "candidate_node_id": "G.PILOT.COMPULSION_SUMMARY",
+      "candidate_status": "candidate_only_not_published",
+      "proposal": {
+        "clinical_intent_candidate": "在返回前，对 G11 gate 生成非诊断性的工程摘要。",
+        "dialogue_contract_candidate": {
+          "allowed_paraphrases": [
+            "仅供内部状态转移。"
+          ],
+          "clarification_ladder": [],
+          "core_concept": "非诊断性的强迫行为 gate 摘要。",
+          "key_exclusions": [
+            "诊断性陈述",
+            "声称已完成 criterion 审核"
+          ],
+          "neutral_examples": [],
+          "required_information": [],
+          "severity_threshold": "不得将此呈现为诊断或完整强迫行为评估。",
+          "time_window": "pilot_session"
+        },
+        "evidence_slot_candidates": [],
+        "module_id": "G",
+        "natural_language_expression_candidates": [],
+        "node_id": "G.PILOT.COMPULSION_SUMMARY",
+        "node_type": "module_summary",
+        "score_requirement_candidates": [],
+        "time_window_candidate": "pilot_session",
+        "transition_candidates": [
+          {
+            "effects": [
+              {
+                "type": "record_pilot_outcome"
+              }
+            ],
+            "status": "candidate_only_not_published",
+            "target_node_id": "G.PILOT.COMPULSION_RETURN",
+            "transition_id": "G.PILOT.COMPULSION_SUMMARY.RETURN",
+            "when": {
+              "always": true
+            }
+          }
+        ]
+      },
+      "review_items": [
+        {
+          "kind": "candidate_content_review",
+          "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+          "severity": "required"
+        },
+        {
+          "kind": "engineering_scaffold",
+          "message": "This is an engineering control node, not source clinical content; verify it remains non-diagnostic and non-user-visible where required.",
+          "severity": "required"
+        }
+      ],
+      "source_confidence": "engineering_only",
+      "source_evidence": {
+        "knowledge_source_refs": [
+          {
+            "description": "Required to test module-summary and return semantics; not source clinical content.",
+            "field_id": null,
+            "kind": "engineering_scaffold",
+            "locator": "g-pilot.json#G.PILOT.COMPULSION_SUMMARY",
+            "pdf_page": null,
+            "printed_page": null,
+            "source_id": "phase-1-engineering"
+          }
+        ],
+        "phase_2_location": {
+          "node_id": "G.PILOT.COMPULSION_SUMMARY",
+          "review_layout_assets": [],
+          "source_refs": [],
+          "status": "not_applicable"
+        },
+        "phase_3_form_field_anchors": [],
+        "phase_3_ocr_regions": []
+      }
+    },
+    {
+      "candidate_id": "scid5-zh-g-pilot-candidate:G.PILOT.COMPULSION_RETURN",
+      "candidate_node_id": "G.PILOT.COMPULSION_RETURN",
+      "candidate_status": "candidate_only_not_published",
+      "proposal": {
+        "clinical_intent_candidate": "在不推断诊断的前提下，从限定的强迫行为 gate Pilot 返回调用方。",
+        "dialogue_contract_candidate": {
+          "allowed_paraphrases": [],
+          "clarification_ladder": [],
+          "core_concept": "将控制权返回调用方。",
+          "key_exclusions": [
+            "诊断性陈述"
+          ],
+          "neutral_examples": [],
+          "required_information": [],
+          "severity_threshold": "不允许产生面向用户的临床解释。",
+          "time_window": "pilot_session"
+        },
+        "evidence_slot_candidates": [],
+        "module_id": "G",
+        "natural_language_expression_candidates": [],
+        "node_id": "G.PILOT.COMPULSION_RETURN",
+        "node_type": "return",
+        "score_requirement_candidates": [],
+        "time_window_candidate": "pilot_session",
+        "transition_candidates": [
+          {
+            "effects": [
+              {
+                "type": "return_to_caller"
+              }
+            ],
+            "status": "candidate_only_not_published",
+            "target_node_id": "$terminal",
+            "transition_id": "G.PILOT.COMPULSION_RETURN.TERMINAL",
+            "when": {
+              "always": true
+            }
+          }
+        ]
+      },
+      "review_items": [
+        {
+          "kind": "candidate_content_review",
+          "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+          "severity": "required"
+        },
+        {
+          "kind": "engineering_scaffold",
+          "message": "This is an engineering control node, not source clinical content; verify it remains non-diagnostic and non-user-visible where required.",
+          "severity": "required"
+        }
+      ],
+      "source_confidence": "engineering_only",
+      "source_evidence": {
+        "knowledge_source_refs": [
+          {
+            "description": "Required to test module-return semantics; not source clinical content.",
+            "field_id": null,
+            "kind": "engineering_scaffold",
+            "locator": "g-pilot.json#G.PILOT.COMPULSION_RETURN",
+            "pdf_page": null,
+            "printed_page": null,
+            "source_id": "phase-1-engineering"
+          }
+        ],
+        "phase_2_location": {
+          "node_id": "G.PILOT.COMPULSION_RETURN",
+          "review_layout_assets": [],
+          "source_refs": [],
+          "status": "not_applicable"
+        },
+        "phase_3_form_field_anchors": [],
+        "phase_3_ocr_regions": []
+      }
+    }
+  ],
+  "limitations": [
+    "Candidate fields preserve proposed content from the bounded G Pilot; they are not newly released SCID content.",
+    "OCR text and geometric proximity are source-review aids, not independent proof of clinical semantics.",
+    "No candidate in this file grants a model authority to score, diagnose, or write a runtime ledger."
+  ],
+  "review_handoff": {
+    "candidate_review": "pending",
+    "detailed_reviewer_identity_or_item_overlay": "not_recorded_in_repository",
+    "phase_1_clinical_audit": "reported_complete_by_project_owner_2026-07-29",
+    "phase_3_source_audit": "reported_complete_by_project_owner_2026-07-29",
+    "release_constraint": "Candidate artifacts cannot be copied into a runtime bundle before a separate candidate/content review and release process."
+  },
+  "source_artifacts": {
+    "anchor_alignment": {
+      "path": "xtalk/src/xtalk/psych_sop/data/scid_knowledge/source-map/g-pilot-anchor-alignment.json",
+      "sha256": "93e2a517caa1f50bee535306acd79d382ee2fab82c2c8d21f8e70c2d08dfa582"
+    },
+    "inventory": {
+      "path": "xtalk/src/xtalk/psych_sop/data/scid_knowledge/inventory/scid-5.acroform-inventory.json",
+      "sha256": "5b54885e30df8160007aa2c846524cc78a730fa7a7792444900bef30f92c0710"
+    },
+    "ocr_blocks": {
+      "path": "xtalk/src/xtalk/psych_sop/data/scid_knowledge/source-map/g-pilot-ocr-blocks.json",
+      "sha256": "e3f765814d4473d0f9723c51a3d825efac22117d9f018ec22ed0bbfc8d2415a6"
+    },
+    "ocr_quality": {
+      "path": "xtalk/src/xtalk/psych_sop/data/scid_knowledge/source-map/g-pilot-ocr-quality.json",
+      "sha256": "21d343c97878ad064ca0b4864343c50cece88a20cc9d51c83030829ea8819f88"
+    },
+    "pilot_locations": {
+      "path": "xtalk/src/xtalk/psych_sop/data/scid_knowledge/inventory/scid-5.pilot-locations.json",
+      "sha256": "ef0f887a85021e35248a9b8dc28ac3154bb12c69bcab434fa691d1bffdb45a54"
+    }
+  },
+  "source_document_sha256": "681d666c27eec13923e06b8f12317c2c27736c96ef0f0651d45bb65dc5cf799e"
+}

@@ -1,0 +1,51 @@
+{
+  "phase5r_version": "0.1.0",
+  "status": "candidate_only_not_published",
+  "artifact_hashes": [
+    {
+      "path": "baseline/g-pilot-pre5r-baseline.json",
+      "sha256": "0139ac97f5d4684148aaa24bdc4432f95ef061b257a6cd5475297fbfbd220722"
+    },
+    {
+      "path": "candidates/g-pilot-5r-candidates.json",
+      "sha256": "7a67fb95cc64c7affb23dec6ecf43fc35726b3d660f9143797796fa59987d8a1"
+    },
+    {
+      "path": "dist/g-pilot-clinical-spec-preview.json",
+      "sha256": "264fe7241ce24414e80105cb6145204e1f1949a009ff69e4c4e545188a3143c2"
+    },
+    {
+      "path": "fixtures/g-pilot-5r-replay-fixtures.json",
+      "sha256": "17814a24e31268cc020706535a2355c47c65df2fae84a917eae961b6f4893666"
+    },
+    {
+      "path": "provenance/g-pilot-provenance-relations.json",
+      "sha256": "a626bd71168c3e79b4fd0b7de57254730caed2682313e9b3d2949462f5722600"
+    },
+    {
+      "path": "reports/g-pilot-5r-replay-report.json",
+      "sha256": "35211f2cc3b04dd72e8e492e43079a8ab07c3b708a34fba9e5e4c4f30b8ebc82"
+    },
+    {
+      "path": "reports/g-pilot-pre5r-equivalence-report.json",
+      "sha256": "e0bea39f1efaf6fb2ad49617f856fed2863c981ec6856c76c91b24bc82831730"
+    },
+    {
+      "path": "reviews/g-pilot-5r-review.json",
+      "sha256": "5990d7068833790856e695cdf704fee8a2447bbf44c42112a2c75a4842d346b0"
+    },
+    {
+      "path": "schema/phase5r.schema.json",
+      "sha256": "7ed5092c979efde991e8d06563298f033dec81aadf9c80ba0a583d2a7b8104c8"
+    },
+    {
+      "path": "source-clinical/g-pilot-source-nodes.json",
+      "sha256": "dba566c3aaf43f2afe93c8a317f0f3f2a784c54430219e5552e0fd791de1a45f"
+    },
+    {
+      "path": "strategy-contracts/g-pilot-strategy-contract.json",
+      "sha256": "9273121a6c17d7aa6cc5aed6e0a89363d29959af5c01fb0a38d79a688aecb053"
+    }
+  ],
+  "runtime_boundary": "No Runtime integration; adapter preview/replay only."
+}

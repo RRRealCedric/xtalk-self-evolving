@@ -1,0 +1,22 @@
+{
+  "items": {
+    "fields_without_widgets": [],
+    "pdf_parse_errors": [],
+    "pilot_nodes_needing_review": [],
+    "unassociated_widgets": []
+  },
+  "report_version": "1.0.0",
+  "review_guidance": [
+    "Unassociated widgets are retained as structural exceptions; do not drop them or infer a clinical meaning.",
+    "A nonzero JavaScript or ResetForm action count is not an error when its action type is explicitly classified.",
+    "Any future unresolved GoTo destination is a release-blocking inventory exception."
+  ],
+  "source_inventory_sha256": "681d666c27eec13923e06b8f12317c2c27736c96ef0f0651d45bb65dc5cf799e",
+  "summary": {
+    "field_count": 1958,
+    "fields_without_widgets": 0,
+    "pdf_parse_errors": 0,
+    "pilot_nodes_needing_review": 0,
+    "unassociated_widgets": 0
+  }
+}

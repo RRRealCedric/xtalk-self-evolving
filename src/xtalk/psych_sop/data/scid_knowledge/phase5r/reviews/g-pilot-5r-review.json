@@ -1,0 +1,236 @@
+{
+  "review_record_version": "0.1.0",
+  "review_id": "scid5-zh-g-pilot-5r-source-review-v1",
+  "record_status": "open",
+  "candidate_bundle_id": "scid5-zh-g-pilot-5r-candidates",
+  "candidate_bundle_sha256": "e907e08b8bbdb7e34d5aea1f7e16e558cd640ae31826f5402bb5758c201266f1",
+  "candidate_status_required": "candidate_only_not_published",
+  "scope": "Six source clinical nodes only: S9, S12, G3, G6, G7, G11.",
+  "explicitly_excluded": [
+    "S9.PROBE.OCCURRENCE",
+    "G.PILOT.*SUMMARY",
+    "G.PILOT.*RETURN",
+    "Every individual generated ConversationPlan utterance"
+  ],
+  "review_boundary": "Approval establishes only clinically_reviewed source content after all items pass; it does not mark this compiler preview compiled_validated, shadow_validated, or runtime_enabled.",
+  "review_items": [
+    {
+      "review_item_id": "S9.source_and_semantics",
+      "risk_level": "high",
+      "required_independent_approvals": 2,
+      "reviewer_role": "clinical_reviewer",
+      "release_blocking": true,
+      "item_status": "pending",
+      "reviewer_decisions": [],
+      "adjudication": {
+        "status": "not_required"
+      }
+    },
+    {
+      "review_item_id": "S9.scores_and_transitions",
+      "risk_level": "high",
+      "required_independent_approvals": 2,
+      "reviewer_role": "clinical_reviewer",
+      "release_blocking": true,
+      "item_status": "pending",
+      "reviewer_decisions": [],
+      "adjudication": {
+        "status": "not_required"
+      }
+    },
+    {
+      "review_item_id": "S12.source_and_semantics",
+      "risk_level": "high",
+      "required_independent_approvals": 2,
+      "reviewer_role": "clinical_reviewer",
+      "release_blocking": true,
+      "item_status": "pending",
+      "reviewer_decisions": [],
+      "adjudication": {
+        "status": "not_required"
+      }
+    },
+    {
+      "review_item_id": "S12.scores_and_transitions",
+      "risk_level": "high",
+      "required_independent_approvals": 2,
+      "reviewer_role": "clinical_reviewer",
+      "release_blocking": true,
+      "item_status": "pending",
+      "reviewer_decisions": [],
+      "adjudication": {
+        "status": "not_required"
+      }
+    },
+    {
+      "review_item_id": "G3.source_and_semantics",
+      "risk_level": "high",
+      "required_independent_approvals": 2,
+      "reviewer_role": "clinical_reviewer",
+      "release_blocking": true,
+      "item_status": "pending",
+      "reviewer_decisions": [],
+      "adjudication": {
+        "status": "not_required"
+      }
+    },
+    {
+      "review_item_id": "G3.scores_and_transitions",
+      "risk_level": "high",
+      "required_independent_approvals": 2,
+      "reviewer_role": "clinical_reviewer",
+      "release_blocking": true,
+      "item_status": "pending",
+      "reviewer_decisions": [],
+      "adjudication": {
+        "status": "not_required"
+      }
+    },
+    {
+      "review_item_id": "G6.source_and_semantics",
+      "risk_level": "high",
+      "required_independent_approvals": 2,
+      "reviewer_role": "clinical_reviewer",
+      "release_blocking": true,
+      "item_status": "pending",
+      "reviewer_decisions": [],
+      "adjudication": {
+        "status": "not_required"
+      }
+    },
+    {
+      "review_item_id": "G6.scores_and_transitions",
+      "risk_level": "high",
+      "required_independent_approvals": 2,
+      "reviewer_role": "clinical_reviewer",
+      "release_blocking": true,
+      "item_status": "pending",
+      "reviewer_decisions": [],
+      "adjudication": {
+        "status": "not_required"
+      }
+    },
+    {
+      "review_item_id": "G7.source_and_semantics",
+      "risk_level": "high",
+      "required_independent_approvals": 2,
+      "reviewer_role": "clinical_reviewer",
+      "release_blocking": true,
+      "item_status": "pending",
+      "reviewer_decisions": [],
+      "adjudication": {
+        "status": "not_required"
+      }
+    },
+    {
+      "review_item_id": "G7.scores_and_transitions",
+      "risk_level": "high",
+      "required_independent_approvals": 2,
+      "reviewer_role": "clinical_reviewer",
+      "release_blocking": true,
+      "item_status": "pending",
+      "reviewer_decisions": [],
+      "adjudication": {
+        "status": "not_required"
+      }
+    },
+    {
+      "review_item_id": "G11.source_and_semantics",
+      "risk_level": "high",
+      "required_independent_approvals": 2,
+      "reviewer_role": "clinical_reviewer",
+      "release_blocking": true,
+      "item_status": "pending",
+      "reviewer_decisions": [],
+      "adjudication": {
+        "status": "not_required"
+      }
+    },
+    {
+      "review_item_id": "G11.scores_and_transitions",
+      "risk_level": "high",
+      "required_independent_approvals": 2,
+      "reviewer_role": "clinical_reviewer",
+      "release_blocking": true,
+      "item_status": "pending",
+      "reviewer_decisions": [],
+      "adjudication": {
+        "status": "not_required"
+      }
+    },
+    {
+      "review_item_id": "GLOBAL.provenance_relations",
+      "risk_level": "high",
+      "required_independent_approvals": 1,
+      "reviewer_role": "clinical_reviewer",
+      "release_blocking": true,
+      "item_status": "pending",
+      "reviewer_decisions": [],
+      "adjudication": {
+        "status": "not_required"
+      }
+    },
+    {
+      "review_item_id": "GLOBAL.strategy_semantic_invariants",
+      "risk_level": "routine",
+      "required_independent_approvals": 1,
+      "reviewer_role": "clinical_reviewer",
+      "release_blocking": true,
+      "item_status": "pending",
+      "reviewer_decisions": [],
+      "adjudication": {
+        "status": "not_required"
+      }
+    },
+    {
+      "review_item_id": "ENGINE.internal_return_and_stay_controls",
+      "risk_level": "engineering",
+      "required_independent_approvals": 1,
+      "reviewer_role": "engineering_reviewer",
+      "release_blocking": true,
+      "item_status": "pending",
+      "reviewer_decisions": [],
+      "adjudication": {
+        "status": "not_required"
+      }
+    },
+    {
+      "review_item_id": "ENGINE.replay_and_effect_rejection",
+      "risk_level": "engineering",
+      "required_independent_approvals": 1,
+      "reviewer_role": "engineering_reviewer",
+      "release_blocking": true,
+      "item_status": "pending",
+      "reviewer_decisions": [],
+      "adjudication": {
+        "status": "not_required"
+      }
+    }
+  ],
+  "review_summary": {
+    "total_items": 16,
+    "item_status_counts": {
+      "pending": 16
+    },
+    "clinical_review_gate_passed": false,
+    "open_blocking_item_ids": [
+      "S9.source_and_semantics",
+      "S9.scores_and_transitions",
+      "S12.source_and_semantics",
+      "S12.scores_and_transitions",
+      "G3.source_and_semantics",
+      "G3.scores_and_transitions",
+      "G6.source_and_semantics",
+      "G6.scores_and_transitions",
+      "G7.source_and_semantics",
+      "G7.scores_and_transitions",
+      "G11.source_and_semantics",
+      "G11.scores_and_transitions",
+      "GLOBAL.provenance_relations",
+      "GLOBAL.strategy_semantic_invariants",
+      "ENGINE.internal_return_and_stay_controls",
+      "ENGINE.replay_and_effect_rejection"
+    ],
+    "candidate_stays_non_published": true
+  }
+}

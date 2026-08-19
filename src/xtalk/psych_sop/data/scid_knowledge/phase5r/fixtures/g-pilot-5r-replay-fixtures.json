@@ -1,0 +1,189 @@
+{
+  "fixture_set_id": "scid5-zh-g-pilot-5r-replay",
+  "fixture_version": "0.1.0",
+  "data_class": "synthetic_only",
+  "cases": [
+    {
+      "case_id": "S9-uncertain-clarify-then-negative",
+      "data_class": "synthetic",
+      "entry_node_id": "S9",
+      "events": [
+        {
+          "kind": "assessment",
+          "node_id": "S9",
+          "score": "?"
+        },
+        {
+          "kind": "conversation_plan",
+          "semantic_anchor": "S9",
+          "missing_slots": [
+            "occurrence"
+          ],
+          "utterance_goal": "Clarify occurrence without repeating the full scan question."
+        },
+        {
+          "kind": "assessment",
+          "node_id": "S9",
+          "score": "1"
+        }
+      ],
+      "expected": {
+        "visited_clinical_nodes": [
+          "S9"
+        ],
+        "final_cursor": "$return",
+        "conversation_cursor_advance_count": 0,
+        "forbidden_clinical_nodes": [
+          "S9.PROBE.OCCURRENCE",
+          "G3"
+        ]
+      }
+    },
+    {
+      "case_id": "S9-positive-obsession-path",
+      "data_class": "synthetic",
+      "entry_node_id": "S9",
+      "events": [
+        {
+          "kind": "assessment",
+          "node_id": "S9",
+          "score": "3"
+        },
+        {
+          "kind": "assessment",
+          "node_id": "G3",
+          "score": "3"
+        },
+        {
+          "kind": "assessment",
+          "node_id": "G6",
+          "score": "3"
+        },
+        {
+          "kind": "assessment",
+          "node_id": "G7",
+          "score": "3"
+        }
+      ],
+      "expected": {
+        "visited_clinical_nodes": [
+          "S9",
+          "G3",
+          "G6",
+          "G7"
+        ],
+        "final_cursor": "$return",
+        "conversation_cursor_advance_count": 0,
+        "forbidden_clinical_nodes": [
+          "G.PILOT.OBSESSION_SUMMARY",
+          "G.PILOT.OBSESSION_RETURN"
+        ]
+      }
+    },
+    {
+      "case_id": "S12-positive-gate-path",
+      "data_class": "synthetic",
+      "entry_node_id": "S12",
+      "events": [
+        {
+          "kind": "assessment",
+          "node_id": "S12",
+          "score": "3"
+        },
+        {
+          "kind": "assessment",
+          "node_id": "G11",
+          "score": "3"
+        }
+      ],
+      "expected": {
+        "visited_clinical_nodes": [
+          "S12",
+          "G11"
+        ],
+        "final_cursor": "$return",
+        "conversation_cursor_advance_count": 0,
+        "forbidden_clinical_nodes": [
+          "G.PILOT.COMPULSION_SUMMARY",
+          "G.PILOT.COMPULSION_RETURN"
+        ]
+      }
+    },
+    {
+      "case_id": "illegal-effect-is-rejected",
+      "data_class": "synthetic",
+      "entry_node_id": "S9",
+      "events": [
+        {
+          "kind": "conversation_plan",
+          "semantic_anchor": "S9",
+          "missing_slots": [
+            "occurrence"
+          ],
+          "utterance_goal": "Acknowledge uncertainty.",
+          "proposed_effects": [
+            {
+              "type": "advance_clinical_cursor",
+              "target": "G6"
+            }
+          ]
+        },
+        {
+          "kind": "assessment",
+          "node_id": "S9",
+          "score": "1"
+        }
+      ],
+      "expected": {
+        "visited_clinical_nodes": [
+          "S9"
+        ],
+        "final_cursor": "$return",
+        "conversation_cursor_advance_count": 0,
+        "illegal_effect_commit_count": 0
+      }
+    },
+    {
+      "case_id": "conversation-failure-stays-on-cursor",
+      "data_class": "synthetic",
+      "entry_node_id": "S9",
+      "events": [
+        {
+          "kind": "conversation_failure",
+          "failure": "timeout"
+        },
+        {
+          "kind": "conversation_failure",
+          "failure": "empty_output"
+        },
+        {
+          "kind": "conversation_failure",
+          "failure": "malformed_proposal"
+        },
+        {
+          "kind": "conversation_failure",
+          "failure": "service_unavailable"
+        },
+        {
+          "kind": "assessment",
+          "node_id": "S9",
+          "score": "1"
+        }
+      ],
+      "expected": {
+        "visited_clinical_nodes": [
+          "S9"
+        ],
+        "final_cursor": "$return",
+        "conversation_cursor_advance_count": 0,
+        "illegal_effect_commit_count": 0,
+        "required_rejected_events": [
+          "conversation_timeout_stays_on_cursor",
+          "conversation_empty_output_stays_on_cursor",
+          "conversation_malformed_proposal_stays_on_cursor",
+          "conversation_service_unavailable_stays_on_cursor"
+        ]
+      }
+    }
+  ]
+}

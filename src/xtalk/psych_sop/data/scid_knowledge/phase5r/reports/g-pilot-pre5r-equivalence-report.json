@@ -1,0 +1,196 @@
+{
+  "comparison_version": "0.1.0",
+  "comparison_scope": "synthetic formal score, source-route, and internal-control projection only; no Runtime Ledger mutation or equivalence claim",
+  "pre5r_fixture_set_sha256": "db2dfb94de4f92f63befea8cc4fd4a7822134cdadec5d09ad7ac3c3fe319b9a1",
+  "clinical_spec_sha256": "99279a697006d1bcdc6147d60c2644272d95021be60f21ae3ce07e77b58f12c4",
+  "case_count": 5,
+  "passed_case_count": 5,
+  "failed_case_ids": [],
+  "traces": [
+    {
+      "case_id": "synthetic-s9-clear-negative",
+      "passed": true,
+      "pre5r_projection": {
+        "source_route": [
+          "S9"
+        ],
+        "committed_scores": [
+          {
+            "node_id": "S9",
+            "score": "1"
+          }
+        ],
+        "internal_return_control": "$return"
+      },
+      "post5r_projection": {
+        "source_route": [
+          "S9"
+        ],
+        "committed_scores": [
+          {
+            "node_id": "S9",
+            "score": "1"
+          }
+        ],
+        "internal_return_control": "$return"
+      },
+      "differences": []
+    },
+    {
+      "case_id": "synthetic-s9-uncertain-then-negative",
+      "passed": true,
+      "pre5r_projection": {
+        "source_route": [
+          "S9"
+        ],
+        "committed_scores": [
+          {
+            "node_id": "S9",
+            "score": "1"
+          }
+        ],
+        "internal_return_control": "$return"
+      },
+      "post5r_projection": {
+        "source_route": [
+          "S9"
+        ],
+        "committed_scores": [
+          {
+            "node_id": "S9",
+            "score": "1"
+          }
+        ],
+        "internal_return_control": "$return"
+      },
+      "differences": []
+    },
+    {
+      "case_id": "synthetic-obsession-pilot-path",
+      "passed": true,
+      "pre5r_projection": {
+        "source_route": [
+          "S9",
+          "G3",
+          "G6",
+          "G7"
+        ],
+        "committed_scores": [
+          {
+            "node_id": "S9",
+            "score": "3"
+          },
+          {
+            "node_id": "G3",
+            "score": "3"
+          },
+          {
+            "node_id": "G6",
+            "score": "3"
+          },
+          {
+            "node_id": "G7",
+            "score": "3"
+          }
+        ],
+        "internal_return_control": "$return"
+      },
+      "post5r_projection": {
+        "source_route": [
+          "S9",
+          "G3",
+          "G6",
+          "G7"
+        ],
+        "committed_scores": [
+          {
+            "node_id": "S9",
+            "score": "3"
+          },
+          {
+            "node_id": "G3",
+            "score": "3"
+          },
+          {
+            "node_id": "G6",
+            "score": "3"
+          },
+          {
+            "node_id": "G7",
+            "score": "3"
+          }
+        ],
+        "internal_return_control": "$return"
+      },
+      "differences": []
+    },
+    {
+      "case_id": "synthetic-s12-clear-negative",
+      "passed": true,
+      "pre5r_projection": {
+        "source_route": [
+          "S12"
+        ],
+        "committed_scores": [
+          {
+            "node_id": "S12",
+            "score": "1"
+          }
+        ],
+        "internal_return_control": "$return"
+      },
+      "post5r_projection": {
+        "source_route": [
+          "S12"
+        ],
+        "committed_scores": [
+          {
+            "node_id": "S12",
+            "score": "1"
+          }
+        ],
+        "internal_return_control": "$return"
+      },
+      "differences": []
+    },
+    {
+      "case_id": "synthetic-compulsion-gate-path",
+      "passed": true,
+      "pre5r_projection": {
+        "source_route": [
+          "S12",
+          "G11"
+        ],
+        "committed_scores": [
+          {
+            "node_id": "S12",
+            "score": "3"
+          },
+          {
+            "node_id": "G11",
+            "score": "3"
+          }
+        ],
+        "internal_return_control": "$return"
+      },
+      "post5r_projection": {
+        "source_route": [
+          "S12",
+          "G11"
+        ],
+        "committed_scores": [
+          {
+            "node_id": "S12",
+            "score": "3"
+          },
+          {
+            "node_id": "G11",
+            "score": "3"
+          }
+        ],
+        "internal_return_control": "$return"
+      },
+      "differences": []
+    }
+  ]
+}

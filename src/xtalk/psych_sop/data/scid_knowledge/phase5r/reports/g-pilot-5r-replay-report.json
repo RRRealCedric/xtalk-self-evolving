@@ -1,0 +1,91 @@
+{
+  "replay_version": "0.1.0",
+  "clinical_spec_sha256": "99279a697006d1bcdc6147d60c2644272d95021be60f21ae3ce07e77b58f12c4",
+  "fixture_set_sha256": "e1efe92202e176c26b4c3b693f9764474df31319baa7371974c1f6b48eebbb32",
+  "data_class": "synthetic_only",
+  "case_count": 5,
+  "passed_case_count": 5,
+  "failed_case_ids": [],
+  "illegal_effect_commit_count": 0,
+  "conversation_cursor_advance_count": 0,
+  "traces": [
+    {
+      "case_id": "S9-uncertain-clarify-then-negative",
+      "passed": true,
+      "visited_clinical_nodes": [
+        "S9"
+      ],
+      "final_cursor": "$return",
+      "ledger_commit_count": 1,
+      "conversation_focus": null,
+      "rejected_events": [
+        "unknown_score_stays_on_cursor"
+      ],
+      "conversation_cursor_advance_count": 0,
+      "illegal_effect_commit_count": 0
+    },
+    {
+      "case_id": "S9-positive-obsession-path",
+      "passed": true,
+      "visited_clinical_nodes": [
+        "S9",
+        "G3",
+        "G6",
+        "G7"
+      ],
+      "final_cursor": "$return",
+      "ledger_commit_count": 4,
+      "conversation_focus": null,
+      "rejected_events": [],
+      "conversation_cursor_advance_count": 0,
+      "illegal_effect_commit_count": 0
+    },
+    {
+      "case_id": "S12-positive-gate-path",
+      "passed": true,
+      "visited_clinical_nodes": [
+        "S12",
+        "G11"
+      ],
+      "final_cursor": "$return",
+      "ledger_commit_count": 2,
+      "conversation_focus": null,
+      "rejected_events": [],
+      "conversation_cursor_advance_count": 0,
+      "illegal_effect_commit_count": 0
+    },
+    {
+      "case_id": "illegal-effect-is-rejected",
+      "passed": true,
+      "visited_clinical_nodes": [
+        "S9"
+      ],
+      "final_cursor": "$return",
+      "ledger_commit_count": 1,
+      "conversation_focus": null,
+      "rejected_events": [
+        "illegal_proposed_effect_rejected"
+      ],
+      "conversation_cursor_advance_count": 0,
+      "illegal_effect_commit_count": 0
+    },
+    {
+      "case_id": "conversation-failure-stays-on-cursor",
+      "passed": true,
+      "visited_clinical_nodes": [
+        "S9"
+      ],
+      "final_cursor": "$return",
+      "ledger_commit_count": 1,
+      "conversation_focus": null,
+      "rejected_events": [
+        "conversation_timeout_stays_on_cursor",
+        "conversation_empty_output_stays_on_cursor",
+        "conversation_malformed_proposal_stays_on_cursor",
+        "conversation_service_unavailable_stays_on_cursor"
+      ],
+      "conversation_cursor_advance_count": 0,
+      "illegal_effect_commit_count": 0
+    }
+  ]
+}

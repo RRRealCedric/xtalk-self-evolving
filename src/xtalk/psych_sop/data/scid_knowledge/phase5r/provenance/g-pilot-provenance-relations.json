@@ -1,0 +1,1022 @@
+{
+  "relations": [
+    {
+      "relation_id": "G11:ocr_anchor:ocr-anchor-1:f568be69b001",
+      "node_id": "G11",
+      "relation_type": "ocr_anchor",
+      "evidence": {
+        "image_rect_px": [
+          1900,
+          1167,
+          1959,
+          1226
+        ],
+        "match_status": "related_field_match",
+        "matched_field_id": "S12-G11",
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:a55ec5c06e7139b1",
+        "nearest_ocr_line_ids": [
+          "scid5:p233:ocr-line:001-001-005",
+          "scid5:p233:ocr-line:001-001-006",
+          "scid5:p233:ocr-line:001-001-004",
+          "scid5:p233:ocr-line:001-001-022",
+          "scid5:p233:ocr-line:001-001-013"
+        ],
+        "node_id": "G11",
+        "page_number": 233,
+        "pdf_rect_points": [
+          280.023,
+          455.756,
+          294.196,
+          469.929
+        ],
+        "relation_note": "Static source anchor G11 has no exact AcroForm field; using explicit related scan-to-module anchor S12-G11.",
+        "requested_field_id": "G11",
+        "source_kind": "pdf_region",
+        "widget_object_ref": "25387 0 R"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G11:ocr_anchor:ocr-anchor-2:1fb8acf1b234",
+      "node_id": "G11",
+      "relation_type": "ocr_anchor",
+      "evidence": {
+        "image_rect_px": [
+          2062,
+          1167,
+          2121,
+          1226
+        ],
+        "match_status": "related_field_match",
+        "matched_field_id": "S12-G11",
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:a55ec5c06e7139b1",
+        "nearest_ocr_line_ids": [
+          "scid5:p233:ocr-line:001-001-005",
+          "scid5:p233:ocr-line:001-001-006",
+          "scid5:p233:ocr-line:001-001-022",
+          "scid5:p233:ocr-line:001-001-004",
+          "scid5:p233:ocr-line:001-001-013"
+        ],
+        "node_id": "G11",
+        "page_number": 233,
+        "pdf_rect_points": [
+          280.023,
+          494.773,
+          294.196,
+          508.946
+        ],
+        "relation_note": "Static source anchor G11 has no exact AcroForm field; using explicit related scan-to-module anchor S12-G11.",
+        "requested_field_id": "G11",
+        "source_kind": "pdf_region",
+        "widget_object_ref": "25388 0 R"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G11:ocr_region:ocr-region-1:fdd7b883e702",
+      "node_id": "G11",
+      "relation_type": "ocr_region",
+      "evidence": {
+        "asset_id": "g3-g11",
+        "ocr_line_ids": [
+          "scid5:p233:ocr-line:001-001-007",
+          "scid5:p233:ocr-line:001-001-008",
+          "scid5:p233:ocr-line:001-001-009",
+          "scid5:p233:ocr-line:001-001-010",
+          "scid5:p233:ocr-line:001-001-011",
+          "scid5:p233:ocr-line:001-001-012",
+          "scid5:p233:ocr-line:001-001-013",
+          "scid5:p233:ocr-line:001-001-014",
+          "scid5:p233:ocr-line:001-001-015",
+          "scid5:p233:ocr-line:001-001-016",
+          "scid5:p233:ocr-line:001-001-017",
+          "scid5:p233:ocr-line:001-001-018",
+          "scid5:p233:ocr-line:001-001-019",
+          "scid5:p233:ocr-line:001-001-020",
+          "scid5:p233:ocr-line:001-001-021",
+          "scid5:p233:ocr-line:001-001-022",
+          "scid5:p233:ocr-line:001-001-023",
+          "scid5:p233:ocr-line:001-001-024",
+          "scid5:p233:ocr-line:001-001-025",
+          "scid5:p233:ocr-line:001-001-026",
+          "scid5:p233:ocr-line:001-001-027",
+          "scid5:p233:ocr-line:001-001-028",
+          "scid5:p233:ocr-line:001-001-029"
+        ],
+        "pdf_page": 233
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G11:related_field:phase2-1:94dcae267ba3",
+      "node_id": "G11",
+      "relation_type": "related_field",
+      "evidence": {
+        "declared_page_present": true,
+        "declared_pdf_page": 233,
+        "matched_field_id": "S12-G11",
+        "matched_page_numbers": [
+          4,
+          233
+        ],
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:a55ec5c06e7139b1",
+        "node_id": "G11",
+        "relation_note": "Static source anchor G11 has no exact AcroForm field; using explicit related scan-to-module anchor S12-G11.",
+        "requested_field_id": "G11",
+        "source_kind": "pdf_region",
+        "status": "related_field_match"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G11:source_region:source-1:26cfc9f6fcd3",
+      "node_id": "G11",
+      "relation_type": "source_region",
+      "evidence": {
+        "description": "G.3 compulsive behavior page, G11 gate following positive S12 screen.",
+        "field_id": "G11",
+        "kind": "pdf_region",
+        "locator": "pdf:page=233;printed_page=255;node=G11",
+        "pdf_page": 233,
+        "printed_page": 255,
+        "source_id": "scid5-zh-local-source-01"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G3:ocr_anchor:ocr-anchor-1:f04d4da9c717",
+      "node_id": "G3",
+      "relation_type": "ocr_anchor",
+      "evidence": {
+        "image_rect_px": [
+          1870,
+          361,
+          1929,
+          420
+        ],
+        "match_status": "related_field_match",
+        "matched_field_id": "S9-G3",
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+        "nearest_ocr_line_ids": [
+          "scid5:p232:ocr-line:001-001-002",
+          "scid5:p232:ocr-line:001-001-008",
+          "scid5:p232:ocr-line:001-001-011",
+          "scid5:p232:ocr-line:001-001-001",
+          "scid5:p232:ocr-line:001-001-004"
+        ],
+        "node_id": "G3",
+        "page_number": 232,
+        "pdf_rect_points": [
+          86.7143,
+          448.638,
+          100.888,
+          462.811
+        ],
+        "relation_note": "Static source anchor G3 has no exact AcroForm field; using explicit related scan-to-module anchor S9-G3.",
+        "requested_field_id": "G3",
+        "source_kind": "pdf_region",
+        "widget_object_ref": "25360 0 R"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G3:ocr_anchor:ocr-anchor-2:0b66a0e8038f",
+      "node_id": "G3",
+      "relation_type": "ocr_anchor",
+      "evidence": {
+        "image_rect_px": [
+          2033,
+          361,
+          2092,
+          420
+        ],
+        "match_status": "related_field_match",
+        "matched_field_id": "S9-G3",
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+        "nearest_ocr_line_ids": [
+          "scid5:p232:ocr-line:001-001-002",
+          "scid5:p232:ocr-line:001-001-008",
+          "scid5:p232:ocr-line:001-001-011",
+          "scid5:p232:ocr-line:001-001-001",
+          "scid5:p232:ocr-line:001-001-018"
+        ],
+        "node_id": "G3",
+        "page_number": 232,
+        "pdf_rect_points": [
+          86.7143,
+          487.656,
+          100.888,
+          501.829
+        ],
+        "relation_note": "Static source anchor G3 has no exact AcroForm field; using explicit related scan-to-module anchor S9-G3.",
+        "requested_field_id": "G3",
+        "source_kind": "pdf_region",
+        "widget_object_ref": "25362 0 R"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G3:ocr_region:ocr-region-1:e1ab2e9f6e96",
+      "node_id": "G3",
+      "relation_type": "ocr_region",
+      "evidence": {
+        "asset_id": "g2-g3",
+        "ocr_line_ids": [
+          "scid5:p232:ocr-line:001-001-002",
+          "scid5:p232:ocr-line:001-001-003",
+          "scid5:p232:ocr-line:001-001-004",
+          "scid5:p232:ocr-line:001-001-005",
+          "scid5:p232:ocr-line:001-001-006",
+          "scid5:p232:ocr-line:001-001-007",
+          "scid5:p232:ocr-line:001-001-008",
+          "scid5:p232:ocr-line:001-001-009",
+          "scid5:p232:ocr-line:001-001-010",
+          "scid5:p232:ocr-line:001-001-011",
+          "scid5:p232:ocr-line:001-001-012",
+          "scid5:p232:ocr-line:001-001-013"
+        ],
+        "pdf_page": 232
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G3:related_field:phase2-1:9112e4f56152",
+      "node_id": "G3",
+      "relation_type": "related_field",
+      "evidence": {
+        "declared_page_present": true,
+        "declared_pdf_page": 232,
+        "matched_field_id": "S9-G3",
+        "matched_page_numbers": [
+          4,
+          232
+        ],
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+        "node_id": "G3",
+        "relation_note": "Static source anchor G3 has no exact AcroForm field; using explicit related scan-to-module anchor S9-G3.",
+        "requested_field_id": "G3",
+        "source_kind": "pdf_region",
+        "status": "related_field_match"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G3:source_region:source-1:d34a8ea34c4d",
+      "node_id": "G3",
+      "relation_type": "source_region",
+      "evidence": {
+        "description": "G.2 obsessive-compulsive disorder page, G3 prompt.",
+        "field_id": "G3",
+        "kind": "pdf_region",
+        "locator": "pdf:page=232;printed_page=254;node=G3",
+        "pdf_page": 232,
+        "printed_page": 254,
+        "source_id": "scid5-zh-local-source-01"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G6:exact_field:ocr-anchor-1:402636456bef",
+      "node_id": "G6",
+      "relation_type": "exact_field",
+      "evidence": {
+        "image_rect_px": [
+          1759,
+          2223,
+          1818,
+          2282
+        ],
+        "match_status": "exact_field_match",
+        "matched_field_id": "G6",
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:780d558be6960a54",
+        "nearest_ocr_line_ids": [
+          "scid5:p232:ocr-line:001-001-031",
+          "scid5:p232:ocr-line:001-001-030",
+          "scid5:p232:ocr-line:001-001-027",
+          "scid5:p232:ocr-line:001-001-025",
+          "scid5:p232:ocr-line:001-001-028"
+        ],
+        "node_id": "G6",
+        "page_number": 232,
+        "pdf_rect_points": [
+          533.433,
+          422.016,
+          547.606,
+          436.189
+        ],
+        "relation_note": null,
+        "requested_field_id": "G6",
+        "source_kind": "pdf_region",
+        "widget_object_ref": "25367 0 R"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G6:exact_field:ocr-anchor-2:99a2e1702415",
+      "node_id": "G6",
+      "relation_type": "exact_field",
+      "evidence": {
+        "image_rect_px": [
+          1851,
+          2223,
+          1910,
+          2282
+        ],
+        "match_status": "exact_field_match",
+        "matched_field_id": "G6",
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:780d558be6960a54",
+        "nearest_ocr_line_ids": [
+          "scid5:p232:ocr-line:001-001-031",
+          "scid5:p232:ocr-line:001-001-030",
+          "scid5:p232:ocr-line:001-001-027",
+          "scid5:p232:ocr-line:001-001-025",
+          "scid5:p232:ocr-line:001-001-028"
+        ],
+        "node_id": "G6",
+        "page_number": 232,
+        "pdf_rect_points": [
+          533.433,
+          444.089,
+          547.606,
+          458.262
+        ],
+        "relation_note": null,
+        "requested_field_id": "G6",
+        "source_kind": "pdf_region",
+        "widget_object_ref": "25368 0 R"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G6:exact_field:ocr-anchor-3:f70c26af777f",
+      "node_id": "G6",
+      "relation_type": "exact_field",
+      "evidence": {
+        "image_rect_px": [
+          1948,
+          2223,
+          2007,
+          2282
+        ],
+        "match_status": "exact_field_match",
+        "matched_field_id": "G6",
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:780d558be6960a54",
+        "nearest_ocr_line_ids": [
+          "scid5:p232:ocr-line:001-001-031",
+          "scid5:p232:ocr-line:001-001-030",
+          "scid5:p232:ocr-line:001-001-025",
+          "scid5:p232:ocr-line:001-001-027",
+          "scid5:p232:ocr-line:001-001-037"
+        ],
+        "node_id": "G6",
+        "page_number": 232,
+        "pdf_rect_points": [
+          533.433,
+          467.213,
+          547.606,
+          481.386
+        ],
+        "relation_note": null,
+        "requested_field_id": "G6",
+        "source_kind": "pdf_region",
+        "widget_object_ref": "25369 0 R"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G6:exact_field:ocr-anchor-4:9d53e69ed9f8",
+      "node_id": "G6",
+      "relation_type": "exact_field",
+      "evidence": {
+        "image_rect_px": [
+          2042,
+          2223,
+          2101,
+          2282
+        ],
+        "match_status": "exact_field_match",
+        "matched_field_id": "G6",
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:780d558be6960a54",
+        "nearest_ocr_line_ids": [
+          "scid5:p232:ocr-line:001-001-031",
+          "scid5:p232:ocr-line:001-001-030",
+          "scid5:p232:ocr-line:001-001-025",
+          "scid5:p232:ocr-line:001-001-027",
+          "scid5:p232:ocr-line:001-001-038"
+        ],
+        "node_id": "G6",
+        "page_number": 232,
+        "pdf_rect_points": [
+          533.433,
+          489.812,
+          547.606,
+          503.985
+        ],
+        "relation_note": null,
+        "requested_field_id": "G6",
+        "source_kind": "pdf_region",
+        "widget_object_ref": "25370 0 R"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G6:exact_field:phase2-1:ca5eeb8d90dd",
+      "node_id": "G6",
+      "relation_type": "exact_field",
+      "evidence": {
+        "declared_page_present": true,
+        "declared_pdf_page": 232,
+        "matched_field_id": "G6",
+        "matched_page_numbers": [
+          232
+        ],
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:780d558be6960a54",
+        "node_id": "G6",
+        "relation_note": null,
+        "requested_field_id": "G6",
+        "source_kind": "pdf_region",
+        "status": "exact_field_match"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G6:ocr_region:ocr-region-1:5ed12c0eae5f",
+      "node_id": "G6",
+      "relation_type": "ocr_region",
+      "evidence": {
+        "asset_id": "g2-g6-g7",
+        "ocr_line_ids": [
+          "scid5:p232:ocr-line:001-001-023",
+          "scid5:p232:ocr-line:001-001-024",
+          "scid5:p232:ocr-line:001-001-025",
+          "scid5:p232:ocr-line:001-001-026",
+          "scid5:p232:ocr-line:001-001-027",
+          "scid5:p232:ocr-line:001-001-028",
+          "scid5:p232:ocr-line:001-001-029",
+          "scid5:p232:ocr-line:001-001-030",
+          "scid5:p232:ocr-line:001-001-031",
+          "scid5:p232:ocr-line:001-001-032",
+          "scid5:p232:ocr-line:001-001-033",
+          "scid5:p232:ocr-line:001-001-034",
+          "scid5:p232:ocr-line:001-001-035",
+          "scid5:p232:ocr-line:001-001-036",
+          "scid5:p232:ocr-line:001-001-037",
+          "scid5:p232:ocr-line:001-001-038",
+          "scid5:p232:ocr-line:001-001-040"
+        ],
+        "pdf_page": 232
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G6:source_region:source-1:4f28b74f383b",
+      "node_id": "G6",
+      "relation_type": "source_region",
+      "evidence": {
+        "description": "G.2 page, G6 prompt.",
+        "field_id": "G6",
+        "kind": "pdf_region",
+        "locator": "pdf:page=232;printed_page=254;node=G6",
+        "pdf_page": 232,
+        "printed_page": 254,
+        "source_id": "scid5-zh-local-source-01"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G7:exact_field:ocr-anchor-1:9ab7932a4172",
+      "node_id": "G7",
+      "relation_type": "exact_field",
+      "evidence": {
+        "image_rect_px": [
+          1762,
+          2592,
+          1821,
+          2651
+        ],
+        "match_status": "exact_field_match",
+        "matched_field_id": "G7",
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:3a5357e2b9676180",
+        "nearest_ocr_line_ids": [
+          "scid5:p232:ocr-line:001-001-031",
+          "scid5:p232:ocr-line:001-001-037",
+          "scid5:p232:ocr-line:001-001-038",
+          "scid5:p232:ocr-line:001-001-030",
+          "scid5:p232:ocr-line:001-001-036"
+        ],
+        "node_id": "G7",
+        "page_number": 232,
+        "pdf_rect_points": [
+          621.973,
+          422.687,
+          636.146,
+          436.86
+        ],
+        "relation_note": null,
+        "requested_field_id": "G7",
+        "source_kind": "pdf_region",
+        "widget_object_ref": "25359 0 R"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G7:exact_field:ocr-anchor-2:ecb2f735780a",
+      "node_id": "G7",
+      "relation_type": "exact_field",
+      "evidence": {
+        "image_rect_px": [
+          1854,
+          2592,
+          1913,
+          2651
+        ],
+        "match_status": "exact_field_match",
+        "matched_field_id": "G7",
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:3a5357e2b9676180",
+        "nearest_ocr_line_ids": [
+          "scid5:p232:ocr-line:001-001-037",
+          "scid5:p232:ocr-line:001-001-031",
+          "scid5:p232:ocr-line:001-001-038",
+          "scid5:p232:ocr-line:001-001-030",
+          "scid5:p232:ocr-line:001-001-036"
+        ],
+        "node_id": "G7",
+        "page_number": 232,
+        "pdf_rect_points": [
+          621.973,
+          444.76,
+          636.146,
+          458.933
+        ],
+        "relation_note": null,
+        "requested_field_id": "G7",
+        "source_kind": "pdf_region",
+        "widget_object_ref": "25371 0 R"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G7:exact_field:ocr-anchor-3:c275d24bb2d5",
+      "node_id": "G7",
+      "relation_type": "exact_field",
+      "evidence": {
+        "image_rect_px": [
+          1950,
+          2592,
+          2009,
+          2651
+        ],
+        "match_status": "exact_field_match",
+        "matched_field_id": "G7",
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:3a5357e2b9676180",
+        "nearest_ocr_line_ids": [
+          "scid5:p232:ocr-line:001-001-038",
+          "scid5:p232:ocr-line:001-001-037",
+          "scid5:p232:ocr-line:001-001-031",
+          "scid5:p232:ocr-line:001-001-030",
+          "scid5:p232:ocr-line:001-001-036"
+        ],
+        "node_id": "G7",
+        "page_number": 232,
+        "pdf_rect_points": [
+          621.973,
+          467.885,
+          636.146,
+          482.058
+        ],
+        "relation_note": null,
+        "requested_field_id": "G7",
+        "source_kind": "pdf_region",
+        "widget_object_ref": "25372 0 R"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G7:exact_field:ocr-anchor-4:22ccc59e31a4",
+      "node_id": "G7",
+      "relation_type": "exact_field",
+      "evidence": {
+        "image_rect_px": [
+          2045,
+          2592,
+          2104,
+          2651
+        ],
+        "match_status": "exact_field_match",
+        "matched_field_id": "G7",
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:3a5357e2b9676180",
+        "nearest_ocr_line_ids": [
+          "scid5:p232:ocr-line:001-001-038",
+          "scid5:p232:ocr-line:001-001-037",
+          "scid5:p232:ocr-line:001-001-031",
+          "scid5:p232:ocr-line:001-001-039",
+          "scid5:p232:ocr-line:001-001-030"
+        ],
+        "node_id": "G7",
+        "page_number": 232,
+        "pdf_rect_points": [
+          621.973,
+          490.484,
+          636.146,
+          504.657
+        ],
+        "relation_note": null,
+        "requested_field_id": "G7",
+        "source_kind": "pdf_region",
+        "widget_object_ref": "25373 0 R"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G7:exact_field:phase2-1:24a3a58d1cb6",
+      "node_id": "G7",
+      "relation_type": "exact_field",
+      "evidence": {
+        "declared_page_present": true,
+        "declared_pdf_page": 232,
+        "matched_field_id": "G7",
+        "matched_page_numbers": [
+          232
+        ],
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:3a5357e2b9676180",
+        "node_id": "G7",
+        "relation_note": null,
+        "requested_field_id": "G7",
+        "source_kind": "pdf_region",
+        "status": "exact_field_match"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G7:ocr_region:ocr-region-1:5ed12c0eae5f",
+      "node_id": "G7",
+      "relation_type": "ocr_region",
+      "evidence": {
+        "asset_id": "g2-g6-g7",
+        "ocr_line_ids": [
+          "scid5:p232:ocr-line:001-001-023",
+          "scid5:p232:ocr-line:001-001-024",
+          "scid5:p232:ocr-line:001-001-025",
+          "scid5:p232:ocr-line:001-001-026",
+          "scid5:p232:ocr-line:001-001-027",
+          "scid5:p232:ocr-line:001-001-028",
+          "scid5:p232:ocr-line:001-001-029",
+          "scid5:p232:ocr-line:001-001-030",
+          "scid5:p232:ocr-line:001-001-031",
+          "scid5:p232:ocr-line:001-001-032",
+          "scid5:p232:ocr-line:001-001-033",
+          "scid5:p232:ocr-line:001-001-034",
+          "scid5:p232:ocr-line:001-001-035",
+          "scid5:p232:ocr-line:001-001-036",
+          "scid5:p232:ocr-line:001-001-037",
+          "scid5:p232:ocr-line:001-001-038",
+          "scid5:p232:ocr-line:001-001-040"
+        ],
+        "pdf_page": 232
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "G7:source_region:source-1:30692bc65188",
+      "node_id": "G7",
+      "relation_type": "source_region",
+      "evidence": {
+        "description": "G.2 page, G7 prompt.",
+        "field_id": "G7",
+        "kind": "pdf_region",
+        "locator": "pdf:page=232;printed_page=254;node=G7",
+        "pdf_page": 232,
+        "printed_page": 254,
+        "source_id": "scid5-zh-local-source-01"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "S12:exact_field:ocr-anchor-1:6fe4ffbf31f8",
+      "node_id": "S12",
+      "relation_type": "exact_field",
+      "evidence": {
+        "image_rect_px": [
+          1978,
+          1616,
+          2037,
+          1675
+        ],
+        "match_status": "exact_field_match",
+        "matched_field_id": "S12-G11",
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:a55ec5c06e7139b1",
+        "nearest_ocr_line_ids": [
+          "scid5:p004:ocr-line:001-001-015",
+          "scid5:p004:ocr-line:001-001-023",
+          "scid5:p004:ocr-line:001-001-021",
+          "scid5:p004:ocr-line:001-001-019",
+          "scid5:p004:ocr-line:001-001-017"
+        ],
+        "node_id": "S12",
+        "page_number": 4,
+        "pdf_rect_points": [
+          387.762,
+          474.474,
+          401.935,
+          488.647
+        ],
+        "relation_note": null,
+        "requested_field_id": "S12-G11",
+        "source_kind": "structured_scan_json",
+        "widget_object_ref": "21456 0 R"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "S12:exact_field:ocr-anchor-2:2f54207d8591",
+      "node_id": "S12",
+      "relation_type": "exact_field",
+      "evidence": {
+        "image_rect_px": [
+          1788,
+          1616,
+          1847,
+          1675
+        ],
+        "match_status": "exact_field_match",
+        "matched_field_id": "S12-G11",
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:a55ec5c06e7139b1",
+        "nearest_ocr_line_ids": [
+          "scid5:p004:ocr-line:001-001-015",
+          "scid5:p004:ocr-line:001-001-019",
+          "scid5:p004:ocr-line:001-001-023",
+          "scid5:p004:ocr-line:001-001-017",
+          "scid5:p004:ocr-line:001-001-021"
+        ],
+        "node_id": "S12",
+        "page_number": 4,
+        "pdf_rect_points": [
+          387.762,
+          428.954,
+          401.935,
+          443.127
+        ],
+        "relation_note": null,
+        "requested_field_id": "S12-G11",
+        "source_kind": "structured_scan_json",
+        "widget_object_ref": "21458 0 R"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "S12:exact_field:phase2-1:07800b54038b",
+      "node_id": "S12",
+      "relation_type": "exact_field",
+      "evidence": {
+        "declared_page_present": null,
+        "declared_pdf_page": null,
+        "matched_field_id": "S12-G11",
+        "matched_page_numbers": [
+          4,
+          233
+        ],
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:a55ec5c06e7139b1",
+        "node_id": "S12",
+        "relation_note": null,
+        "requested_field_id": "S12-G11",
+        "source_kind": "structured_scan_json",
+        "status": "exact_field_match"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "S12:exact_field:phase2-2:4ee92029cde6",
+      "node_id": "S12",
+      "relation_type": "exact_field",
+      "evidence": {
+        "declared_page_present": true,
+        "declared_pdf_page": 4,
+        "matched_field_id": "S12-G11",
+        "matched_page_numbers": [
+          4,
+          233
+        ],
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:a55ec5c06e7139b1",
+        "node_id": "S12",
+        "relation_note": null,
+        "requested_field_id": "S12-G11",
+        "source_kind": "pdf_form_anchor",
+        "status": "exact_field_match"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "S12:exact_field:source-2:1585c5badc66",
+      "node_id": "S12",
+      "relation_type": "exact_field",
+      "evidence": {
+        "description": "Scan-to-module form anchor.",
+        "field_id": "S12-G11",
+        "kind": "pdf_form_anchor",
+        "locator": "pdf:page=4;field=S12-G11",
+        "pdf_page": 4,
+        "printed_page": null,
+        "source_id": "scid5-zh-local-source-01"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "S12:ocr_region:ocr-region-1:136ddc48ac43",
+      "node_id": "S12",
+      "relation_type": "ocr_region",
+      "evidence": {
+        "asset_id": "scan-s12",
+        "ocr_line_ids": [
+          "scid5:p004:ocr-line:001-001-017",
+          "scid5:p004:ocr-line:001-001-018",
+          "scid5:p004:ocr-line:001-001-019",
+          "scid5:p004:ocr-line:001-001-020",
+          "scid5:p004:ocr-line:001-001-022",
+          "scid5:p004:ocr-line:001-001-024",
+          "scid5:p004:ocr-line:001-001-023"
+        ],
+        "pdf_page": 4
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "S12:source_text:source-1:7abe8312eca1",
+      "node_id": "S12",
+      "relation_type": "source_text",
+      "evidence": {
+        "description": "Approved local scan-item source.",
+        "field_id": "S12-G11",
+        "kind": "structured_scan_json",
+        "locator": "xtalk/src/xtalk/psych_sop/data/pysc/SCID-5-S.json#qid=S12",
+        "pdf_page": null,
+        "printed_page": null,
+        "source_id": "scid5-zh-local-source-01"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "S9:exact_field:ocr-anchor-1:548b84e17853",
+      "node_id": "S9",
+      "relation_type": "exact_field",
+      "evidence": {
+        "image_rect_px": [
+          1978,
+          645,
+          2037,
+          704
+        ],
+        "match_status": "exact_field_match",
+        "matched_field_id": "S9-G3",
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+        "nearest_ocr_line_ids": [
+          "scid5:p004:ocr-line:001-001-004",
+          "scid5:p004:ocr-line:001-001-003",
+          "scid5:p004:ocr-line:001-001-015",
+          "scid5:p004:ocr-line:001-001-008",
+          "scid5:p004:ocr-line:001-001-006"
+        ],
+        "node_id": "S9",
+        "page_number": 4,
+        "pdf_rect_points": [
+          154.8,
+          474.474,
+          168.973,
+          488.647
+        ],
+        "relation_note": null,
+        "requested_field_id": "S9-G3",
+        "source_kind": "structured_scan_json",
+        "widget_object_ref": "21431 0 R"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "S9:exact_field:ocr-anchor-2:d7e330a9c221",
+      "node_id": "S9",
+      "relation_type": "exact_field",
+      "evidence": {
+        "image_rect_px": [
+          1788,
+          645,
+          1847,
+          704
+        ],
+        "match_status": "exact_field_match",
+        "matched_field_id": "S9-G3",
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+        "nearest_ocr_line_ids": [
+          "scid5:p004:ocr-line:001-001-004",
+          "scid5:p004:ocr-line:001-001-003",
+          "scid5:p004:ocr-line:001-001-008",
+          "scid5:p004:ocr-line:001-001-006",
+          "scid5:p004:ocr-line:001-001-011"
+        ],
+        "node_id": "S9",
+        "page_number": 4,
+        "pdf_rect_points": [
+          154.8,
+          428.954,
+          168.973,
+          443.127
+        ],
+        "relation_note": null,
+        "requested_field_id": "S9-G3",
+        "source_kind": "structured_scan_json",
+        "widget_object_ref": "21459 0 R"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "S9:exact_field:phase2-1:3da702cff6ef",
+      "node_id": "S9",
+      "relation_type": "exact_field",
+      "evidence": {
+        "declared_page_present": null,
+        "declared_pdf_page": null,
+        "matched_field_id": "S9-G3",
+        "matched_page_numbers": [
+          4,
+          232
+        ],
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+        "node_id": "S9",
+        "relation_note": null,
+        "requested_field_id": "S9-G3",
+        "source_kind": "structured_scan_json",
+        "status": "exact_field_match"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "S9:exact_field:phase2-2:498e2748f15f",
+      "node_id": "S9",
+      "relation_type": "exact_field",
+      "evidence": {
+        "declared_page_present": true,
+        "declared_pdf_page": 4,
+        "matched_field_id": "S9-G3",
+        "matched_page_numbers": [
+          4,
+          232
+        ],
+        "matched_stable_id": "scid5-zh-local-source-01:acroform:e04531d50c08cf22",
+        "node_id": "S9",
+        "relation_note": null,
+        "requested_field_id": "S9-G3",
+        "source_kind": "pdf_form_anchor",
+        "status": "exact_field_match"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "S9:exact_field:source-2:3fa502976ad7",
+      "node_id": "S9",
+      "relation_type": "exact_field",
+      "evidence": {
+        "description": "Scan-to-module form anchor.",
+        "field_id": "S9-G3",
+        "kind": "pdf_form_anchor",
+        "locator": "pdf:page=4;field=S9-G3",
+        "pdf_page": 4,
+        "printed_page": null,
+        "source_id": "scid5-zh-local-source-01"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "S9:ocr_region:ocr-region-1:90aecdd2d2ec",
+      "node_id": "S9",
+      "relation_type": "ocr_region",
+      "evidence": {
+        "asset_id": "scan-s9",
+        "ocr_line_ids": [
+          "scid5:p004:ocr-line:001-001-005",
+          "scid5:p004:ocr-line:001-001-006",
+          "scid5:p004:ocr-line:001-001-007",
+          "scid5:p004:ocr-line:001-001-008",
+          "scid5:p004:ocr-line:001-001-009",
+          "scid5:p004:ocr-line:001-001-010",
+          "scid5:p004:ocr-line:001-001-011",
+          "scid5:p004:ocr-line:001-001-012"
+        ],
+        "pdf_page": 4
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    },
+    {
+      "relation_id": "S9:source_text:source-1:7efb417444f4",
+      "node_id": "S9",
+      "relation_type": "source_text",
+      "evidence": {
+        "description": "Approved local scan-item source.",
+        "field_id": "S9-G3",
+        "kind": "structured_scan_json",
+        "locator": "xtalk/src/xtalk/psych_sop/data/pysc/SCID-5-S.json#qid=S9",
+        "pdf_page": null,
+        "printed_page": null,
+        "source_id": "scid5-zh-local-source-01"
+      },
+      "review_status": "source_mapped_pending_clinical_review"
+    }
+  ]
+}

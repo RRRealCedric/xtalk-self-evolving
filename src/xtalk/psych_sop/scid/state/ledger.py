@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -39,8 +40,14 @@ class AssessmentLedger:
     terminal_status: str | None = None
     pending_clarification: str | None = None
     state_version: int = 0
+    archived_turn_count: int = 0
+    _turn_id_counter: int = field(default=0, init=False, repr=False)
 
     def __post_init__(self) -> None:
+        self._turn_id_counter = max(
+            (turn.turn_id for turn in self.turns),
+            default=0,
+        )
         if self.current_field_id is None:
             self.current_field_id = self.template.first_field_id()
 
@@ -55,17 +62,37 @@ class AssessmentLedger:
     def next_turn_id(self) -> int:
         """Return the id that will be assigned to the next user turn."""
 
-        return len(self.turns) + 1
+        return self._turn_id_counter + 1
 
-    def begin_turn(self, user_text: str) -> SCIDTurn:
+    def begin_turn(self, user_text: str, *, interaction_seq: int) -> SCIDTurn:
         """Create a new turn for the current field."""
 
+        if self.terminal_status is not None or self.current_field_id is None:
+            raise LedgerValidationError(
+                "Cannot begin a turn after the ledger is terminal"
+            )
+        if type(interaction_seq) is not int or interaction_seq < 1:
+            raise LedgerValidationError("interaction_seq must be a positive integer")
+        if not isinstance(user_text, str) or not user_text.strip():
+            raise LedgerValidationError("Turn user_text must be a non-empty string")
+        if len(user_text) > 8192:
+            raise LedgerValidationError("Turn user_text exceeds 8192 characters")
+        if any(turn.decision is None for turn in self.turns):
+            raise LedgerValidationError(
+                "Cannot begin a turn while another turn is uncommitted"
+            )
+        if any(turn.interaction_seq == interaction_seq for turn in self.turns):
+            raise LedgerValidationError("interaction_seq has already created a turn")
+        if self.turns and interaction_seq <= self.turns[-1].interaction_seq:
+            raise LedgerValidationError("interaction_seq is stale or out of order")
         turn = SCIDTurn(
             turn_id=self.next_turn_id(),
+            interaction_seq=interaction_seq,
             field_id=self.current_field_id,
             user_text=user_text,
         )
         self.turns.append(turn)
+        self._turn_id_counter = turn.turn_id
         return turn
 
     def discard_turn_if_uncommitted(self, turn_id: int) -> bool:
@@ -140,6 +167,7 @@ class AssessmentLedger:
         recent_turns = [item.snapshot() for item in self.turns[-8:]]
         return {
             "turn_id": turn.turn_id,
+            "interaction_seq": turn.interaction_seq,
             "state_version": self.state_version,
             "current_node": field.snapshot() if field else None,
             "current_field_id": self.current_field_id,
@@ -161,12 +189,19 @@ class AssessmentLedger:
         decision: AssessmentDecision,
         *,
         turn_id: int,
-        raw_user_text: str,
         expected_field_id: str | None = None,
         expected_state_version: int | None = None,
     ) -> None:
         """Validate and apply one background-LM decision."""
 
+        if type(turn_id) is not int or turn_id < 1:
+            raise LedgerValidationError("turn_id must be a positive integer")
+        if expected_state_version is not None and (
+            type(expected_state_version) is not int or expected_state_version < 0
+        ):
+            raise LedgerValidationError(
+                "expected_state_version must be a non-negative integer"
+            )
         if (
             expected_state_version is not None
             and expected_state_version != self.state_version
@@ -195,14 +230,20 @@ class AssessmentLedger:
             self.state_version += 1
             return
 
-        assert decision.score is not None
-        assert self.current_field_id is not None
+        if decision.score is None:
+            raise LedgerValidationError(
+                "Advance/branch decision unexpectedly has no score"
+            )
+        if self.current_field_id is None:
+            raise LedgerValidationError(
+                "Advance/branch decision has no active ledger field"
+            )
         self.field_states[self.current_field_id] = SCIDFieldState(
             field_id=self.current_field_id,
             score=decision.score,
             confidence=decision.confidence,
             evidence=decision.evidence,
-            raw_user_text=raw_user_text,
+            raw_user_text=turn.user_text,
             reasoning_summary=decision.reasoning_summary,
             turn_id=turn_id,
         )
@@ -236,6 +277,7 @@ class AssessmentLedger:
             "terminal_status": self.terminal_status,
             "pending_clarification": self.pending_clarification,
             "queued_module_fields": list(self.queued_module_fields),
+            "archived_turn_count": self.archived_turn_count,
             "field_states": {
                 field_id: state.snapshot()
                 for field_id, state in self.field_states.items()
@@ -243,16 +285,50 @@ class AssessmentLedger:
             "turns": [turn.snapshot() for turn in self.turns],
         }
 
+    def archive_committed_turns(self, *, max_recent: int = 16) -> int:
+        """Keep only a bounded recent window after events have been projected."""
+
+        if type(max_recent) is not int or max_recent < 1:
+            raise ValueError("max_recent must be positive")
+        if len(self.turns) <= max_recent:
+            return 0
+        archive_count = len(self.turns) - max_recent
+        candidates = self.turns[:archive_count]
+        if any(turn.decision is None for turn in candidates):
+            raise LedgerValidationError("Cannot archive an uncommitted ledger turn")
+        self.turns = self.turns[archive_count:]
+        self.archived_turn_count += archive_count
+        return archive_count
+
     def _validate_decision(
         self,
         decision: AssessmentDecision,
         *,
         turn_id: int,
     ) -> None:
-        if turn_id != len(self.turns):
+        if self.terminal_status is not None or self.current_field_id is None:
+            raise LedgerValidationError("Cannot apply a decision to a terminal ledger")
+        if not self.turns or self.turns[-1].turn_id != turn_id:
             raise LedgerValidationError("Decision turn_id is stale or unknown")
-        if decision.next_action not in VALID_ACTIONS:
+        turn = self._turn_by_id(turn_id)
+        if turn.decision is not None:
+            raise LedgerValidationError(
+                "Decision has already been committed for this turn"
+            )
+        if turn.field_id != self.current_field_id:
+            raise LedgerValidationError("Turn is based on a stale ledger field")
+        if not isinstance(decision.next_action, str) or (
+            decision.next_action not in VALID_ACTIONS
+        ):
             raise LedgerValidationError(f"Invalid action: {decision.next_action}")
+        if (
+            not isinstance(decision.field_id, str)
+            or not decision.field_id.strip()
+            or len(decision.field_id) > 256
+        ):
+            raise LedgerValidationError(
+                "Decision field_id must be a non-empty bounded string"
+            )
         if (
             decision.next_action != "crisis"
             and decision.field_id != self.current_field_id
@@ -261,13 +337,62 @@ class AssessmentLedger:
                 f"Decision field_id {decision.field_id!r} does not match current "
                 f"field {self.current_field_id!r}"
             )
+        if isinstance(decision.confidence, bool) or not isinstance(
+            decision.confidence, (int, float)
+        ):
+            raise LedgerValidationError("Decision confidence must be a number")
+        try:
+            confidence = float(decision.confidence)
+        except (OverflowError, ValueError) as exc:
+            raise LedgerValidationError(
+                "Decision confidence must be finite and within [0, 1]"
+            ) from exc
+        if not math.isfinite(confidence) or not (0.0 <= confidence <= 1.0):
+            raise LedgerValidationError(
+                "Decision confidence must be finite and within [0, 1]"
+            )
+        if not isinstance(decision.evidence, list):
+            raise LedgerValidationError("Decision evidence must be a list")
+        if len(decision.evidence) > 32:
+            raise LedgerValidationError(
+                "Decision evidence may contain at most 32 items"
+            )
+        if any(
+            not isinstance(item, str) or not item.strip() or len(item.strip()) > 4096
+            for item in decision.evidence
+        ):
+            raise LedgerValidationError(
+                "Decision evidence must contain only non-empty bounded strings"
+            )
+        if decision.score is not None and (
+            not isinstance(decision.score, str) or decision.score not in VALID_SCORES
+        ):
+            raise LedgerValidationError(f"Invalid score: {decision.score!r}")
+        if (
+            not isinstance(decision.clarification_question, str)
+            or len(decision.clarification_question) > 4096
+        ):
+            raise LedgerValidationError(
+                "Decision clarification_question must be a bounded string"
+            )
+        if (
+            not isinstance(decision.reasoning_summary, str)
+            or len(decision.reasoning_summary) > 8192
+        ):
+            raise LedgerValidationError(
+                "Decision reasoning_summary must be a bounded string"
+            )
         if decision.next_action in {"advance", "branch"}:
-            if decision.score not in VALID_SCORES:
-                raise LedgerValidationError("Advance/branch decisions require a score")
+            if decision.score not in {"1", "2", "3"}:
+                raise LedgerValidationError(
+                    "Advance/branch decisions require a committed score"
+                )
             if not decision.evidence:
                 raise LedgerValidationError("Advance/branch decisions require evidence")
         if decision.next_action in {"clarify", "reask"}:
-            if not decision.clarification_question.strip():
+            if not isinstance(decision.clarification_question, str) or not (
+                decision.clarification_question.strip()
+            ):
                 raise LedgerValidationError("Clarify/reask requires a question")
 
     def _turn_by_id(self, turn_id: int) -> SCIDTurn:
@@ -308,10 +433,4 @@ class AssessmentLedger:
         self.terminal_status = "completed"
 
     def _progress_text(self) -> str:
-        if self.current_field_id in self.template.scan_order:
-            index = self.template.scan_order.index(self.current_field_id) + 1
-            total = len(self.template.scan_order)
-            return f"扫描模块第 {index}/{total} 题"
-        if self.current_field_id:
-            return f"重点模块：{self.current_field_id}"
         return ""

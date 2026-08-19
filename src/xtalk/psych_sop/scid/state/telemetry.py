@@ -12,6 +12,12 @@ def now_ts() -> float:
     return time.time()
 
 
+def monotonic_ts() -> float:
+    """Return a monotonic timestamp for elapsed-time comparisons."""
+
+    return time.monotonic()
+
+
 @dataclass(slots=True)
 class SCIDLatencyTrace:
     """One interaction's internal SCID latency trace."""
@@ -51,6 +57,7 @@ class SCIDLatencyTrace:
     initial_semantic_boundary_at: float | None = None
     foreground_action_superseded_count: int = 0
     speech_action_committed_at: float | None = None
+    action_delivery_status: str = "not_selected"
     post_boundary_wait_started_at: float | None = None
     post_boundary_wait_finished_at: float | None = None
     fast_policy_started_at: float | None = None
@@ -67,6 +74,8 @@ class SCIDLatencyTrace:
     stale: bool = False
     repair_required: bool = False
     error: str = ""
+    frontend_stream_error: str = ""
+    frontend_stream_truncated: bool = False
 
     def snapshot(self) -> dict[str, object]:
         """Return a JSON-friendly representation."""

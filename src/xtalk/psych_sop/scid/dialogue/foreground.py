@@ -8,6 +8,11 @@ from typing import Any
 from uuid import uuid4
 
 from ..core.schema import DialogueDirective, SCIDField
+from ..orchestration.action_policy import (
+    ActionBudget,
+    ActionEligibilityPolicy,
+    ActionRankingPolicy,
+)
 
 
 @dataclass(slots=True)
@@ -45,15 +50,20 @@ class ForegroundActionBroker:
         interaction_seq: int,
         state_version: int,
         field_id: str | None,
-        max_followups: int = 1,
+        speculation_active: bool = False,
+        eligibility_policy: ActionEligibilityPolicy | None = None,
+        ranking_policy: ActionRankingPolicy | None = None,
+        action_budget: ActionBudget | None = None,
     ) -> None:
         self.interaction_seq = interaction_seq
         self.state_version = state_version
         self.field_id = field_id
-        self.max_followups = max(0, max_followups)
+        self.speculation_active = speculation_active
+        self.eligibility_policy = eligibility_policy or ActionEligibilityPolicy()
+        self.ranking_policy = ranking_policy or ActionRankingPolicy()
+        self.action_budget = action_budget or ActionBudget()
         self._condition = asyncio.Condition()
         self._actions: list[ForegroundAction] = []
-        self._selected_count = 0
         self._seen_keys: set[tuple[str, str]] = set()
         self._committed_action: ForegroundAction | None = None
         self._superseded: list[dict[str, Any]] = []
@@ -64,14 +74,25 @@ class ForegroundActionBroker:
         """Submit one action candidate. Return False when it is stale."""
 
         async with self._condition:
+            eligibility = self.eligibility_policy.evaluate(
+                action,
+                interaction_seq=self.interaction_seq,
+                state_version=self.state_version,
+                field_id=self.field_id,
+                speculation_active=self.speculation_active,
+            )
             if (
                 self._closed
                 or self._committed_action is not None
-                or action.interaction_seq != self.interaction_seq
-                or action.based_on_state_version != self.state_version
-                or action.field_id != self.field_id
+                or not eligibility.allowed
             ):
-                self._rejected_stale.append(action.snapshot())
+                rejected = action.snapshot()
+                rejected["reason_code"] = (
+                    "broker_closed"
+                    if self._closed or self._committed_action is not None
+                    else eligibility.reason_code
+                )
+                self._rejected_stale.append(rejected)
                 return False
             key = (action.kind, action.directive.question_text.strip())
             if key in self._seen_keys:
@@ -93,13 +114,13 @@ class ForegroundActionBroker:
                     }
                 )
                 self._actions.append(action)
-                self._actions.sort(key=lambda item: item.priority, reverse=True)
+                self._actions.sort(key=self.ranking_policy.rank, reverse=True)
                 self._condition.notify_all()
                 return True
             previous_best = self._actions[0] if self._actions else None
             self._seen_keys.add(key)
             self._actions.append(action)
-            self._actions.sort(key=lambda item: item.priority, reverse=True)
+            self._actions.sort(key=self.ranking_policy.rank, reverse=True)
             current_best = self._actions[0]
             if (
                 previous_best is not None
@@ -121,9 +142,9 @@ class ForegroundActionBroker:
     ) -> ForegroundAction | None:
         """Commit the best available action and lock foreground selection."""
 
-        if self._selected_count >= self.max_followups:
-            return None
         async with self._condition:
+            if self._committed_action is not None:
+                return None
             deadline = (
                 None
                 if timeout is None
@@ -146,17 +167,9 @@ class ForegroundActionBroker:
                     return None
             if self._closed or not self._actions:
                 return None
-            self._selected_count += 1
             self._committed_action = self._actions[0]
             self._closed = True
             return self._committed_action
-
-    async def wait_next(
-        self, *, timeout: float | None = None
-    ) -> ForegroundAction | None:
-        """Compatibility wrapper for the previous one-shot broker API."""
-
-        return await self.commit_best(timeout=timeout)
 
     @property
     def committed_action(self) -> ForegroundAction | None:
@@ -189,7 +202,7 @@ class ForegroundActionBroker:
                 if self._committed_action is not None
                 else None
             ),
-            "speech_committed": (
+            "selected": (
                 self._committed_action.snapshot()
                 if self._committed_action is not None
                 else None
@@ -197,19 +210,20 @@ class ForegroundActionBroker:
             "superseded": list(self._superseded),
             "rejected_stale": list(self._rejected_stale),
             "closed": self._closed,
+            "policy_version": self.ranking_policy.version,
+            "action_budget": asdict(self.action_budget),
         }
 
-    def close(self) -> None:
+    async def close(self) -> None:
         """Stop waiting for more actions."""
 
-        self._closed = True
+        async with self._condition:
+            self._closed = True
+            self._condition.notify_all()
 
 
 class FastForegroundPolicy:
     """Local low-latency policy for obvious non-committal foreground actions."""
-
-    def __init__(self, *, enabled: bool = True) -> None:
-        self.enabled = enabled
 
     def action_for_scan_answer(
         self,
@@ -225,8 +239,7 @@ class FastForegroundPolicy:
         """Return a safe candidate next question for a clear scan answer."""
 
         if (
-            not self.enabled
-            or field is None
+            field is None
             or next_field is None
             or field.kind != "scan"
             or field.latency_mode != "optimistic_scan"

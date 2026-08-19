@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
-import json
 from typing import Any
 
 from ..core.schema import AssessmentDecision, normalize_score
+from ..core.validation import (
+    MAX_MODEL_JSON_BYTES,
+    strict_finite_float,
+    strict_json_loads,
+    strict_string,
+    strict_string_list,
+)
 
 
 class DecisionParseError(ValueError):
@@ -15,7 +21,11 @@ class DecisionParseError(ValueError):
 def extract_json_object_text(text: str) -> str:
     """Extract one JSON object from model output text."""
 
-    stripped = (text or "").strip()
+    if not isinstance(text, str):
+        raise DecisionParseError("Model output must be text")
+    if len(text.encode("utf-8")) > MAX_MODEL_JSON_BYTES:
+        raise DecisionParseError(f"Model output exceeds {MAX_MODEL_JSON_BYTES} bytes")
+    stripped = text.strip()
     if stripped.startswith("```"):
         lines = stripped.splitlines()
         if lines and lines[0].startswith("```"):
@@ -37,8 +47,10 @@ def parse_assessment_decision(text: str) -> AssessmentDecision:
     """Parse model text into an ``AssessmentDecision``."""
 
     try:
-        payload = json.loads(extract_json_object_text(text))
-    except json.JSONDecodeError as exc:
+        payload = strict_json_loads(extract_json_object_text(text))
+    except DecisionParseError:
+        raise
+    except ValueError as exc:
         raise DecisionParseError(str(exc)) from exc
     if not isinstance(payload, dict):
         raise DecisionParseError("Decision payload must be a JSON object")
@@ -48,10 +60,27 @@ def parse_assessment_decision(text: str) -> AssessmentDecision:
 def decision_from_payload(payload: dict[str, Any]) -> AssessmentDecision:
     """Build a typed decision from a JSON-like dict."""
 
+    if not isinstance(payload, dict):
+        raise DecisionParseError("Decision payload must be a JSON object")
+    if any(not isinstance(key, str) for key in payload):
+        raise DecisionParseError("Decision payload keys must be strings")
+    allowed = {
+        "field_id",
+        "score",
+        "confidence",
+        "evidence",
+        "next_action",
+        "clarification_question",
+        "reasoning_summary",
+    }
+    unknown = sorted(set(payload) - allowed)
+    if unknown:
+        raise DecisionParseError(f"Decision payload contains unknown keys: {unknown}")
     missing = [
         key
         for key in (
             "field_id",
+            "score",
             "confidence",
             "evidence",
             "next_action",
@@ -63,29 +92,70 @@ def decision_from_payload(payload: dict[str, Any]) -> AssessmentDecision:
     if missing:
         raise DecisionParseError(f"Decision payload missing keys: {missing}")
 
-    action = str(payload["next_action"]).strip()
+    try:
+        action = strict_string(
+            payload["next_action"],
+            field_name="next_action",
+            maximum_length=32,
+        )
+    except ValueError as exc:
+        raise DecisionParseError(str(exc)) from exc
     if action not in {"advance", "clarify", "reask", "branch", "crisis"}:
         raise DecisionParseError(f"Invalid next_action: {action!r}")
 
     score = None
-    if payload.get("score") is not None and str(payload.get("score")).strip():
-        score = normalize_score(payload.get("score"))
+    if payload.get("score") is not None:
+        try:
+            score_text = strict_string(
+                payload["score"],
+                field_name="score",
+                maximum_length=32,
+            )
+            score = normalize_score(score_text)
+        except ValueError as exc:
+            raise DecisionParseError(str(exc)) from exc
 
-    evidence_raw = payload.get("evidence")
-    if not isinstance(evidence_raw, list):
-        raise DecisionParseError("evidence must be a list of strings")
-    evidence = [str(item).strip() for item in evidence_raw if str(item).strip()]
+    try:
+        evidence = strict_string_list(
+            payload["evidence"],
+            field_name="evidence",
+            maximum_items=32,
+            maximum_item_length=4096,
+        )
+        confidence = strict_finite_float(
+            payload["confidence"],
+            field_name="confidence",
+            minimum=0.0,
+            maximum=1.0,
+        )
+        field_id = strict_string(
+            payload["field_id"],
+            field_name="field_id",
+            maximum_length=256,
+        )
+        clarification_question = strict_string(
+            payload["clarification_question"],
+            field_name="clarification_question",
+            maximum_length=4096,
+            allow_empty=True,
+        )
+        reasoning_summary = strict_string(
+            payload["reasoning_summary"],
+            field_name="reasoning_summary",
+            maximum_length=8192,
+            allow_empty=True,
+        )
+    except ValueError as exc:
+        raise DecisionParseError(str(exc)) from exc
 
-    confidence = float(payload.get("confidence") or 0.0)
-    confidence = max(0.0, min(1.0, confidence))
     return AssessmentDecision(
-        field_id=str(payload.get("field_id") or "").strip(),
+        field_id=field_id,
         score=score,
         confidence=confidence,
         evidence=evidence,
         next_action=action,  # type: ignore[arg-type]
-        clarification_question=str(payload.get("clarification_question") or ""),
-        reasoning_summary=str(payload.get("reasoning_summary") or ""),
+        clarification_question=clarification_question,
+        reasoning_summary=reasoning_summary,
         raw_payload=dict(payload),
     )
 

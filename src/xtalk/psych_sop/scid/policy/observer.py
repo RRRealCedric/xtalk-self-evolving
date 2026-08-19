@@ -14,6 +14,44 @@ from langchain_openai import ChatOpenAI
 from ....log_utils import logger
 from ..assessment.decision import DecisionParseError, extract_json_object_text
 from ..core.schema import TurnInterpretation, VALID_OBSERVER_ACTIONS
+from ..core.validation import (
+    MAX_JSON_ARRAY_ITEMS,
+    strict_bool,
+    strict_finite_float,
+    strict_json_loads,
+    strict_nonnegative_int,
+    strict_string,
+    strict_string_list,
+)
+
+
+_OBSERVER_SLOT_BY_ACTION = {
+    "ask_duration": "duration",
+    "ask_frequency": "frequency",
+    "ask_most_of_day": "most_of_day",
+    "ask_impairment": "impairment",
+    "clarify_time_window": "time_window",
+    "repeat_current_question": "direct_response",
+}
+_VALID_EVIDENCE_SLOTS = {
+    "direct_response",
+    "duration",
+    "frequency",
+    "most_of_day",
+    "impairment",
+    "time_window",
+}
+_VALID_DIALOGUE_ACTS = {
+    "answer",
+    "correction",
+    "narrative",
+    "partial",
+    "question",
+    "self_disclosure",
+}
+_VALID_OBSERVER_SOURCES = {"llm", "rule", "test"}
+_VALID_MEMORY_TYPES = {"contextual_history"}
+_VALID_EVIDENCE_SUPPORT = {"contradicts", "supports", "undetermined"}
 
 
 class ObserverParseError(ValueError):
@@ -48,8 +86,8 @@ def parse_turn_interpretation(text: str) -> TurnInterpretation:
     """
 
     try:
-        payload = json.loads(extract_json_object_text(text))
-    except (json.JSONDecodeError, DecisionParseError) as exc:
+        payload = strict_json_loads(extract_json_object_text(text))
+    except (ValueError, DecisionParseError) as exc:
         raise ObserverParseError(str(exc)) from exc
     if not isinstance(payload, dict):
         raise ObserverParseError("Observer payload must be a JSON object")
@@ -78,11 +116,38 @@ def turn_interpretation_from_payload(
         attempts to make a forbidden clinical commitment.
     """
 
+    if not isinstance(payload, dict):
+        raise ObserverParseError("Observer payload must be a JSON object")
+    if any(not isinstance(key, str) for key in payload):
+        raise ObserverParseError("Observer payload keys must be strings")
     forbidden = {"score", "diagnosis", "field_completed"} & payload.keys()
     if forbidden:
         raise ObserverParseError(
-            f"Observer payload contains forbidden clinical commitments: {sorted(forbidden)}"
+            "Observer payload contains forbidden clinical commitments: "
+            f"{sorted(forbidden)}"
         )
+    allowed = {
+        "interaction_seq",
+        "observer_version",
+        "based_on_state_version",
+        "field_id",
+        "dialogue_acts",
+        "current_field_relevance",
+        "related_field_ids",
+        "related_module_ids",
+        "contextual_memories",
+        "evidence_candidates",
+        "recommended_action",
+        "missing_slots",
+        "needs_deep_assessment",
+        "commit_required",
+        "confidence",
+        "input_kind",
+        "source",
+    }
+    unknown = sorted(set(payload) - allowed)
+    if unknown:
+        raise ObserverParseError(f"Observer payload contains unknown keys: {unknown}")
     required = {
         "interaction_seq",
         "observer_version",
@@ -104,30 +169,221 @@ def turn_interpretation_from_payload(
     if missing:
         raise ObserverParseError(f"Observer payload missing keys: {missing}")
 
-    action = str(payload.get("recommended_action") or "").strip()
+    try:
+        action = strict_string(
+            payload["recommended_action"],
+            field_name="recommended_action",
+            maximum_length=64,
+        )
+    except ValueError as exc:
+        raise ObserverParseError(str(exc)) from exc
     if action not in VALID_OBSERVER_ACTIONS:
         raise ObserverParseError(f"Invalid observer action: {action!r}")
 
-    return TurnInterpretation(
-        interaction_seq=int(payload["interaction_seq"]),
-        observer_version=int(payload["observer_version"]),
-        based_on_state_version=int(payload["based_on_state_version"]),
-        field_id=(str(payload["field_id"]).strip() if payload["field_id"] else None),
-        dialogue_acts=_string_list(payload["dialogue_acts"]),
-        current_field_relevance=_confidence(payload["current_field_relevance"]),
-        related_field_ids=_string_list(payload["related_field_ids"]),
-        related_module_ids=_string_list(payload["related_module_ids"]),
-        contextual_memories=_dict_list(payload["contextual_memories"]),
-        evidence_candidates=_dict_list(payload["evidence_candidates"]),
-        recommended_action=action,  # type: ignore[arg-type]
-        missing_slots=_string_list(payload["missing_slots"]),
-        needs_deep_assessment=bool(payload["needs_deep_assessment"]),
-        commit_required=bool(payload["commit_required"]),
-        confidence=_confidence(payload["confidence"]),
-        input_kind=str(payload.get("input_kind") or "final"),
-        source=str(payload.get("source") or "llm"),
-        raw_payload=dict(payload),
+    try:
+        field_id = _optional_bounded_string(payload["field_id"], "field_id", 256)
+        dialogue_acts = strict_string_list(
+            payload["dialogue_acts"],
+            field_name="dialogue_acts",
+            maximum_item_length=128,
+        )
+        invalid_acts = sorted(set(dialogue_acts) - _VALID_DIALOGUE_ACTS)
+        if invalid_acts:
+            raise ValueError(f"Invalid dialogue_acts: {invalid_acts}")
+        related_field_ids = strict_string_list(
+            payload["related_field_ids"],
+            field_name="related_field_ids",
+            maximum_item_length=256,
+        )
+        related_module_ids = strict_string_list(
+            payload["related_module_ids"],
+            field_name="related_module_ids",
+            maximum_item_length=64,
+        )
+        missing_slots = strict_string_list(
+            payload["missing_slots"],
+            field_name="missing_slots",
+            maximum_item_length=64,
+        )
+        invalid_slots = sorted(set(missing_slots) - _VALID_EVIDENCE_SLOTS)
+        if invalid_slots:
+            raise ValueError(f"Invalid missing_slots: {invalid_slots}")
+        required_slot = _OBSERVER_SLOT_BY_ACTION.get(action)
+        if required_slot is not None and required_slot not in missing_slots:
+            raise ValueError(
+                f"recommended_action {action!r} requires missing slot {required_slot!r}"
+            )
+
+        commit_required = strict_bool(
+            payload["commit_required"],
+            field_name="commit_required",
+        )
+        if action in _OBSERVER_SLOT_BY_ACTION and commit_required:
+            raise ValueError(
+                f"recommended_action {action!r} cannot require a ledger commit"
+            )
+        input_kind = strict_string(
+            payload.get("input_kind", "final"),
+            field_name="input_kind",
+            maximum_length=16,
+        )
+        if input_kind not in {"final", "partial"}:
+            raise ValueError("input_kind must be 'final' or 'partial'")
+
+        source = strict_string(
+            payload.get("source", "llm"),
+            field_name="source",
+            maximum_length=64,
+        )
+        if source not in _VALID_OBSERVER_SOURCES:
+            raise ValueError(f"Invalid observer source: {source!r}")
+
+        return TurnInterpretation(
+            interaction_seq=strict_nonnegative_int(
+                payload["interaction_seq"], field_name="interaction_seq"
+            ),
+            observer_version=strict_nonnegative_int(
+                payload["observer_version"], field_name="observer_version"
+            ),
+            based_on_state_version=strict_nonnegative_int(
+                payload["based_on_state_version"],
+                field_name="based_on_state_version",
+            ),
+            field_id=field_id,
+            dialogue_acts=dialogue_acts,
+            current_field_relevance=strict_finite_float(
+                payload["current_field_relevance"],
+                field_name="current_field_relevance",
+                minimum=0.0,
+                maximum=1.0,
+            ),
+            related_field_ids=related_field_ids,
+            related_module_ids=related_module_ids,
+            contextual_memories=_parse_contextual_memories(
+                payload["contextual_memories"]
+            ),
+            evidence_candidates=_parse_evidence_candidates(
+                payload["evidence_candidates"]
+            ),
+            recommended_action=action,  # type: ignore[arg-type]
+            missing_slots=missing_slots,
+            needs_deep_assessment=strict_bool(
+                payload["needs_deep_assessment"],
+                field_name="needs_deep_assessment",
+            ),
+            commit_required=commit_required,
+            confidence=strict_finite_float(
+                payload["confidence"],
+                field_name="confidence",
+                minimum=0.0,
+                maximum=1.0,
+            ),
+            input_kind=input_kind,
+            source=source,
+            raw_payload=dict(payload),
+        )
+    except ValueError as exc:
+        raise ObserverParseError(str(exc)) from exc
+
+
+def validate_observer_provenance(
+    interpretation: TurnInterpretation,
+    *,
+    interaction_seq: int,
+    observer_version: int,
+    state_version: int,
+    field_id: str | None,
+    module_id: str | None,
+    user_text: str,
+    input_kind: str,
+) -> TurnInterpretation:
+    """Fail closed unless observer claims match the immutable call context.
+
+    This check must run after the asynchronous model call and before the result
+    is written to the Blackboard or passed to the assessor.  It deliberately
+    validates rather than overwrites provenance supplied by the model.
+    """
+
+    # Custom observer implementations can return a dataclass without using the
+    # JSON parser.  Re-validate and canonicalize that object at this boundary.
+    interpretation = turn_interpretation_from_payload(
+        {
+            "interaction_seq": interpretation.interaction_seq,
+            "observer_version": interpretation.observer_version,
+            "based_on_state_version": interpretation.based_on_state_version,
+            "field_id": interpretation.field_id,
+            "dialogue_acts": interpretation.dialogue_acts,
+            "current_field_relevance": interpretation.current_field_relevance,
+            "related_field_ids": interpretation.related_field_ids,
+            "related_module_ids": interpretation.related_module_ids,
+            "contextual_memories": interpretation.contextual_memories,
+            "evidence_candidates": interpretation.evidence_candidates,
+            "recommended_action": interpretation.recommended_action,
+            "missing_slots": interpretation.missing_slots,
+            "needs_deep_assessment": interpretation.needs_deep_assessment,
+            "commit_required": interpretation.commit_required,
+            "confidence": interpretation.confidence,
+            "input_kind": interpretation.input_kind,
+            "source": interpretation.source,
+        }
     )
+    expected = {
+        "interaction_seq": (interpretation.interaction_seq, interaction_seq),
+        "observer_version": (interpretation.observer_version, observer_version),
+        "based_on_state_version": (
+            interpretation.based_on_state_version,
+            state_version,
+        ),
+        "field_id": (interpretation.field_id, field_id),
+        "input_kind": (interpretation.input_kind, input_kind),
+    }
+    mismatched = [
+        name for name, (actual, wanted) in expected.items() if actual != wanted
+    ]
+    if mismatched:
+        raise ObserverParseError(
+            f"Observer provenance mismatch: {', '.join(mismatched)}"
+        )
+
+    if any(related != field_id for related in interpretation.related_field_ids):
+        raise ObserverParseError("related_field_ids contains an unrelated field")
+    if any(related != module_id for related in interpretation.related_module_ids):
+        raise ObserverParseError("related_module_ids contains an unrelated module")
+
+    for index, memory in enumerate(interpretation.contextual_memories):
+        if memory["source_interaction_seq"] != interaction_seq:
+            raise ObserverParseError(
+                f"contextual_memories[{index}] interaction sequence mismatch"
+            )
+        if memory["status"] != "context_only":
+            raise ObserverParseError(
+                f"contextual_memories[{index}] must have status=context_only"
+            )
+        if memory["content"] not in user_text:
+            raise ObserverParseError(
+                f"contextual_memories[{index}] content is not traceable to this turn"
+            )
+
+    for index, candidate in enumerate(interpretation.evidence_candidates):
+        if candidate["source_interaction_seq"] != interaction_seq:
+            raise ObserverParseError(
+                f"evidence_candidates[{index}] interaction sequence mismatch"
+            )
+        if candidate["field_id"] != field_id:
+            raise ObserverParseError(f"evidence_candidates[{index}] field mismatch")
+        if candidate["status"] != "candidate":
+            raise ObserverParseError(
+                f"evidence_candidates[{index}] must have status=candidate"
+            )
+        if candidate["slot"] not in _VALID_EVIDENCE_SLOTS:
+            raise ObserverParseError(
+                f"evidence_candidates[{index}] has an invalid slot"
+            )
+        if candidate["quote"] not in user_text:
+            raise ObserverParseError(
+                f"evidence_candidates[{index}] quote is not traceable to this turn"
+            )
+    return interpretation
 
 
 class RuleBasedObserver(IncrementalObserver):
@@ -462,23 +718,149 @@ def _looks_incomplete_partial(text: str) -> bool:
     )
 
 
-def _string_list(value: Any) -> list[str]:
-    if not isinstance(value, list):
-        raise ObserverParseError("Expected a JSON array of strings")
-    return [str(item).strip() for item in value if str(item).strip()]
+def _optional_bounded_string(
+    value: Any,
+    field_name: str,
+    maximum_length: int,
+) -> str | None:
+    if value is None:
+        return None
+    return strict_string(
+        value,
+        field_name=field_name,
+        maximum_length=maximum_length,
+    )
 
 
-def _dict_list(value: Any) -> list[dict[str, Any]]:
+def _parse_contextual_memories(value: Any) -> list[dict[str, Any]]:
+    items = _object_list(value, field_name="contextual_memories")
+    parsed: list[dict[str, Any]] = []
+    required = {"content", "source_interaction_seq", "status"}
+    allowed = required | {"type"}
+    for index, item in enumerate(items):
+        _validate_object_keys(
+            item,
+            field_name=f"contextual_memories[{index}]",
+            required=required,
+            allowed=allowed,
+        )
+        memory = {
+            "content": strict_string(
+                item["content"],
+                field_name=f"contextual_memories[{index}].content",
+                maximum_length=8192,
+            ),
+            "source_interaction_seq": strict_nonnegative_int(
+                item["source_interaction_seq"],
+                field_name=f"contextual_memories[{index}].source_interaction_seq",
+            ),
+            "status": strict_string(
+                item["status"],
+                field_name=f"contextual_memories[{index}].status",
+                maximum_length=32,
+            ),
+        }
+        if "type" in item:
+            memory_type = strict_string(
+                item["type"],
+                field_name=f"contextual_memories[{index}].type",
+                maximum_length=64,
+            )
+            if memory_type not in _VALID_MEMORY_TYPES:
+                raise ValueError(f"contextual_memories[{index}].type is invalid")
+            memory["type"] = memory_type
+        parsed.append(memory)
+    return parsed
+
+
+def _parse_evidence_candidates(value: Any) -> list[dict[str, Any]]:
+    items = _object_list(
+        value,
+        field_name="evidence_candidates",
+        maximum_items=32,
+    )
+    parsed: list[dict[str, Any]] = []
+    required = {
+        "field_id",
+        "quote",
+        "slot",
+        "source_interaction_seq",
+        "status",
+    }
+    allowed = required | {"supports"}
+    for index, item in enumerate(items):
+        _validate_object_keys(
+            item,
+            field_name=f"evidence_candidates[{index}]",
+            required=required,
+            allowed=allowed,
+        )
+        candidate = {
+            "field_id": strict_string(
+                item["field_id"],
+                field_name=f"evidence_candidates[{index}].field_id",
+                maximum_length=256,
+            ),
+            "quote": strict_string(
+                item["quote"],
+                field_name=f"evidence_candidates[{index}].quote",
+                maximum_length=8192,
+            ),
+            "slot": strict_string(
+                item["slot"],
+                field_name=f"evidence_candidates[{index}].slot",
+                maximum_length=64,
+            ),
+            "source_interaction_seq": strict_nonnegative_int(
+                item["source_interaction_seq"],
+                field_name=(f"evidence_candidates[{index}].source_interaction_seq"),
+            ),
+            "status": strict_string(
+                item["status"],
+                field_name=f"evidence_candidates[{index}].status",
+                maximum_length=32,
+            ),
+        }
+        if "supports" in item:
+            supports = strict_string(
+                item["supports"],
+                field_name=f"evidence_candidates[{index}].supports",
+                maximum_length=64,
+            )
+            if supports not in _VALID_EVIDENCE_SUPPORT:
+                raise ValueError(f"evidence_candidates[{index}].supports is invalid")
+            candidate["supports"] = supports
+        parsed.append(candidate)
+    return parsed
+
+
+def _object_list(
+    value: Any,
+    *,
+    field_name: str,
+    maximum_items: int = MAX_JSON_ARRAY_ITEMS,
+) -> list[dict[str, Any]]:
     if not isinstance(value, list):
-        raise ObserverParseError("Expected a JSON array of objects")
+        raise ValueError(f"{field_name} must be an array of objects")
+    if len(value) > maximum_items:
+        raise ValueError(f"{field_name} must contain at most {maximum_items} items")
     if any(not isinstance(item, dict) for item in value):
-        raise ObserverParseError("Expected a JSON array of objects")
+        raise ValueError(f"{field_name} must be an array of objects")
     return [dict(item) for item in value]
 
 
-def _confidence(value: Any) -> float:
-    try:
-        parsed = float(value)
-    except (TypeError, ValueError) as exc:
-        raise ObserverParseError(f"Invalid confidence: {value!r}") from exc
-    return max(0.0, min(1.0, parsed))
+def _validate_object_keys(
+    value: dict[str, Any],
+    *,
+    field_name: str,
+    required: set[str],
+    allowed: set[str],
+) -> None:
+    if any(not isinstance(key, str) for key in value):
+        raise ValueError(f"{field_name} keys must be strings")
+    missing = sorted(required - value.keys())
+    if missing:
+        raise ValueError(f"{field_name} is missing keys: {missing}")
+    unknown = sorted(value.keys() - allowed)
+    if unknown:
+        raise ValueError(f"{field_name} contains unknown keys: {unknown}")

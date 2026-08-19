@@ -1,0 +1,521 @@
+{
+  "nodes": [
+    {
+      "node_id": "S9",
+      "module_id": "S",
+      "node_type": "screening_question",
+      "clinical_intent": "筛查终生是否存在不希望出现且反复出现的想法，以决定是否需要进入强迫思维路径。",
+      "time_window": "lifetime",
+      "canonical_prompt": "在你一生的任何时候，你是否被一些想法困扰，即使你不愿去想，但它们还是不断出现，例如，反复想到暴露于细菌或尘土，或需要所有的东西以特定的方式排列起来？",
+      "source_relation_ids": [
+        "S9:exact_field:ocr-anchor-1:548b84e17853",
+        "S9:exact_field:ocr-anchor-2:d7e330a9c221",
+        "S9:exact_field:phase2-1:3da702cff6ef",
+        "S9:exact_field:phase2-2:498e2748f15f",
+        "S9:exact_field:source-2:3fa502976ad7",
+        "S9:ocr_region:ocr-region-1:90aecdd2d2ec",
+        "S9:source_text:source-1:7efb417444f4"
+      ],
+      "evidence_slots": [
+        {
+          "slot_id": "occurrence",
+          "value_type": "boolean_or_uncertain",
+          "description": "所描述的体验是否在终生时间范围内发生过。",
+          "required_for_scores": [
+            "1",
+            "2",
+            "3"
+          ]
+        },
+        {
+          "slot_id": "answer_certainty",
+          "value_type": "ordinal",
+          "description": "当事人对该扫描回答的确定程度。",
+          "required_for_scores": []
+        }
+      ],
+      "score_requirements": [
+        {
+          "score": "1",
+          "required_slots": [
+            "occurrence"
+          ],
+          "requires_assessor_judgment": true,
+          "summary": "只有在用户回答能够支持“未发生”时，才可提出明确否定。"
+        },
+        {
+          "score": "2",
+          "required_slots": [
+            "occurrence"
+          ],
+          "requires_assessor_judgment": true,
+          "summary": "可能存在阈下解释；本 Pilot 不定义诊断结论。"
+        },
+        {
+          "score": "3",
+          "required_slots": [
+            "occurrence"
+          ],
+          "requires_assessor_judgment": true,
+          "summary": "阳性扫描可进入限定的 G Pilot；这不是诊断。"
+        }
+      ],
+      "semantic_constraints": {
+        "core_concept": "反复出现、并非主动希望去想的想法；与普通一过性担心相区分。",
+        "severity_threshold": "不得把普通担心或个人偏好等同于具有临床相关性的体验。",
+        "key_exclusions": [
+          "普通情境性担心",
+          "当事人主动希望继续思考的内容"
+        ],
+        "required_information": [
+          "occurrence",
+          "answer_certainty"
+        ]
+      },
+      "formal_transitions": [
+        {
+          "transition_id": "S9.POSITIVE_TO_G3",
+          "when": {
+            "score_in": [
+              "3"
+            ]
+          },
+          "target": "G3"
+        },
+        {
+          "transition_id": "S9.NEGATIVE_OR_SUBTHRESHOLD",
+          "when": {
+            "score_in": [
+              "1",
+              "2"
+            ]
+          },
+          "target": "$return"
+        }
+      ],
+      "coverage_status": "clinical_spec_candidate",
+      "publication_status": "candidate_only_not_published"
+    },
+    {
+      "node_id": "S12",
+      "module_id": "S",
+      "node_type": "screening_question",
+      "clinical_intent": "筛查终生是否存在难以控制的反复行为，以决定是否需要进入强迫行为模块 gate。",
+      "time_window": "lifetime",
+      "canonical_prompt": "在你一生的任何时候，你是否控制不住地反反复复去做某件事情，例如，反复洗手、一遍遍重复地做某件事直到“感觉对了”、计数到某个具体数目或反复检查某件事直到确保自己做对了？",
+      "source_relation_ids": [
+        "S12:exact_field:ocr-anchor-1:6fe4ffbf31f8",
+        "S12:exact_field:ocr-anchor-2:2f54207d8591",
+        "S12:exact_field:phase2-1:07800b54038b",
+        "S12:exact_field:phase2-2:4ee92029cde6",
+        "S12:exact_field:source-2:1585c5badc66",
+        "S12:ocr_region:ocr-region-1:136ddc48ac43",
+        "S12:source_text:source-1:7abe8312eca1"
+      ],
+      "evidence_slots": [
+        {
+          "slot_id": "occurrence",
+          "value_type": "boolean_or_uncertain",
+          "description": "所描述的反复行为是否在终生时间范围内发生过。",
+          "required_for_scores": [
+            "1",
+            "2",
+            "3"
+          ]
+        },
+        {
+          "slot_id": "answer_certainty",
+          "value_type": "ordinal",
+          "description": "当事人对该扫描回答的确定程度。",
+          "required_for_scores": []
+        }
+      ],
+      "score_requirements": [
+        {
+          "score": "1",
+          "required_slots": [
+            "occurrence"
+          ],
+          "requires_assessor_judgment": true,
+          "summary": "明确否定的扫描提议。"
+        },
+        {
+          "score": "2",
+          "required_slots": [
+            "occurrence"
+          ],
+          "requires_assessor_judgment": true,
+          "summary": "阈下提议；本文件不定义诊断。"
+        },
+        {
+          "score": "3",
+          "required_slots": [
+            "occurrence"
+          ],
+          "requires_assessor_judgment": true,
+          "summary": "阳性扫描提议可进入限定的 G11 gate。"
+        }
+      ],
+      "semantic_constraints": {
+        "core_concept": "感觉难以控制的反复行为；与普通日常习惯相区分。",
+        "severity_threshold": "不得把正常偏好、习惯或可自主控制的日常程序归为具有临床相关性的反复行为。",
+        "key_exclusions": [
+          "普通日常程序",
+          "不存在失控感的自主偏好"
+        ],
+        "required_information": [
+          "occurrence",
+          "answer_certainty"
+        ]
+      },
+      "formal_transitions": [
+        {
+          "transition_id": "S12.POSITIVE_TO_G11",
+          "when": {
+            "score_in": [
+              "3"
+            ]
+          },
+          "target": "G11"
+        },
+        {
+          "transition_id": "S12.NEGATIVE_OR_SUBTHRESHOLD",
+          "when": {
+            "score_in": [
+              "1",
+              "2"
+            ]
+          },
+          "target": "$return"
+        }
+      ],
+      "coverage_status": "clinical_spec_candidate",
+      "publication_status": "candidate_only_not_published"
+    },
+    {
+      "node_id": "G3",
+      "module_id": "G",
+      "node_type": "criterion_question",
+      "clinical_intent": "了解 S9 阳性想法的具体内容，以及其反复出现和不希望出现的性质。",
+      "time_window": "lifetime_context_from_S9",
+      "canonical_prompt": "你说过你曾被一些反复出现的想法所困扰，即使你不愿去想，但它们还是不断出现，例如，反复想到暴露于细菌或污物，或者需要所有的东西以特定的方式排列起来。它们是什么？",
+      "source_relation_ids": [
+        "G3:ocr_anchor:ocr-anchor-1:f04d4da9c717",
+        "G3:ocr_anchor:ocr-anchor-2:0b66a0e8038f",
+        "G3:ocr_region:ocr-region-1:e1ab2e9f6e96",
+        "G3:related_field:phase2-1:9112e4f56152",
+        "G3:source_region:source-1:d34a8ea34c4d"
+      ],
+      "evidence_slots": [
+        {
+          "slot_id": "occurrence",
+          "value_type": "boolean",
+          "description": "在模块语境中是否确认该扫描体验存在。",
+          "required_for_scores": [
+            "1",
+            "3"
+          ]
+        },
+        {
+          "slot_id": "content_description",
+          "value_type": "free_text_reference",
+          "description": "当事人对想法、表象或冲动内容的自主描述。",
+          "required_for_scores": [
+            "3"
+          ]
+        },
+        {
+          "slot_id": "recurrent_or_intrusive_quality",
+          "value_type": "boolean_or_uncertain",
+          "description": "描述是否支持反复出现或不希望/侵入性的性质。",
+          "required_for_scores": [
+            "3"
+          ]
+        }
+      ],
+      "score_requirements": [
+        {
+          "score": "1",
+          "required_slots": [
+            "occurrence"
+          ],
+          "requires_assessor_judgment": true,
+          "summary": "模块内的否定发现提议；不构成诊断结论。"
+        },
+        {
+          "score": "3",
+          "required_slots": [
+            "occurrence",
+            "content_description",
+            "recurrent_or_intrusive_quality"
+          ],
+          "requires_assessor_judgment": true,
+          "summary": "阳性 Pilot 推进提议；需要受训临床人员审核。"
+        }
+      ],
+      "semantic_constraints": {
+        "core_concept": "用当事人自己的话描述反复、不希望出现的想法、表象或冲动内容。",
+        "severity_threshold": "不得从自愿偏好或普通关切推断强迫思维。",
+        "key_exclusions": [
+          "自愿希望保留的想法",
+          "没有侵入性反复出现的普通关切"
+        ],
+        "required_information": [
+          "occurrence",
+          "content_description",
+          "recurrent_or_intrusive_quality"
+        ]
+      },
+      "formal_transitions": [
+        {
+          "transition_id": "G3.POSITIVE_TO_G6",
+          "when": {
+            "score_in": [
+              "3"
+            ]
+          },
+          "target": "G6"
+        },
+        {
+          "transition_id": "G3.NEGATIVE_TO_SUMMARY",
+          "when": {
+            "score_in": [
+              "1"
+            ]
+          },
+          "target": "$return"
+        }
+      ],
+      "coverage_status": "clinical_spec_candidate",
+      "publication_status": "candidate_only_not_published"
+    },
+    {
+      "node_id": "G6",
+      "module_id": "G",
+      "node_type": "criterion_question",
+      "clinical_intent": "评估已描述的想法、表象或冲动是否伴随显著焦虑或痛苦。",
+      "time_window": "same_episode_or_context_as_G3",
+      "canonical_prompt": "这些（想法/表象/冲动）是否令你非常焦虑或不安？",
+      "source_relation_ids": [
+        "G6:exact_field:ocr-anchor-1:402636456bef",
+        "G6:exact_field:ocr-anchor-2:99a2e1702415",
+        "G6:exact_field:ocr-anchor-3:f70c26af777f",
+        "G6:exact_field:ocr-anchor-4:9d53e69ed9f8",
+        "G6:exact_field:phase2-1:ca5eeb8d90dd",
+        "G6:ocr_region:ocr-region-1:5ed12c0eae5f",
+        "G6:source_region:source-1:4f28b74f383b"
+      ],
+      "evidence_slots": [
+        {
+          "slot_id": "distress_or_anxiety",
+          "value_type": "severity_or_uncertain",
+          "description": "该体验是否伴随显著焦虑或痛苦。",
+          "required_for_scores": [
+            "1",
+            "2",
+            "3"
+          ]
+        }
+      ],
+      "score_requirements": [
+        {
+          "score": "1",
+          "required_slots": [
+            "distress_or_anxiety"
+          ],
+          "requires_assessor_judgment": true,
+          "summary": "痛苦/焦虑阴性发现提议。"
+        },
+        {
+          "score": "2",
+          "required_slots": [
+            "distress_or_anxiety"
+          ],
+          "requires_assessor_judgment": true,
+          "summary": "痛苦/焦虑阈下提议。"
+        },
+        {
+          "score": "3",
+          "required_slots": [
+            "distress_or_anxiety"
+          ],
+          "requires_assessor_judgment": true,
+          "summary": "痛苦/焦虑阳性发现提议；需要受训人员审核。"
+        }
+      ],
+      "semantic_constraints": {
+        "core_concept": "此前描述体验的情绪影响。",
+        "severity_threshold": "区分显著焦虑或痛苦与轻微、一过性的不喜欢。",
+        "key_exclusions": [
+          "没有实质痛苦的轻微普通不喜欢"
+        ],
+        "required_information": [
+          "distress_or_anxiety"
+        ]
+      },
+      "formal_transitions": [
+        {
+          "transition_id": "G6.CONTINUE_TO_G7",
+          "when": {
+            "score_in": [
+              "1",
+              "2",
+              "3"
+            ]
+          },
+          "target": "G7"
+        }
+      ],
+      "coverage_status": "clinical_spec_candidate",
+      "publication_status": "candidate_only_not_published"
+    },
+    {
+      "node_id": "G7",
+      "module_id": "G",
+      "node_type": "criterion_question",
+      "clinical_intent": "评估当事人是否尝试忽略、压制、中和或抵制此前描述的体验。",
+      "time_window": "same_episode_or_context_as_G3",
+      "canonical_prompt": "当你出现这些（想法/表象/冲动）时，你是否努力地从你的大脑里去除它们？（你尝试做过些什么？）",
+      "source_relation_ids": [
+        "G7:exact_field:ocr-anchor-1:9ab7932a4172",
+        "G7:exact_field:ocr-anchor-2:ecb2f735780a",
+        "G7:exact_field:ocr-anchor-3:c275d24bb2d5",
+        "G7:exact_field:ocr-anchor-4:22ccc59e31a4",
+        "G7:exact_field:phase2-1:24a3a58d1cb6",
+        "G7:ocr_region:ocr-region-1:5ed12c0eae5f",
+        "G7:source_region:source-1:30692bc65188"
+      ],
+      "evidence_slots": [
+        {
+          "slot_id": "resistance_or_neutralization",
+          "value_type": "boolean_or_uncertain",
+          "description": "当事人是否尝试忽略、压制、中和或抵制该体验。",
+          "required_for_scores": [
+            "1",
+            "2",
+            "3"
+          ]
+        }
+      ],
+      "score_requirements": [
+        {
+          "score": "1",
+          "required_slots": [
+            "resistance_or_neutralization"
+          ],
+          "requires_assessor_judgment": true,
+          "summary": "抵制/中和阴性发现提议。"
+        },
+        {
+          "score": "2",
+          "required_slots": [
+            "resistance_or_neutralization"
+          ],
+          "requires_assessor_judgment": true,
+          "summary": "阈下提议。"
+        },
+        {
+          "score": "3",
+          "required_slots": [
+            "resistance_or_neutralization"
+          ],
+          "requires_assessor_judgment": true,
+          "summary": "阳性提议；需要受训人员审核。"
+        }
+      ],
+      "semantic_constraints": {
+        "core_concept": "当事人对此前描述体验所做的反应。",
+        "severity_threshold": "不得把任何应对行动都假定为强迫行为或具有临床意义的抵制。",
+        "key_exclusions": [
+          "与所描述体验无关的普通应对"
+        ],
+        "required_information": [
+          "resistance_or_neutralization"
+        ]
+      },
+      "formal_transitions": [
+        {
+          "transition_id": "G7.TO_OBSESSION_SUMMARY",
+          "when": {
+            "score_in": [
+              "1",
+              "2",
+              "3"
+            ]
+          },
+          "target": "$return"
+        }
+      ],
+      "coverage_status": "clinical_spec_candidate",
+      "publication_status": "candidate_only_not_published"
+    },
+    {
+      "node_id": "G11",
+      "module_id": "G",
+      "node_type": "criterion_rule",
+      "clinical_intent": "表示由 S12 阳性扫描进入的 G11 强迫行为模块 gate。",
+      "time_window": "lifetime_context_from_S12",
+      "canonical_prompt": "",
+      "source_relation_ids": [
+        "G11:ocr_anchor:ocr-anchor-1:f568be69b001",
+        "G11:ocr_anchor:ocr-anchor-2:1fb8acf1b234",
+        "G11:ocr_region:ocr-region-1:fdd7b883e702",
+        "G11:related_field:phase2-1:94dcae267ba3",
+        "G11:source_region:source-1:26cfc9f6fcd3"
+      ],
+      "evidence_slots": [
+        {
+          "slot_id": "screen_positive",
+          "value_type": "boolean_or_uncertain",
+          "description": "上游 S12 是否支持进入强迫行为 gate。",
+          "required_for_scores": [
+            "1",
+            "3"
+          ]
+        }
+      ],
+      "score_requirements": [
+        {
+          "score": "1",
+          "required_slots": [
+            "screen_positive"
+          ],
+          "requires_assessor_judgment": true,
+          "summary": "Gate 阴性提议。"
+        },
+        {
+          "score": "3",
+          "required_slots": [
+            "screen_positive"
+          ],
+          "requires_assessor_judgment": true,
+          "summary": "Gate 阳性提议。本 Pilot 在尚未实现的后续 criterion 序列前停止。"
+        }
+      ],
+      "semantic_constraints": {
+        "core_concept": "承接 S12 扫描结果的非用户可见 gate。",
+        "severity_threshold": "此 gate 不能独立确立强迫行为 criterion 或诊断。",
+        "key_exclusions": [
+          "作为独立诊断使用"
+        ],
+        "required_information": [
+          "screen_positive"
+        ]
+      },
+      "formal_transitions": [
+        {
+          "transition_id": "G11.TO_COMPULSION_SUMMARY",
+          "when": {
+            "score_in": [
+              "1",
+              "3"
+            ]
+          },
+          "target": "$return"
+        }
+      ],
+      "coverage_status": "clinical_spec_candidate",
+      "publication_status": "candidate_only_not_published"
+    }
+  ]
+}

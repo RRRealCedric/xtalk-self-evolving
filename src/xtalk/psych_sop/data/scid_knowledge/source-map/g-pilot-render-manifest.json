@@ -1,0 +1,71 @@
+{
+  "coordinate_systems": {
+    "pdf_widget": "PDF user space points, origin lower-left in the unrotated crop box",
+    "rendered_image": "pixels, origin upper-left",
+    "review_layout": "normalized 0-10000, origin upper-left in rendered-page space"
+  },
+  "generator": {
+    "dpi": 300,
+    "name": "xtalk.scid.ocr_layout",
+    "renderer": "pypdfium2",
+    "version": "1.0.0"
+  },
+  "pages": [
+    {
+      "dpi": 300,
+      "image_height_px": 3509,
+      "image_path": "xtalk/src/xtalk/psych_sop/data/scid_knowledge/source-map/rendered/g-pilot-pages/scid5-page-004-300dpi.png",
+      "image_sha256": "2d8e03d107987c32beb537621685cff3f5e2de3acc3c1887d2cb518f29718ed8",
+      "image_width_px": 2482,
+      "page_number": 4,
+      "pdf_geometry": {
+        "crop_box_pdf_points": [
+          0.0,
+          0.0,
+          842.04,
+          595.44
+        ],
+        "rotation_degrees": 90
+      }
+    },
+    {
+      "dpi": 300,
+      "image_height_px": 3509,
+      "image_path": "xtalk/src/xtalk/psych_sop/data/scid_knowledge/source-map/rendered/g-pilot-pages/scid5-page-232-300dpi.png",
+      "image_sha256": "8c1690cc8987b9ae29a744b615305be71ec3262e8e42bc600b9f8fe77eebe84f",
+      "image_width_px": 2482,
+      "page_number": 232,
+      "pdf_geometry": {
+        "crop_box_pdf_points": [
+          0.0,
+          0.0,
+          842.04,
+          595.44
+        ],
+        "rotation_degrees": 90
+      }
+    },
+    {
+      "dpi": 300,
+      "image_height_px": 3509,
+      "image_path": "xtalk/src/xtalk/psych_sop/data/scid_knowledge/source-map/rendered/g-pilot-pages/scid5-page-233-300dpi.png",
+      "image_sha256": "dc9db1b3682be0453464bc169658fcdb4d9d1d718515e61b62dd0e4b2056e185",
+      "image_width_px": 2482,
+      "page_number": 233,
+      "pdf_geometry": {
+        "crop_box_pdf_points": [
+          0.0,
+          0.0,
+          842.04,
+          595.44
+        ],
+        "rotation_degrees": 90
+      }
+    }
+  ],
+  "render_manifest_version": "1.0.0",
+  "source_document": {
+    "relative_path": "psydata/realdata/PsychologySOP-Template/scid-5.pdf",
+    "sha256": "681d666c27eec13923e06b8f12317c2c27736c96ef0f0651d45bb65dc5cf799e"
+  }
+}

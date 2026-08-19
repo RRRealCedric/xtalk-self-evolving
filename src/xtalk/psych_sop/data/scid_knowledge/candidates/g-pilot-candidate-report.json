@@ -1,0 +1,144 @@
+{
+  "candidate_bundle_sha256": "8f75a26df4be47d4f3a9d3f9cf63a0fbbce6888ae692887eec7b3297225819e7",
+  "candidate_report_version": "1.0.0",
+  "candidate_status": "candidate_only_not_published",
+  "global_review_items": [
+    {
+      "kind": "audit_traceability",
+      "message": "Project-owner confirmations allow this candidate-generation step, but reviewer identity and per-item audit decisions are not recorded in this repository.",
+      "severity": "required_before_release"
+    },
+    {
+      "kind": "publication_boundary",
+      "message": "Candidate-only data must not be copied into the released bundle or Runtime without the later review, compiler, and governance gates.",
+      "severity": "required_before_release"
+    }
+  ],
+  "review_items": [
+    {
+      "candidate_node_id": "S9",
+      "kind": "candidate_content_review",
+      "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+      "severity": "required"
+    },
+    {
+      "candidate_node_id": "S9.PROBE.OCCURRENCE",
+      "kind": "candidate_content_review",
+      "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+      "severity": "required"
+    },
+    {
+      "candidate_node_id": "S9.PROBE.OCCURRENCE",
+      "kind": "derived_clarification",
+      "message": "The clarification prompt is derived content and must retain non-leading, time-window-faithful wording.",
+      "severity": "required"
+    },
+    {
+      "candidate_node_id": "G3",
+      "kind": "candidate_content_review",
+      "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+      "severity": "required"
+    },
+    {
+      "candidate_node_id": "G3",
+      "kind": "related_form_anchor",
+      "message": "The source region is linked through a related form anchor, not an exact AcroForm field; preserve this distinction.",
+      "severity": "required"
+    },
+    {
+      "candidate_node_id": "G6",
+      "kind": "candidate_content_review",
+      "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+      "severity": "required"
+    },
+    {
+      "candidate_node_id": "G7",
+      "kind": "candidate_content_review",
+      "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+      "severity": "required"
+    },
+    {
+      "candidate_node_id": "G.PILOT.OBSESSION_SUMMARY",
+      "kind": "candidate_content_review",
+      "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+      "severity": "required"
+    },
+    {
+      "candidate_node_id": "G.PILOT.OBSESSION_SUMMARY",
+      "kind": "engineering_scaffold",
+      "message": "This is an engineering control node, not source clinical content; verify it remains non-diagnostic and non-user-visible where required.",
+      "severity": "required"
+    },
+    {
+      "candidate_node_id": "G.PILOT.OBSESSION_RETURN",
+      "kind": "candidate_content_review",
+      "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+      "severity": "required"
+    },
+    {
+      "candidate_node_id": "G.PILOT.OBSESSION_RETURN",
+      "kind": "engineering_scaffold",
+      "message": "This is an engineering control node, not source clinical content; verify it remains non-diagnostic and non-user-visible where required.",
+      "severity": "required"
+    },
+    {
+      "candidate_node_id": "S12",
+      "kind": "candidate_content_review",
+      "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+      "severity": "required"
+    },
+    {
+      "candidate_node_id": "G11",
+      "kind": "candidate_content_review",
+      "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+      "severity": "required"
+    },
+    {
+      "candidate_node_id": "G11",
+      "kind": "related_form_anchor",
+      "message": "The source region is linked through a related form anchor, not an exact AcroForm field; preserve this distinction.",
+      "severity": "required"
+    },
+    {
+      "candidate_node_id": "G.PILOT.COMPULSION_SUMMARY",
+      "kind": "candidate_content_review",
+      "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+      "severity": "required"
+    },
+    {
+      "candidate_node_id": "G.PILOT.COMPULSION_SUMMARY",
+      "kind": "engineering_scaffold",
+      "message": "This is an engineering control node, not source clinical content; verify it remains non-diagnostic and non-user-visible where required.",
+      "severity": "required"
+    },
+    {
+      "candidate_node_id": "G.PILOT.COMPULSION_RETURN",
+      "kind": "candidate_content_review",
+      "message": "Confirm the proposed semantics, slots, score requirements, transitions, and expressions before any release.",
+      "severity": "required"
+    },
+    {
+      "candidate_node_id": "G.PILOT.COMPULSION_RETURN",
+      "kind": "engineering_scaffold",
+      "message": "This is an engineering control node, not source clinical content; verify it remains non-diagnostic and non-user-visible where required.",
+      "severity": "required"
+    }
+  ],
+  "summary": {
+    "candidate_node_count": 11,
+    "candidate_transition_count": 25,
+    "expression_candidate_count": 6,
+    "review_item_count": 18,
+    "review_item_kind_counts": {
+      "candidate_content_review": 11,
+      "derived_clarification": 1,
+      "engineering_scaffold": 4,
+      "related_form_anchor": 2
+    },
+    "source_confidence_counts": {
+      "engineering_only": 4,
+      "high": 4,
+      "medium": 3
+    }
+  }
+}

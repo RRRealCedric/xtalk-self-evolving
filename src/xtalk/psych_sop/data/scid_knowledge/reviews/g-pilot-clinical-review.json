@@ -1,0 +1,53 @@
+{
+  "review_id": "scid5-zh-g-pilot-clinical-review-v1",
+  "status": "pending_trained_clinical_reviewer",
+  "bundle_id": "scid5-zh-g-pilot",
+  "content_version": "0.1.0-engineering-pilot",
+  "review_packet": {
+    "path": "psydata/realdata/PsychologySOP-Template/scid-review-packets/g-pilot-v0.1.0",
+    "entrypoint": "index.html",
+    "printable_markdown": "clinical-review.md",
+    "overlay_template": "review-template.json",
+    "source_crops": ["scan-s9", "scan-s12", "g2-g3", "g2-g6-g7", "g3-g11"],
+    "rendering_rule": "The packet is deterministically rendered from the reviewed JSON and frozen source PDF. It is not an LLM-generated clinical summary."
+  },
+  "scope": {
+    "source_nodes": ["S9", "S12", "G3", "G6", "G7", "G11"],
+    "derived_nodes": ["S9.PROBE.OCCURRENCE"],
+    "engineering_nodes": [
+      "G.PILOT.OBSESSION_SUMMARY",
+      "G.PILOT.OBSESSION_RETURN",
+      "G.PILOT.COMPULSION_SUMMARY",
+      "G.PILOT.COMPULSION_RETURN"
+    ]
+  },
+  "required_review_items": [
+    {
+      "id": "G-PILOT-SOURCE-01",
+      "question": "Does every canonical prompt and page/field reference faithfully match the approved SCID source?",
+      "status": "pending"
+    },
+    {
+      "id": "G-PILOT-SEMANTICS-01",
+      "question": "Do the constructs, time windows, exclusions, and evidence slots preserve the intended meaning without adding unsupported criterion logic?",
+      "status": "pending"
+    },
+    {
+      "id": "G-PILOT-SCORE-01",
+      "question": "Are the score requirements correctly framed as evidence sufficiency rather than an autonomous diagnostic rule?",
+      "status": "pending"
+    },
+    {
+      "id": "G-PILOT-FLOW-01",
+      "question": "Are the S9/S12 to G3/G11 transitions and the explicitly bounded pilot return semantics clinically safe for the stated non-diagnostic scope?",
+      "status": "pending"
+    },
+    {
+      "id": "G-PILOT-DIALOGUE-01",
+      "question": "Is the derived S9 clarification non-leading, semantically faithful, and appropriate for the stated time window?",
+      "status": "pending"
+    }
+  ],
+  "release_rule": "No node may move from the engineering schema pilot into runtime interview use until all source and clinical review items are adjudicated by a trained reviewer using the linked review packet and review overlay.",
+  "data_boundary": "No real-patient transcript, audio, or derived content is included in this review artifact."
+}
